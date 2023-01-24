@@ -32,10 +32,10 @@ const imfCardName = []
 const EternalCardName = []
 
 imf.cards.forEach((c) => {
-	imfCardName.push(c.name)
+	imfCardName.push(c.name.toLowerCase())
 })
 eternal.cards.forEach((c) => {
-	EternalCardName.push(c.name)
+	EternalCardName.push(c.name.toLowerCase())
 })
 
 const specialAttack = {
@@ -151,38 +151,40 @@ client.once(Events.ClientReady, () => {
 
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-	if (!(message.content.includes("[[") || message.content.includes("{{")))
-		return
 
-	const m = message.content.match(/([\[]|[\{]){2,}[^\]\}]+([\]]|[\}]){2,}/g)
+	console.log(!message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g))
 
+	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
 	if (!m) return
-	if (m.length < 1) return
 
 	let embedList = []
 	let attachmentList = []
 
 	for (const cn of m) {
+	
 		// get important shit
 		let cardName
 		let rulesetNameList
 		let ruleset
 
+		cardName = cn.toLowerCase()
 		// check which ruleset it should be check from
-		if (cn.includes("[[")) {
-			cardName = cn.replaceAll("[[", "").replaceAll("]]", "")
-			rulesetNameList = imfCardName
-			ruleset = imf
-		} else {
-			cardName = cn.replaceAll("{{", "").replaceAll("}}", "")
+		if (cn.startsWith("e")) {
+			cardName = cardName.slice(1).replaceAll("[[", "").replaceAll("]]", "")
 			rulesetNameList = EternalCardName
 			ruleset = eternal
+		} else {
+			cardName = cardName.replaceAll("[[", "").replaceAll("]]", "")
+			rulesetNameList = imfCardName
+			ruleset = imf
 		}
-
+		console.log(
+			StringSimilarity.findBestMatch(cardName, rulesetNameList).bestMatch
+		)
 		// find the best match
 		const card = ruleset.cards.find(
 			(c) =>
-				c.name ===
+				c.name.toLowerCase() ===
 					StringSimilarity.findBestMatch(cardName, rulesetNameList)
 						.bestMatch.target &&
 				StringSimilarity.findBestMatch(cardName, rulesetNameList)
@@ -194,7 +196,7 @@ client.on(Events.MessageCreate, async (message) => {
 			embedList.push(
 				new EmbedBuilder()
 					.setTitle(`Card "${cardName}" not found!`)
-					.setDescription("This card doesn't exist")
+					.setDescription(`This card doesn't exist in the selected ruleset (${ruleset.ruleset})`)
 			)
 			continue
 		}
@@ -288,7 +290,7 @@ client.on(Events.MessageCreate, async (message) => {
 		embedList.push(
 			new EmbedBuilder()
 				.setColor(card.rare ? Colors.Red : Colors.Greyple)
-				.setTitle(`${card.name} (${ruleset.ruleset})`)
+				.setTitle(`${card.name} [${ruleset.ruleset}]`)
 				.setDescription(description)
 				.setThumbnail(
 					`attachment://${card.name
