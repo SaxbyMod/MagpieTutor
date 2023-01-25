@@ -3,7 +3,9 @@ const { clientId, guildId, token } = require("./config.json")
 const fs = require("node:fs")
 
 const commands = [
-
+	new SlashCommandBuilder()
+		.setName("ruleset-code")
+		.setDescription("Show all the ruleset code"),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

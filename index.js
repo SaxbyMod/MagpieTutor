@@ -72,131 +72,62 @@ client.once(Events.ClientReady, () => {
 	console.log("Ready!")
 })
 
-// // on commands call
-// client.on(Events.InteractionCreate, async (interaction) => {
-// 	if (!interaction.isChatInputCommand()) return // executing everything but commands interaction
+// on commands call
+client.on(Events.InteractionCreate, async (interaction) => {
+	if (!interaction.isChatInputCommand()) return // returning everything but commands interaction
 
-// 	const { commandName, options } = interaction
-// 	// if (commandName === "lookup") {
-// 	// 	const card = ruleset.cards.find(
-// 	// 		(c) =>
-// 	// 			c.name ===
-// 	// 				StringSimilarity.findBestMatch(cardName, cardNameList)
-// 	// 					.bestMatch.target &&
-// 	// 			StringSimilarity.findBestMatch(cardName, cardNameList).bestMatch
-// 	// 				.rating >= 0.4
-// 	// 	)
+	const { commandName, options } = interaction
 
-// 	// 	if (!card) {
-// 	// 		await interaction.reply("Card not found")
-// 	// 		return
-// 	// 	}
-// 	// 	const portrait = Canvas.createCanvas(400, 280)
-// 	// 	const context = portrait.getContext("2d")
-// 	// 	const cardPortrait = await Canvas.loadImage(
-// 	// 		`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-// 	// 			" ",
-// 	// 			"%20"
-// 	// 		)}.png`
-// 	// 	)
-
-// 	// 	context.imageSmoothingEnabled = false
-// 	// 	context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
-// 	// 	const attachment = new AttachmentBuilder(await portrait.encode("png"), {
-// 	// 		name: "pfp.png",
-// 	// 	})
-// 	// 	context.filter = console.log()
-// 	// 	await interaction.reply({
-// 	// 		embeds: [
-// 	// 			new EmbedBuilder()
-// 	// 				.setColor(Colors.Green)
-// 	// 				.setTitle(card.name)
-// 	// 				.setDescription(
-// 	// 					`${
-// 	// 						card.description !== undefined
-// 	// 							? `*${card.description}*\n\n`
-// 	// 							: ""
-// 	// 					}${card.rare ? "**Rare**\n" : ""}${
-// 	// 						card.blood_cost > 0
-// 	// 							? `**Blood Cost**: ${card.blood_cost}\n`
-// 	// 							: ""
-// 	// 					}${
-// 	// 						card.bone_cost > 0
-// 	// 							? `**Bone Cost**: ${card.bone_cost}\n`
-// 	// 							: ""
-// 	// 					}${
-// 	// 						card.energy_cost > 0
-// 	// 							? `**Energy Cost**: ${card.energy_cost}\n`
-// 	// 							: ""
-// 	// 					}${
-// 	// 						card.mox_cost > 0
-// 	// 							? `**Mox Cost**: ${card.mox_cost.join(", ")}\n`
-// 	// 							: ""
-// 	// 					}\n**Attack**: ${card.attack}\n**Health**: ${
-// 	// 						card.health
-// 	// 					}\n${
-// 	// 						card.sigils
-// 	// 							? `\n**Sigil**: ${card.sigils.join(", ")}\n`
-// 	// 							: ""
-// 	// 					}\n${card.nosac ? "**Can't be sacrifice**\n" : ""}${
-// 	// 						card.banned ? "**Banned**" : ""
-// 	// 					}`
-// 	// 				)
-// 	// 				.setThumbnail(`attachment://pfp.png`),
-// 	// 		],
-// 	// 		files: [attachment],
-// 	// 	})
-// 	// }
-// })
+	if (commandName === "ruleset-code") {
+		await interaction.reply(
+			"Possible ruleset code for look:\ne: Eternal format"
+		)
+	}
+})
 
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
-	console.log(!message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g))
-
-	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
+	const m = message.content.match(/([\w]|)\[{2}[^\]]+\]{2}/g)
 	if (!m) return
 
 	let embedList = []
 	let attachmentList = []
 
 	for (const cn of m) {
-	
 		// get important shit
-		let cardName
-		let rulesetNameList
-		let ruleset
+		let cardName = cn.toLowerCase().trim()
+		let rulesetNameList = imfCardName
+		let ruleset = imf
 
-		cardName = cn.toLowerCase()
 		// check which ruleset it should be check from
 		if (cn.startsWith("e")) {
-			cardName = cardName.slice(1).replaceAll("[[", "").replaceAll("]]", "")
+			cardName = cardName.slice(1)
 			rulesetNameList = EternalCardName
 			ruleset = eternal
-		} else {
-			cardName = cardName.replaceAll("[[", "").replaceAll("]]", "")
-			rulesetNameList = imfCardName
-			ruleset = imf
 		}
-		console.log(
-			StringSimilarity.findBestMatch(cardName, rulesetNameList).bestMatch
-		)
+		cardName = cardName.slice(2, cardName.length - 2)
+		const bestMatch = StringSimilarity.findBestMatch(
+			cardName,
+			rulesetNameList
+		).bestMatch
+
 		// find the best match
 		const card = ruleset.cards.find(
 			(c) =>
-				c.name.toLowerCase() ===
-					StringSimilarity.findBestMatch(cardName, rulesetNameList)
-						.bestMatch.target &&
-				StringSimilarity.findBestMatch(cardName, rulesetNameList)
-					.bestMatch.rating >= 0.5
+				c.name.toLowerCase() === bestMatch.target &&
+				bestMatch.rating >= 0.4
 		)
 
 		// if the card doesn't exist or missing exit and go to the next one
 		if (!card) {
 			embedList.push(
 				new EmbedBuilder()
+					.setColor(Colors.Red)
 					.setTitle(`Card "${cardName}" not found!`)
-					.setDescription(`This card doesn't exist in the selected ruleset (${ruleset.ruleset})`)
+					.setDescription(
+						`No card found in selected ruleset (${ruleset.ruleset}) that have more than 40% similarity with the search term (${cardName})`
+					)
 			)
 			continue
 		}
@@ -232,32 +163,34 @@ client.on(Events.MessageCreate, async (message) => {
 		let description = ""
 
 		// bool stuff
-		if (card.description) description += `*${card.description}*\n\n`
-		if (card.rare) description += "**Rare**\n\n"
-		if (card.conduit) description += "**Conductive**\n\n"
+		if (card.description) description += `*${card.description}*\n`
+		if (card.rare) description += "**Rare**\n"
+		if (card.conduit) description += "**Conductive**\n"
+		if (card.nosac) description += "**Can't be sacrifice**\n"
+		if (card.banned) description += "**Banned**\n"
 
 		// cost stuff
 		if (card.blood_cost)
-			description += `**Blood Cost**: ${getEmoji("blood")}${getEmoji(
+			description += `\n**Blood Cost**: ${getEmoji("blood")}${getEmoji(
 				"x_"
-			)}${numToEmoji(card.blood_cost)}\n`
+			)}${numToEmoji(card.blood_cost)}`
 
 		if (card.bone_cost)
-			description += `**Bone Cost**: ${getEmoji("bonebone")}${getEmoji(
+			description += `\n**Bone Cost**: ${getEmoji("bonebone")}${getEmoji(
 				"x_"
-			)}${numToEmoji(card.bone_cost)}\n`
+			)}${numToEmoji(card.bone_cost)}`
 
 		if (card.energy_cost)
-			description += `**Energy Cost**: ${getEmoji("energy")}${getEmoji(
+			description += `\n**Energy Cost**: ${getEmoji("energy")}${getEmoji(
 				"x_"
-			)}${numToEmoji(card.energy_cost)}\n`
+			)}${numToEmoji(card.energy_cost)}`
 
 		if (card.mox_cost)
-			description += `**Mox Cost**: ${
+			description += `\n**Mox Cost**: ${
 				card.mox_cost.includes("Green") ? getEmoji("green") : ""
 			}${card.mox_cost.includes("Orange") ? getEmoji("orange") : ""}${
 				card.mox_cost.includes("Blue") ? getEmoji("blue") : ""
-			}\n`
+			}`
 
 		if (
 			!card.blood_cost &&
@@ -265,9 +198,10 @@ client.on(Events.MessageCreate, async (message) => {
 			!card.energy_cost &&
 			!card.mox_cost
 		)
-			description += "**Free**\n"
+			description += "\n**Free**"
+
 		// attack and health stuff
-		description += `\n**Attack**: ${
+		description += `\n\n**Attack**: ${
 			card.atkspecial
 				? `${specialAttack[card.atkspecial]} (${
 						specialAttackDescription[card.atkspecial]
@@ -282,14 +216,14 @@ client.on(Events.MessageCreate, async (message) => {
 			description += `\n**Change into**: ${card.evolution}\n`
 		}
 
+		if (card.left_half)
+			description += `\n**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
 		if (card.sheds) description += `\n**Shed**: ${card.sheds}\n`
 		if (card.sigils) description += `\n**Sigils**:\n${sigilDescription}\n`
-		if (card.nosac) description += "\n**Can't be sacrifice**\n"
-		if (card.banned) description += "\n**Banned**"
 
 		embedList.push(
 			new EmbedBuilder()
-				.setColor(card.rare ? Colors.Red : Colors.Greyple)
+				.setColor(card.rare ? Colors.Green : Colors.Greyple)
 				.setTitle(`${card.name} [${ruleset.ruleset}]`)
 				.setDescription(description)
 				.setThumbnail(
@@ -297,6 +231,11 @@ client.on(Events.MessageCreate, async (message) => {
 						.replaceAll(" ", "")
 						.slice(0, 5)}.png`
 				)
+				.setFooter({
+					text: `*This card was selected because it matches ${
+						Math.round(bestMatch.rating * 10000) / 100
+					}% with the search term (${cardName})*`,
+				})
 		)
 	}
 
