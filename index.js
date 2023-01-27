@@ -169,15 +169,15 @@ async function genCardEmbed(rawName) {
 
 	// if the card doesn't exist or missing exit and go to the next one
 	if (!card) {
-		return (
+		return [
 			new EmbedBuilder()
 				.setColor(Colors.Red)
 				.setTitle(`Card "${name}" not found`)
 				.setDescription(
 					`No card found in selected set (${set.ruleset}) that have more than 40% similarity with the search term(${name})`
 				),
-			-1
-		)
+			-1,
+		]
 	}
 
 	// get the card pfp
@@ -307,8 +307,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		} else await interaction.reply("no")
 	} else if (commandName === "draft") {
 		const set = options.getString("set")
-		const deckSize = options.getString("size")
-			? options.getString("size")
+		const deckSize = options.getInteger("size")
+			? options.getInteger("size")
 			: 20
 		const pool = listDiff(
 			setsCardPool[set],
@@ -325,21 +325,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		var deck = { cards: [], side_deck: "10 Squirrel" }
 
+		let flag = false
 		for (cycle = 0; cycle < deckSize; cycle++) {
 			// take 4 random common
 			let temp = randomChoices(
 				listDiff(listDiff(pool, setsRarePool[set]), setsBanPool[set]),
 				4
 			)
+
 			// 1 one random rare
 			temp.push(
 				randomChoice(
 					listDiff(
-						listInter(pool, setsRarePool[set]),
+						listDiff(
+							listInter(pool, setsRarePool[set]),
+							deck.cards.map((n) => n.toLowerCase())
+						),
 						setsBanPool[set]
 					)
 				)
 			)
+
 			// generating stuff
 
 			//set up a pack
@@ -352,7 +358,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			//adding in wild if duplicate is found
 			if (pack.length < 5) {
-				for (i = 0; i < 5 - pack.length; i++) pack.push("wild")
+				for (i = 0; i < 5 - pack.length; i++) {
+					const newCard = randomChoice(
+						listDiff(
+							listDiff(
+								listDiff(pool, setsRarePool[set]),
+								setsBanPool[set]
+							),
+							temp
+						)
+					)
+					pack.push(
+						setsData[set].cards.find(
+							(c) => c.name.toLowerCase() === newCard
+						)
+					)
+				}
 			}
 
 			// generating embed and button
@@ -371,42 +392,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			for (c in pack) {
 				const card = pack[c]
-				if (card === "wild") {
-					// if wild make a special one
-					embed.addFields({
-						name: "Wild card",
-						value: "You can use this card as any common card",
-						inline: true,
-					})
-				} else {
-					// generating the card description
-					description += `Attack: ${card.attack}\nHealth: ${card.health}\n`
-					if (card.sigils)
-						description += `Sigils: ${card.sigils.join(", ")}`
 
-					// adding it into the embed
-					embed.addFields({
-						name: `${
-							card.rare ? `**${card.name} (RARE)**` : card.name
-						} (${
-							card.blood_cost ? `${card.blood_cost} Blood ` : ""
-						}${card.bone_cost ? `${card.bone_cost} Bone ` : ""}${
-							card.energy_cost
-								? `${card.energy_cost} Energy `
-								: ""
-						}${
-							card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
-						}${
-							!card.blood_cost &&
-							!card.bone_cost &&
-							!card.energy_cost &&
-							!card.mox_cost
-								? "Free"
-								: ""
-						})\n`,
-						value: description,
-					})
-				}
+				// generating the card description
+				description += `Attack: ${card.attack}\nHealth: ${card.health}\n`
+				if (card.sigils)
+					description += `Sigils: ${card.sigils.join(", ")}`
+
+				// adding it into the embed
+				embed.addFields({
+					name: `${
+						card.rare ? `**${card.name} (RARE)**` : card.name
+					} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
+						card.bone_cost ? `${card.bone_cost} Bone ` : ""
+					}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
+						card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
+					}${
+						!card.blood_cost &&
+						!card.bone_cost &&
+						!card.energy_cost &&
+						!card.mox_cost
+							? "Free"
+							: ""
+					})\n`,
+					value: description,
+				})
 
 				// add the selection
 				selectionList.addOptions({
@@ -430,7 +439,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await message
 				.awaitMessageComponent({
 					componentType: ComponentType.StringSelect,
-					time: 60000,
+					time: 180000,
 				})
 				.then(async (i) => {
 					const cardName = i.values[0].slice(0, -1)
@@ -445,12 +454,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						],
 					})
 				})
+				.catch((err) => {
+					flag = true
+				})
+
+			if (flag) {
+				await interaction.editReply({
+					content: "Timed out! canceling deck draft",
+					embeds: [],
+					components: [],
+				})
+				break
+			}
 		}
 
+		if (flag) return
 		await interaction.editReply({
 			content: `Completed Deck: ${deck.cards.join(
 				", "
-			)}\nDeck Json: \`${JSON.stringify(deck)}\``,
+			)}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
 			embeds: [],
 			components: [],
 		})
