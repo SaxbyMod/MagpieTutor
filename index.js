@@ -339,7 +339,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					listDiff(
 						listDiff(
 							listInter(pool, setsRarePool[set]),
-							deck.cards.map((n) => n.toLowerCase())
+							deck.cards
+								.map((c) =>
+									c.startsWith("*")
+										? c.replaceAll("*", "")
+										: c
+								)
+								.map((n) => n.toLowerCase())
 						),
 						setsBanPool[set]
 					)
@@ -388,44 +394,49 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				.setCustomId("select")
 				.setPlaceholder("Select a card!")
 
-			let description = ""
+			var description = ""
 
 			for (c in pack) {
 				const card = pack[c]
 
 				// generating the card description
-				description += `Attack: ${card.attack}\nHealth: ${card.health}\n`
-				if (card.sigils)
-					description += `Sigils: ${card.sigils.join(", ")}`
-
-				// adding it into the embed
-				embed.addFields({
-					name: `${
-						card.rare ? `**${card.name} (RARE)**` : card.name
-					} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
-						card.bone_cost ? `${card.bone_cost} Bone ` : ""
-					}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
-						card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
-					}${
-						!card.blood_cost &&
-						!card.bone_cost &&
-						!card.energy_cost &&
-						!card.mox_cost
-							? "Free"
-							: ""
-					})\n`,
-					value: description,
-				})
+				description += `**${
+					card.rare ? `${card.name} (RARE)` : card.name
+				} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
+					card.bone_cost ? `${card.bone_cost} Bone ` : ""
+				}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
+					card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
+				}${
+					!card.blood_cost &&
+					!card.bone_cost &&
+					!card.energy_cost &&
+					!card.mox_cost
+						? "Free"
+						: ""
+				})**\nAttack: ${card.attack}\nHealth: ${card.health}\n${
+					card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
+				}\n\n`
 
 				// add the selection
 				selectionList.addOptions({
 					label: card.name,
-					value: `${card.name}${c}`,
+					value: `${card.rare ? "*" : ""}${card.name}${c}`,
 				})
-
-				// reset description
-				description = ""
 			}
+
+			embed.addFields(
+				{
+					name: "=============== PACK ===============",
+					value: description,
+					inline: true,
+				},
+				{
+					name: `======= DECK =======`,
+					value:
+						deck.cards.length < 1 ? "Blank" : deck.cards.join("\n"),
+					inline: true,
+				}
+			)
 
 			// send embed and selection
 			await interaction.editReply({
@@ -435,15 +446,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				],
 				embeds: [embed],
 			})
+			const filter = (i) => i.user.id === interaction.user.id
 
 			await message
 				.awaitMessageComponent({
 					componentType: ComponentType.StringSelect,
 					time: 180000,
+					filter,
 				})
 				.then(async (i) => {
 					const cardName = i.values[0].slice(0, -1)
-					deck.cards.push(cardName)
+					deck.cards.push(
+						cardName.startsWith("*") ? `*${cardName}**` : cardName
+					)
 					await i.update({
 						embeds: [
 							new EmbedBuilder()
@@ -460,7 +475,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			if (flag) {
 				await interaction.editReply({
-					content: "Timed out! canceling deck draft",
+					content: "Some error happen ¯\\_(ツ)_/¯",
 					embeds: [],
 					components: [],
 				})
@@ -469,6 +484,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 
 		if (flag) return
+
+		deck.cards = deck.cards.map((c) =>
+			c.startsWith("*") ? c.replaceAll("*", "") : c
+		)
+
 		await interaction.editReply({
 			content: `Completed Deck: ${deck.cards.join(
 				", "
