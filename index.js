@@ -58,7 +58,18 @@ let setsUndeadPool = {}
 let setsTechPool = {}
 let setsMagickPool = {}
 
+const specialMagick = [
+	"Mox Module",
+	"Bleene's Mox",
+	"Goranj's Mox",
+	"Orlu's Mox",
+	"Mage Pupil",
+	"Skelemagus",
+	"Gem Detonator",
+	"Gem Guardian",
+] // these card will be consider magick no matter what
 //downloading all the set and fetch important shit
+	
 ;(async () => {
 	for (const set of Object.values(setList)) {
 		console.log(`Set ${set} loaded!`)
@@ -94,17 +105,21 @@ let setsMagickPool = {}
 				setsRarePool[setCode].push(name)
 			}
 
-			if (card.blood_cost) {
-				setsBeastPool[setCode].push(name)
-			}
-			if (card.bone_cost) {
-				setsUndeadPool[setCode].push(name)
-			}
-			if (card.energy_cost) {
-				setsTechPool[setCode].push(name)
-			}
-			if (card.mox_cost) {
+			if (specialMagick.includes(card.name)) {
 				setsMagickPool[setCode].push(name)
+			} else {
+				if (card.blood_cost) {
+					setsBeastPool[setCode].push(name)
+				}
+				if (card.bone_cost) {
+					setsUndeadPool[setCode].push(name)
+				}
+				if (card.energy_cost) {
+					setsTechPool[setCode].push(name)
+				}
+				if (card.mox_cost) {
+					setsMagickPool[setCode].push(name)
+				}
 			}
 		}
 	}
@@ -135,6 +150,17 @@ function numToEmoji(num) {
 		if (digit === "-") {
 			out += getEmoji("negative")
 		} else out += getEmoji(`${digit}_`)
+	}
+	return out
+}
+
+function countDeckDup(deck) {
+	const singleDeck = new Set(deck)
+	var out = {}
+	for (card of singleDeck) {
+		out[card] = deck.filter(
+			(c) => c.toLowerCase() === card.toLowerCase()
+		).length
 	}
 	return out
 }
@@ -303,7 +329,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	} else if (commandName === "restart") {
 		if (interaction.user.id == 601821309881810973) {
 			await interaction.reply("Committing death...")
-			throw new Error("KILL YOURSELF BITCH")
+			throw new Error("death")
 		} else await interaction.reply("no")
 	} else if (commandName === "draft") {
 		const set = options.getString("set")
@@ -324,8 +350,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 
 		var deck = { cards: [], side_deck: "10 Squirrel" }
-
+		var wildCount = 0
 		let flag = false
+
 		for (cycle = 0; cycle < deckSize; cycle++) {
 			// take 4 random common
 			let temp = randomChoices(
@@ -362,9 +389,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
 			)
 
+			console.log(pack)
 			//adding in wild if duplicate is found
 			if (pack.length < 5) {
-				for (i = 0; i < 5 - pack.length; i++) {
+				console.log(pack.length)
+				console.log("Dup")
+				for (card = 0; card < 5 - pack.length; card++) {
 					const newCard = randomChoice(
 						listDiff(
 							listDiff(
@@ -374,6 +404,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							temp
 						)
 					)
+					console.log(newCard)
 					pack.push(
 						setsData[set].cards.find(
 							(c) => c.name.toLowerCase() === newCard
@@ -382,6 +413,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}
 			}
 
+			console.log(pack)
 			// generating embed and button
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Blue)
@@ -401,7 +433,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 				// generating the card description
 				description += `**${
-					card.rare ? `${card.name} (RARE)` : card.name
+					card.rare ? `${card.name} [RARE]` : card.name
 				} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
 					card.bone_cost ? `${card.bone_cost} Bone ` : ""
 				}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
@@ -424,6 +456,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 			}
 
+			let deckStr = ""
+			temp = countDeckDup(
+				deck.cards.sort((a, b) =>
+					a.startsWith("*")
+						? -1
+						: b.startsWith("*")
+						? 1
+						: a.localeCompare(b)
+				)
+			)
+			for (card of Object.keys(temp)) {
+				deckStr += `${temp[card]}x | ${card}\n`
+			}
 			embed.addFields(
 				{
 					name: "=============== PACK ===============",
@@ -432,8 +477,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				},
 				{
 					name: `======= DECK =======`,
-					value:
-						deck.cards.length < 1 ? "Blank" : deck.cards.join("\n"),
+					value: deck.cards.length < 1 ? "Blank" : deckStr,
 					inline: true,
 				}
 			)
@@ -456,16 +500,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 				.then(async (i) => {
 					const cardName = i.values[0].slice(0, -1)
-					deck.cards.push(
-						cardName.startsWith("*") ? `*${cardName}**` : cardName
-					)
+					let temp = cardName.startsWith("*")
+						? `**${cardName.slice(1)}**`
+						: cardName
+
+					if (
+						deck.cards.filter(
+							(c) => c.toLowerCase() === temp.toLowerCase()
+						).length >= 4
+					) {
+						deck.cards.push("** *WILD CARD* **")
+						wildCount++
+					} else deck.cards.push(temp)
+
 					await i.update({
 						embeds: [
-							new EmbedBuilder()
-								.setTitle(`Selected ${cardName}`)
-								.setDescription(
-									"Selection successful loading next pack"
-								),
+							embed
 						],
 					})
 				})
@@ -485,12 +535,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		if (flag) return
 
-		deck.cards = deck.cards.map((c) =>
-			c.startsWith("*") ? c.replaceAll("*", "") : c
-		)
+		deck.cards = deck.cards
+			.map((c) => {
+				let out
+				out = c.replaceAll("*", "").trim()
+				if (out === "WILD CARD") {
+					out = ""
+				}
+				return out
+			})
+			.filter((c) => c != "")
 
 		await interaction.editReply({
-			content: `Completed Deck: ${deck.cards.join(
+			content: `**You have ${wildCount} Wild Card. You can replace them with any common card**\nCompleted Deck: ${deck.cards.join(
 				", "
 			)}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
 			embeds: [],

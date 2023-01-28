@@ -72,7 +72,7 @@ const commands = [
 			option
 				.setName("magick")
 				.setDescription(
-					"Exclude Magick (card that cost Mox) card when drafting"
+					"Exclude Magick (card that cost Mox or support only Mox) card when drafting"
 				)
 		),
 ].map((command) => command.toJSON())
