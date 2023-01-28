@@ -12,7 +12,7 @@ Scryfall bot but for IMF
     - `tech`: remove all cards that cost blood from the draft pool
     - `magick`: remove all cards that cost blood from the draft pool. This will also remove all the cards that support magic
 
-### How to use ###
+### Note ###
 - You cannot undo selection. 
 - Once you have 4 of the same common and try to take a fifth you will receive a Wild instead 
 - Wild can be use to trade in any common card
