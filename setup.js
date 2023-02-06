@@ -75,6 +75,23 @@ const commands = [
 					"Exclude Magick (card that cost Mox or support only Mox) card when drafting"
 				)
 		),
+	new SlashCommandBuilder()
+		.setName("echo")
+		.setDescription("Echo text")
+		.addStringOption((option) =>
+			option
+				.setName("text")
+				.setDescription("The text to echo back")
+				.setRequired(true)
+		)
+		.addChannelOption((option) =>
+			option.setName("channel").setDescription("The channel to echo into")
+		)
+		.addStringOption((option) =>
+			option
+				.setName("message")
+				.setDescription("The message id to reply to")
+		),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

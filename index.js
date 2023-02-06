@@ -37,7 +37,7 @@ const randomChoice = (list) => {
 
 const randomChoices = (list, num) => {
 	let out = []
-	for (choice = 0; choice < num; choice++) {
+	for (let choice = 0; choice < num; choice++) {
 		out.push(list[Math.floor(Math.random() * list.length)])
 	}
 	return out
@@ -67,9 +67,10 @@ const specialMagick = [
 	"Skelemagus",
 	"Gem Detonator",
 	"Gem Guardian",
+	"Horse Mage",
 ] // these card will be consider magick no matter what
 //downloading all the set and fetch important shit
-	
+
 ;(async () => {
 	for (const set of Object.values(setList)) {
 		console.log(`Set ${set} loaded!`)
@@ -92,7 +93,7 @@ const specialMagick = [
 		setsTechPool[setCode] = []
 		setsMagickPool[setCode] = []
 
-		for (card of setsData[setCode].cards) {
+		for (const card of setsData[setCode].cards) {
 			const name = card.name.toLowerCase()
 
 			setsCardPool[setCode].push(name)
@@ -146,7 +147,7 @@ function getEmoji(name) {
 
 function numToEmoji(num) {
 	let out = ""
-	for (digit of num + []) {
+	for (const digit of num + []) {
 		if (digit === "-") {
 			out += getEmoji("negative")
 		} else out += getEmoji(`${digit}_`)
@@ -157,7 +158,7 @@ function numToEmoji(num) {
 function countDeckDup(deck) {
 	const singleDeck = new Set(deck)
 	var out = {}
-	for (card of singleDeck) {
+	for (const card of singleDeck) {
 		out[card] = deck.filter(
 			(c) => c.toLowerCase() === card.toLowerCase()
 		).length
@@ -171,7 +172,7 @@ async function genCardEmbed(rawName) {
 	let selectedSet = "competitive"
 
 	// check which ruleset it should be check from
-	for (code of Object.keys(setList)) {
+	for (const code of Object.keys(setList)) {
 		if (name.startsWith(code)) {
 			name = name.slice(1)
 			selectedSet = setList[code]
@@ -209,13 +210,18 @@ async function genCardEmbed(rawName) {
 	// get the card pfp
 	const portrait = Canvas.createCanvas(400, 280)
 	const context = portrait.getContext("2d")
-	const cardPortrait = await Canvas.loadImage(
+	var cardPortrait = await Canvas.loadImage(
 		`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
 			" ",
 			"%20"
 		)}.png`
 	)
 
+	if (card.name == "Fox") {
+		cardPortrait = await Canvas.loadImage(
+			"https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
+		)
+	}
 	//load the pfp
 	context.imageSmoothingEnabled = false
 	context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
@@ -232,7 +238,7 @@ async function genCardEmbed(rawName) {
 	let description = ""
 
 	// bool stuff
-	if (card.description) description += `*${card.description}*\n`
+	if (card.description) description += `*${card.description}*\n\n`
 	if (card.rare) description += "**Rare**\n"
 	if (card.conduit) description += "**Conductive**\n"
 	if (card.nosac) description += "**Can't be sacrifice**\n"
@@ -319,16 +325,42 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	if (!interaction.isChatInputCommand()) return // returning everything but commands interaction
 
 	const { commandName, options } = interaction
+	if (commandName === "echo") {
+		if (interaction.user.id != 601821309881810973) return
+		const message = options.getString("text")
+		console.log(`${interaction.user.username} say ${message}`)
+		const channel =
+			(await options.getChannel("channel")) != undefined
+				? options.getChannel("channel")
+				: interaction.channel
 
-	if (commandName === "set-code") {
+		if (options.getString("message")) {
+			var temp = await channel.messages.fetch(
+				options.getString("message")
+			)
+
+			temp.reply(message)
+		} else {
+			channel.send(message)
+		}
+
+		await interaction.reply({
+			content: "Sent",
+			ephemeral: true,
+		})
+	} else if (commandName === "set-code") {
 		await interaction.reply(
 			"Possible set code for searching:\ne: Eternal format\nv: Vanilla"
 		)
 	} else if (commandName === "ping") {
 		await interaction.reply("Pong!")
 	} else if (commandName === "restart") {
-		if (interaction.user.id == 601821309881810973) {
-			await interaction.reply("Committing death...")
+		if (
+			interaction.member.roles.cache.some(
+				(role) => role.id == 994578531671609426
+			)
+		) {
+			await interaction.reply("Restarting...")
 			throw new Error("death")
 		} else await interaction.reply("no")
 	} else if (commandName === "draft") {
@@ -353,7 +385,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		var wildCount = 0
 		let flag = false
 
-		for (cycle = 0; cycle < deckSize; cycle++) {
+		for (let cycle = 0; cycle < deckSize; cycle++) {
 			// take 4 random common
 			let temp = randomChoices(
 				listDiff(listDiff(pool, setsRarePool[set]), setsBanPool[set]),
@@ -389,12 +421,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
 			)
 
-			console.log(pack)
 			//adding in wild if duplicate is found
 			if (pack.length < 5) {
-				console.log(pack.length)
-				console.log("Dup")
-				for (card = 0; card < 5 - pack.length; card++) {
+				for (let card = 0; card < 5 - pack.length; card++) {
 					const newCard = randomChoice(
 						listDiff(
 							listDiff(
@@ -404,7 +433,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							temp
 						)
 					)
-					console.log(newCard)
 					pack.push(
 						setsData[set].cards.find(
 							(c) => c.name.toLowerCase() === newCard
@@ -413,7 +441,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}
 			}
 
-			console.log(pack)
 			// generating embed and button
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Blue)
@@ -428,7 +455,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			var description = ""
 
-			for (c in pack) {
+			for (let c in pack) {
 				const card = pack[c]
 
 				// generating the card description
@@ -466,7 +493,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						: a.localeCompare(b)
 				)
 			)
-			for (card of Object.keys(temp)) {
+			for (const card of Object.keys(temp)) {
 				deckStr += `${temp[card]}x | ${card}\n`
 			}
 			embed.addFields(
@@ -514,9 +541,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					} else deck.cards.push(temp)
 
 					await i.update({
-						embeds: [
-							embed
-						],
+						embeds: [embed],
 					})
 				})
 				.catch((err) => {
@@ -584,4 +609,5 @@ client.on(Events.MessageCreate, async (message) => {
 		},
 	})
 })
+
 client.login(t) // login the bot
