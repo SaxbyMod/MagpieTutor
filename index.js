@@ -584,7 +584,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
-	const m = message.content.match(/([\w]|)\[{2}[^\]]+\]{2}/g)
+	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
 	if (!m) return
 
 	let embedList = []
