@@ -17,6 +17,7 @@ const StringSimilarity = require("string-similarity")
 const Canvas = require("@napi-rs/canvas")
 
 const { betaToken, token, clientId } = require("./config.json")
+const saveLookup = require("./saveLookup.json")
 
 const t = token
 //set up the bot client
@@ -578,6 +579,114 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			embeds: [],
 			components: [],
 		})
+	} else if (commandName === "deck-to-set") {
+		await interaction.reply("Generating...")
+		let cardNotfound = []
+
+		// attachment grabbing code source https://stackoverflow.com/questions/67652628/reading-file-attachments-ex-txt-file-discord-js
+		const response = await fetch(options.getAttachment("save").url)
+
+		// regex source https://github.com/jlcrochet/inscryption_save_editor/blob/main/app.vue
+		const saveFile = JSON.parse(
+			(await response.text())
+				.replace(/\$iref:\d+/g, '"$&"')
+				.replace(
+					/"(position|\w*?Position)":\s*{\s*"\$type":\s*(".*?"|-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\s*}/g,
+					'"$1":{"$type":$2,"x":$3,"y":$4}'
+				)
+		)
+
+		var outputSet = JSON.parse(JSON.stringify(setsData.vanilla))
+		outputSet.ruleset = "Magpie Autogen"
+		outputSet.ant_limit = 4
+		outputSet.allow_snuffing_candles = false
+		outputSet.portrait = "portraits/Worker Ant"
+		outputSet.description =
+			"Ruleset from Inscryption's run.\nThis ruleset use the vanilla as base.\nSome kmod card may not show up."
+		outputSet.cards = [
+			{
+				name: "Squirrel",
+				attack: 0,
+				health: 1,
+				banned: true,
+			},
+		]
+		outputSet.side_decks = {
+			"10 Squirrels": {
+				type: "single",
+				card: "Squirrel",
+				count: 10,
+			},
+		}
+
+		var i = 1
+		for (let card of saveFile.ascensionData.currentRun.playerDeck
+			.cardIdModInfos.$rcontent) {
+			if (card.$v.$rlength > 0) {
+				const baseCard = setsData.vanilla.cards.find(
+					(c) =>
+						c.name.toLowerCase() ==
+						(card.$k.includes("#")
+							? card.$k.slice(0, -2)
+							: card.$k
+						).toLowerCase()
+				)
+				if (baseCard) {
+					// grabbing the base card
+					let cardData = JSON.parse(JSON.stringify(baseCard))
+
+					// adding number into card name to avoid duplicate name
+					cardData.name = card.$k
+
+					// modifying the stat if the card been buff by campfire
+					cardData.attack += card.$v.$rcontent[0].attackAdjustment
+					cardData.health += card.$v.$rcontent[0].healthAdjustment
+
+					// giving it extra sigil
+					if (card.$v.$rcontent[0].abilities.$rlength > 0) {
+						cardData.sigils = []
+						card.$v.$rcontent[0].abilities.$rcontent.forEach(
+							(sigil) => {
+								if (
+									setsData.competitive.working_sigils.includes(
+										saveLookup.sigilIds[sigil]
+									)
+								)
+									cardData.sigils.push(
+										saveLookup.sigilIds[sigil]
+									)
+							}
+						)
+					}
+
+					// putting it in the ruleset
+					outputSet.cards.push(cardData)
+				} else {
+					cardNotfound.push(card.$k)
+				}
+			} else {
+				const cardData = setsData.vanilla.cards.find(
+					(c) => c.name.toLowerCase() == card.$k.toLowerCase()
+				)
+
+				if (cardData) {
+					console.log(cardData.name + " 1")
+					outputSet.cards.push(cardData)
+				} else {
+					cardNotfound.push(card.$k)
+				}
+			}
+			i++
+		}
+		await interaction.editReply({
+			content: "Some card are missing",
+			files: [
+				new AttachmentBuilder()
+					.setFile(Buffer.from(JSON.stringify(outputSet), "utf-8"))
+					.setName("hello.json"),
+			],
+		})
+		console.log(JSON.stringify(outputSet))
 	}
 })
 
