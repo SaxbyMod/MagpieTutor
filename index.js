@@ -17,7 +17,6 @@ const StringSimilarity = require("string-similarity")
 const Canvas = require("@napi-rs/canvas")
 
 const { betaToken, token, clientId } = require("./config.json")
-const saveLookup = require("./saveLookup.json")
 
 const t = token
 //set up the bot client
