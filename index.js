@@ -589,7 +589,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
-	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
+	const m = message.content.match(/(\w|)\[{2}[\w\s]+\]{2}/g)
 	if (!m) return
 
 	let embedList = []
@@ -598,7 +598,6 @@ client.on(Events.MessageCreate, async (message) => {
 
 	for (const cn of m) {
 		const temp = await genCardEmbed(cn)
-		console.log(-1)
 		if (temp[1] === -1) {
 			embedList.push(temp[0])
 			continue
@@ -616,10 +615,11 @@ client.on(Events.MessageCreate, async (message) => {
 			repliedUser: false,
 		},
 	}
+
 	if (msg !== "") replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
-	console.log(replyOption)
+
 	await message.reply(replyOption)
 })
 
