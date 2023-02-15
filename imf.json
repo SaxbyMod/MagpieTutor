@@ -1,5 +1,5 @@
 {
-    "ruleset": "IMF Competitive Ruleset v0.27",
+    "ruleset": "IMF Competitive Ruleset v0.29",
     "hammers_per_turn": 1,
     "ant_limit": 2,
     "deck_size_min": 1,
@@ -7,6 +7,7 @@
     "max_commons_side": 10,
     "num_candles": 2,
     "variable_attack_nerf": false,
+    "allow_snuffing_candles": true,
     "opt_actives": false,
     "portrait": "portraits/Stoat",
     "description": "Opinionated balance by the dev\nThe original ruleset for this game.\nIncludes custom cards",
@@ -19,6 +20,17 @@
             "attack": 1,
             "health": 1,
             "banned": true
+        },
+        {
+            "name": "Greater Smoke",
+            "sigils": [
+                "Bone King"
+            ],
+            "attack": 1,
+            "health": 3,
+            "banned": true,
+            "rare": true,
+            "description": "Ported from Act 1. Act 2 sprite by syntaxevasion."
         },
         {
             "name": "Adder",
@@ -419,7 +431,7 @@
         {
             "name": "Grizzly",
             "attack": 4,
-            "health": 6,
+            "health": 5,
             "blood_cost": 3
         },
         {
@@ -1139,7 +1151,8 @@
             "attack": 1,
             "health": 1,
             "bone_cost": 5,
-            "description": "Note: Was made common due to lack of use."
+            "description": "Note: Was made common due to lack of use.\nThen rare again.",
+            "rare": true
         },
         {
             "name": "Pharaoh's Pets",
@@ -1712,20 +1725,22 @@
             "attack": 0,
             "health": 2,
             "sigils": [
-                "Fledgling"
+                "Fledgling",
+                "Gem Dependant"
             ],
             "mox_cost": [
                 "Orange"
             ],
-            "evolution": "Ruby Dragon",
-            "description": "Custom card by FishGuy101.\nUpdated art by syntaxevasion"
+            "description": "Custom card by FishGuy101.\nUpdated art by syntaxevasion",
+            "evolution": "Ruby Dragon"
         },
         {
             "name": "Ruby Dragon",
             "attack": 2,
             "health": 2,
             "sigils": [
-                "Bifurcated Strike"
+                "Bifurcated Strike",
+                "Gem Dependant"
             ],
             "mox_cost": [
                 "Orange"
@@ -1758,12 +1773,25 @@
             "description": "Custom card by FishGuy101"
         },
         {
+            "name": "Horse Mage",
+            "mox_cost": [
+                "Orange"
+            ],
+            "blood_cost": 1,
+            "sigils": [
+                "Sprinter"
+            ],
+            "attack": 2,
+            "health": 2,
+            "description": "Custom card by ener"
+        },
+        {
             "name": "Winged Guardian",
             "mox_cost": [
                 "Orange",
                 "Blue"
             ],
-            "attack": 2,
+            "attack": 1,
             "health": 3,
             "sigils": [
                 "Airborne",
@@ -1800,9 +1828,6 @@
         },
         {
             "name": "Animox",
-            "mox_cost": [
-                "Blue"
-            ],
             "blood_cost": 1,
             "attack": 1,
             "health": 2,
