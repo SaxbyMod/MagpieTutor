@@ -15,6 +15,7 @@ const {
 const StringSimilarity = require("string-similarity")
 
 const Canvas = require("@napi-rs/canvas")
+const fetch = require("node-fetch")
 
 const { betaToken, token, clientId } = require("./config.json")
 
@@ -582,7 +583,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			embeds: [],
 			components: [],
 		})
-	}
+	} 
 })
 
 client.on(Events.MessageCreate, async (message) => {
