@@ -44,8 +44,7 @@ const commands = [
 				.setDescription(
 					"The deck size (how many pack do you want to open)"
 				)
-				.setMinValue(10)
-				.setMaxValue(30)
+				.setMinValue(20)
 		)
 		.addBooleanOption((option) =>
 			option
@@ -92,6 +91,32 @@ const commands = [
 				.setName("message")
 				.setDescription("The message id to reply to")
 		),
+	new SlashCommandBuilder()
+		.setName("deck-sim")
+		.setDescription(
+			"Simulate a deck, you can draw card test starting hand, etc"
+		)
+		.addAttachmentOption((option) =>
+			option
+				.setName("deck-file")
+				.setDescription("The deck file you want to test with")
+		)
+		.addStringOption((option) =>
+			option
+				.setName("deck-list")
+				.setDescription("The deck list, put comma between card name")
+		)
+		.addBooleanOption((option) =>
+			option
+				.setName("detail")
+				.setDescription(
+					"Show more detail like card left in deck, card draw percentage, etc"
+				)
+		),
+	new SlashCommandBuilder()
+		.setName("tunnel-status")
+		.setDescription("Check the status of the tunnel if it down or not"),
+	
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

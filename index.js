@@ -11,13 +11,16 @@ const {
 	ActionRowBuilder,
 	ComponentType,
 	StringSelectMenuBuilder,
+	ButtonStyle,
 } = require("discord.js")
 const StringSimilarity = require("string-similarity")
 
 const Canvas = require("@napi-rs/canvas")
 const fetch = require("node-fetch")
+const http = require("http")
 
 const { betaToken, token, clientId } = require("./config.json")
+const { ButtonBuilder } = require("@discordjs/builders")
 
 const t = token
 //set up the bot client
@@ -40,6 +43,16 @@ const randomChoices = (list, num) => {
 	let out = []
 	for (let choice = 0; choice < num; choice++) {
 		out.push(list[Math.floor(Math.random() * list.length)])
+	}
+	return out
+}
+
+const drawList = (list, num) => {
+	let out = []
+	for (let choice = 0; choice < num; choice++) {
+		let e = Math.floor(Math.random() * list.length)
+		out.push(list[e])
+		list.splice(e, 1)
 	}
 	return out
 }
@@ -83,7 +96,6 @@ const specialMagick = [
 				setsData[set] = json
 			})
 	}
-
 	// loading all the card pool
 	for (const setCode of Object.values(setList)) {
 		setsCardPool[setCode] = []
@@ -131,13 +143,17 @@ const specialAttack = {
 	green_mox: "Green Mox Power",
 	mirror: "Mirror Power",
 	ant: "Ant Power",
+	bell: "Bell Power",
+	hand: "Hand Size Power",
 }
 
 const specialAttackDescription = {
 	green_mox:
 		'This card\'s power is the number of creature you control that have the sigil "Green Mox"',
 	mirror: "This card's power is the power of the opposing creature",
-	ant: "This card's power is number of ant you control (Cap at 2).",
+	ant: "This card's power is number of ant you control.",
+	bell: "This card's power is the closeness it is to the bell",
+	hand: "This card's power is the number of the cards in your hand",
 }
 
 function getEmoji(name) {
@@ -195,9 +211,10 @@ async function genCardEmbed(rawName) {
 			c.name.toLowerCase() === bestMatch.target && bestMatch.rating >= 0.4
 	)
 
-	if (name === "your mom") {
+	if (name.includes("your mom")) {
 		return [getEmoji("skelemagun"), -2]
 	}
+
 	// if the card doesn't exist or missing exit and go to the next one
 	if (!card) {
 		return [
@@ -212,8 +229,6 @@ async function genCardEmbed(rawName) {
 	}
 
 	// get the card pfp
-	const portrait = Canvas.createCanvas(400, 280)
-	const context = portrait.getContext("2d")
 	var cardPortrait = await Canvas.loadImage(
 		`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
 			" ",
@@ -225,8 +240,20 @@ async function genCardEmbed(rawName) {
 		cardPortrait = await Canvas.loadImage(
 			"https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
 		)
+	} else if (card.name == "Geck") {
+		card.sigils = ["Omni Strike"]
+	} else if (card.name == "Bell Tentacle") {
+		card.atkspecial = "bell"
+	} else if (card.name == "Hand Tentacle") {
+		card.atkspecial = "hand"
 	}
-	//load the pfp
+
+	// scale the pfp
+	const portrait = Canvas.createCanvas(
+		cardPortrait.width * 10,
+		cardPortrait.height * 10
+	)
+	const context = portrait.getContext("2d")
 	context.imageSmoothingEnabled = false
 	context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
 
@@ -234,39 +261,51 @@ async function genCardEmbed(rawName) {
 	let sigilDescription = ""
 	if (card.sigils) {
 		card.sigils.forEach((sigil) => {
-			sigilDescription += `**${sigil}**:\n ${set.sigils[sigil]}\n\n`
+			sigilDescription += `**${sigil}**:\n ${set.sigils[sigil]}\n`
 		})
 	}
 
+	let embed = new EmbedBuilder()
+		.setColor(card.rare ? Colors.Green : Colors.Greyple)
+		.setTitle(`${card.name} [${set.ruleset}]`)
+		.setThumbnail(
+			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
+		)
+		.setFooter({
+			text: `*This card was selected because it matches ${
+				Math.round(bestMatch.rating * 10000) / 100
+			}% with the search term (${name})*`,
+		})
+
 	// generate the description
-	let description = ""
+	let generalInfo = ""
+	let extraInfo = ""
 
 	// bool stuff
-	if (card.description)
-		description += `**In Game Description**: *${card.description}*\n\n`
-	if (card.rare) description += "**Rare**\n"
-	if (card.conduit) description += "**Conductive**\n"
-	if (card.nosac) description += "**Can't be sacrifice**\n"
-	if (card.banned) description += "**Banned**\n"
+	if (card.description) generalInfo += `*${card.description}*\n`
+	if (card.rare) generalInfo += "**Rare**, "
+	if (card.conduit) generalInfo += "**Conductive**, "
+	if (card.nosac) generalInfo += "**Can't be sacrifice**, "
+	if (card.banned) generalInfo += "**Banned**, "
 
 	// cost stuff
 	if (card.blood_cost)
-		description += `\n**Blood Cost**: ${getEmoji("blood")}${getEmoji(
+		generalInfo += `\n**Blood Cost**: ${getEmoji("blood")}${getEmoji(
 			"x_"
 		)}${numToEmoji(card.blood_cost)}`
 
 	if (card.bone_cost)
-		description += `\n**Bone Cost**: ${getEmoji("bonebone")}${getEmoji(
+		generalInfo += `\n**Bone Cost**: ${getEmoji("bonebone")}${getEmoji(
 			"x_"
 		)}${numToEmoji(card.bone_cost)}`
 
 	if (card.energy_cost)
-		description += `\n**Energy Cost**: ${getEmoji("energy")}${getEmoji(
+		generalInfo += `\n**Energy Cost**: ${getEmoji("energy")}${getEmoji(
 			"x_"
 		)}${numToEmoji(card.energy_cost)}`
 
 	if (card.mox_cost)
-		description += `\n**Mox Cost**: ${
+		generalInfo += `\n**Mox Cost**: ${
 			card.mox_cost.includes("Green") ? getEmoji("green") : ""
 		}${card.mox_cost.includes("Orange") ? getEmoji("orange") : ""}${
 			card.mox_cost.includes("Blue") ? getEmoji("blue") : ""
@@ -278,44 +317,41 @@ async function genCardEmbed(rawName) {
 		!card.energy_cost &&
 		!card.mox_cost
 	)
-		description += "\n**Free**"
+		generalInfo += "\n**Free**"
 
-	// attack and health stuff
-	description += `\n\n**Attack**: ${
-		card.atkspecial
-			? `${specialAttack[card.atkspecial]} (${
-					specialAttackDescription[card.atkspecial]
-			  })\n`
-			: card.attack
-	}\n`
+	generalInfo += `\n**Stat**: ${
+		card.atkspecial ? `**${specialAttack[card.atkspecial]}**` : card.attack
+	} / ${card.health} ${
+		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
+	}`
 
-	description += `**Health**: ${card.health}\n`
+	embed.setDescription(generalInfo)
 
 	// other
 	if (card.evolution) {
-		description += `\n**Change into**: ${card.evolution}\n`
+		extraInfo += `\n**Change into**: ${card.evolution}\n`
 	}
-
 	if (card.left_half)
-		description += `\n**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
-	if (card.sheds) description += `\n**Shed**: ${card.sheds}\n`
-	if (card.sigils) description += `\n**Sigils**:\n${sigilDescription}\n`
+		extraInfo += `\n**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
+	if (card.sheds) extraInfo += `\n**Shed**: ${card.sheds}\n`
 
+	if (card.sigils)
+		embed.addFields({
+			name: "=============== SIGIL ===============",
+			value: sigilDescription,
+			inline: true,
+		})
+
+	if (extraInfo != "") {
+		embed.addFields({
+			name: "===================== EXTRA INFO =====================",
+			value: extraInfo,
+		})
+	}
 	return [
-		new EmbedBuilder()
-			.setColor(card.rare ? Colors.Green : Colors.Greyple)
-			.setTitle(`${card.name} [${set.ruleset}]`)
-			.setDescription(description)
-			.setThumbnail(
-				`attachment://${card.name.replaceAll(" ", "").slice(0, 5)}.png`
-			)
-			.setFooter({
-				text: `*This card was selected because it matches ${
-					Math.round(bestMatch.rating * 10000) / 100
-				}% with the search term (${name})*`,
-			}),
+		embed,
 		new AttachmentBuilder(await portrait.encode("png"), {
-			name: `${card.name.replaceAll(" ", "").slice(0, 5)}.png`,
+			name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
 		}),
 	]
 }
@@ -477,7 +513,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					!card.mox_cost
 						? "Free"
 						: ""
-				})**\nAttack: ${card.attack}\nHealth: ${card.health}\n${
+				})**\nAttack: ${
+					card.atkspecial
+						? specialAttack[card.atkspecial]
+						: card.attack
+				}\nHealth: ${card.health}\n${
 					card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
 				}\n\n`
 
@@ -524,6 +564,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			})
 			const filter = (i) => i.user.id === interaction.user.id
 
+			let error = ""
 			await message
 				.awaitMessageComponent({
 					componentType: ComponentType.StringSelect,
@@ -551,11 +592,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 				.catch((err) => {
 					flag = true
+					error = err
 				})
 
 			if (flag) {
 				await interaction.editReply({
-					content: "Some error happen ¯\\_(ツ)_/¯",
+					content: String(error),
 					embeds: [],
 					components: [],
 				})
@@ -583,13 +625,151 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			embeds: [],
 			components: [],
 		})
-	} 
+	} else if (commandName === "deck-sim") {
+		let fullDeck = []
+
+		if (options.getAttachment("deck-file")) {
+			fullDeck = JSON.parse(
+				await (
+					await fetch(options.getAttachment("deck-file").url)
+				).text()
+			).cards
+		} else if (options.getString("deck-list")) {
+			fullDeck = options
+				.getString("deck-list")
+				.split(",")
+				.map((c) => c.trim())
+		} else {
+			await interaction.reply("Deck missing")
+			return
+		}
+
+		let currDeck = JSON.parse(JSON.stringify(fullDeck))
+
+		const message = await interaction.reply({
+			content: "Doing stuff please wait",
+			fetchReply: true,
+		})
+		let stillRunning = true
+		const detailMode = options.getBoolean("detail")
+
+		let hand = drawList(currDeck, 3)
+		while (stillRunning) {
+			let tempstr = ""
+			let temp
+			Object.keys(countDeckDup(hand)).forEach((c) => {
+				tempstr += `${countDeckDup(hand)[c]}x ${c}\n`
+			})
+
+			let embed = new EmbedBuilder()
+				.setColor(Colors.Orange)
+				.setTitle("Thingy")
+				.setDescription("Here you hand")
+				.addFields({
+					name: "====== HAND ======",
+					value: tempstr,
+					inline: true,
+				})
+
+			if (detailMode) {
+				tempstr = ""
+				temp = [countDeckDup(fullDeck), countDeckDup(currDeck)]
+				Object.keys(temp[0]).forEach((c) => {
+					tempstr += `${!temp[1][c] ? `~~0` : temp[1][c]}/${
+						temp[0][c]
+					}) **${c}** (${
+						Math.round(
+							((!temp[1][c] ? 0 : temp[1][c]) / currDeck.length) *
+								100
+						) === 0
+							? `0%)~~`
+							: `${Math.round(
+									((!temp[1][c] ? 0 : temp[1][c]) /
+										currDeck.length) *
+										100
+							  )}%)`
+					}\n`
+				})
+				embed.addFields({
+					name: "====== DRAW PERCENTAGE ======",
+					value: tempstr,
+					inline: true,
+				})
+			}
+
+			let selectionList = new StringSelectMenuBuilder()
+				.setPlaceholder("Select a card to play/remove/discard")
+				.setCustomId("play")
+
+			for (c of new Set(hand)) {
+				selectionList.addOptions({
+					label: c,
+					value: c,
+				})
+			}
+
+			await interaction.editReply({
+				embeds: [embed],
+				components: [
+					new ActionRowBuilder().addComponents(selectionList),
+					new ActionRowBuilder().addComponents(
+						new ButtonBuilder()
+							.setLabel("Draw")
+							.setStyle(ButtonStyle.Success)
+							.setCustomId("draw"),
+						new ButtonBuilder()
+							.setLabel("End")
+							.setStyle(ButtonStyle.Danger)
+							.setCustomId("end")
+					),
+				],
+			})
+
+			const filter = (i) => i.user.id === interaction.user.id
+
+			await message
+				.awaitMessageComponent({
+					time: 60000,
+					filter,
+				})
+				.then(async (i) => {
+					if (i.customId === "draw") {
+						hand.push(drawList(currDeck, 1)[0])
+					} else if (i.customId === "play") {
+						hand.splice(hand.indexOf(i.values[0]), 1)
+					} else if (i.customId === "end") {
+						stillRunning = false
+					}
+					await i.update("updating")
+				})
+				.catch((err) => {
+					console.log(err)
+					stillRunning = false
+				})
+		}
+		await interaction.editReply({
+			embeds: [
+				new EmbedBuilder()
+					.setColor(Colors.Red)
+					.setTitle("Deck Simulation Ended")
+					.setDescription("The simulation Ended"),
+			],
+		})
+	} else if (commandName === "tunnel-status") {
+		await http
+			.get("http://localtunnel.me", async (res) => {
+				await interaction.reply("Tunnel is up and running")
+			})
+			.on("error", async (e) => {
+				await interaction.reply("Tunnel is down.")
+			})
+	}
 })
 
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
-	const m = message.content.match(/(\w|)\[{2}[\w\s]+\]{2}/g)
+	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
 	if (!m) return
 
 	let embedList = []
