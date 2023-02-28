@@ -183,6 +183,38 @@ function countDeckDup(deck) {
 	return out
 }
 
+function coloredString(str) {
+	const codeList = {
+		$$g: "\u001b[0;30m",
+		$$r: "\u001b[0;31m",
+		$$e: "\u001b[0;32m",
+		$$y: "\u001b[0;33m",
+		$$b: "\u001b[0;34m",
+		$$p: "\u001b[0;35m",
+		$$c: "\u001b[0;36m",
+		$$w: "\u001b[0;37m",
+
+		$$1: "\u001b[0;40m",
+		$$2: "\u001b[0;41m",
+		$$3: "\u001b[0;42m",
+		$$4: "\u001b[0;43m",
+		$$5: "\u001b[0;44m",
+		$$6: "\u001b[0;45m",
+		$$7: "\u001b[0;46m",
+		$$8: "\u001b[0;47m",
+
+		$$l: "\u001b[1m",
+		$$u: "\u001b[4m",
+
+		$$0: "\u001b[0m",
+	}
+
+	for (const code of Object.keys(codeList)) {
+		str = str.replaceAll(code, codeList[code])
+	}
+	return str
+}
+
 async function genCardEmbed(rawName) {
 	// get important shit
 	let name = rawName.toLowerCase().trim()
@@ -597,7 +629,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			if (flag) {
 				await interaction.editReply({
-					content: String(error),
+					content: `Error: \`\`\`ansi\n\u001b[0;31m${error}\`\`\`\nCurrent deck: \`${deck.cards
+						.map((c) => {
+							let out
+							out = c.replaceAll("*", "").trim()
+							if (out === "WILD CARD") {
+								out = ""
+							}
+							return out
+						})
+						.filter((c) => c != "")
+						.join(", ")}\`\n\nCurrentDeck Json: \`${JSON.stringify(
+						deck
+					)}\``,
 					embeds: [],
 					components: [],
 				})
@@ -761,8 +805,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				await interaction.reply("Tunnel is up and running")
 			})
 			.on("error", async (e) => {
-				await interaction.reply("Tunnel is down.")
+				await interaction.reply(
+					"Stoat's laptop say tunnel is down, but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
+				)
 			})
+	} else if (commandName === "color-text") {
+		await interaction.reply({
+			content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
+				options.getString("string")
+			)}\\\`\\\`\\\`\n\nThe output will be like this:\n\`\`\`ansi\n${coloredString(
+				options.getString("string")
+			)}\`\`\``,
+			ephemeral: true,
+		})
 	}
 })
 

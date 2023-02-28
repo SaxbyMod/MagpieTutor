@@ -116,7 +116,15 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("tunnel-status")
 		.setDescription("Check the status of the tunnel if it down or not"),
-	
+	new SlashCommandBuilder()
+		.setName("color-text")
+		.setDescription("Give you color text raw input")
+		.addStringOption((option) =>
+			option
+				.setName("string")
+				.setDescription("The string you want to color")
+				.setRequired(true)
+		),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module
