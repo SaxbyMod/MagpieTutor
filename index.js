@@ -13,7 +13,9 @@ const {
 	StringSelectMenuBuilder,
 	ButtonStyle,
 } = require("discord.js")
+
 const StringSimilarity = require("string-similarity")
+const scryfall = require("scryfall")
 
 const Canvas = require("@napi-rs/canvas")
 const fetch = require("node-fetch")
@@ -29,12 +31,17 @@ const client = new Client({
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildEmojisAndStickers,
+		GatewayIntentBits.GuildMessageReactions,
 	],
 	partials: [Partials.Message],
 })
 
 // stuff for bot
 
+const randInt = (min, max) => {
+	return Math.floor(Math.random() * (max - min + 1)) + min
+}
 const randomChoice = (list) => {
 	return list[Math.floor(Math.random() * list.length)]
 }
@@ -61,7 +68,12 @@ const listDiff = (list1, list2) => list1.filter((x) => !list2.includes(x))
 const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 
 //define the ruleset shit
-const setList = { comp: "competitive", e: "eternal", v: "vanilla" }
+const setList = {
+	comp: { name: "competitive", type: "107" },
+	e: { name: "eternal", type: "107" },
+	v: { name: "vanilla", type: "107" },
+	m: { name: "Magic The Gathering", type: "special" },
+}
 let setsData = {}
 let setsCardPool = {}
 let setsBanPool = {}
@@ -83,76 +95,73 @@ const specialMagick = [
 	"Gem Guardian",
 	"Horse Mage",
 ] // these card will be consider magick no matter what
+
 //downloading all the set and fetch important shit
-
 ;(async () => {
+	//fetch all the set json
 	for (const set of Object.values(setList)) {
-		console.log(`Set ${set} loaded!`)
-		await fetch(
-			`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set}.json`
-		)
-			.then((res) => res.json())
-			.then((json) => {
-				setsData[set] = json
-			})
+		if (set.type === "107") {
+			await fetch(
+				`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
+			)
+				.then((res) => res.json())
+				.then((json) => {
+					setsData[set.name] = json
+				})
+		}
+		console.log(`Set ${set.name} loaded!`)
 	}
-	// loading all the card pool
-	for (const setCode of Object.values(setList)) {
-		setsCardPool[setCode] = []
-		setsBanPool[setCode] = []
-		setsRarePool[setCode] = []
-		setsBeastPool[setCode] = []
-		setsUndeadPool[setCode] = []
-		setsTechPool[setCode] = []
-		setsMagickPool[setCode] = []
 
-		for (const card of setsData[setCode].cards) {
+	// loading all the card pool
+	for (const set of Object.keys(setsData)) {
+		setsCardPool[set] = []
+		setsBanPool[set] = []
+		setsRarePool[set] = []
+		setsBeastPool[set] = []
+		setsUndeadPool[set] = []
+		setsTechPool[set] = []
+		setsMagickPool[set] = []
+
+		for (const card of setsData[set].cards) {
 			const name = card.name.toLowerCase()
 
-			setsCardPool[setCode].push(name)
+			setsCardPool[set].push(name)
 
 			if (card.banned) {
-				setsBanPool[setCode].push(name)
+				setsBanPool[set].push(name)
 			}
 
 			if (card.rare) {
-				setsRarePool[setCode].push(name)
+				setsRarePool[set].push(name)
 			}
 
 			if (specialMagick.includes(card.name)) {
-				setsMagickPool[setCode].push(name)
+				setsMagickPool[set].push(name)
 			} else {
 				if (card.blood_cost) {
-					setsBeastPool[setCode].push(name)
+					setsBeastPool[set].push(name)
 				}
 				if (card.bone_cost) {
-					setsUndeadPool[setCode].push(name)
+					setsUndeadPool[set].push(name)
 				}
 				if (card.energy_cost) {
-					setsTechPool[setCode].push(name)
+					setsTechPool[set].push(name)
 				}
 				if (card.mox_cost) {
-					setsMagickPool[setCode].push(name)
+					setsMagickPool[set].push(name)
 				}
 			}
 		}
 	}
 })()
 
-const specialAttack = {
-	green_mox: "Green Mox Power",
-	mirror: "Mirror Power",
-	ant: "Ant Power",
-	bell: "Bell Power",
-	hand: "Hand Size Power",
-}
-
 const specialAttackDescription = {
 	green_mox:
-		'This card\'s power is the number of creature you control that have the sigil "Green Mox"',
+		'This card\'s power is the number of creatures you control that have the sigil "Green Mox"',
+	mox: "This card's power is the number of moxes you control",
 	mirror: "This card's power is the power of the opposing creature",
 	ant: "This card's power is number of ant you control.",
-	bell: "This card's power is the closeness it is to the bell",
+	bell: "This card's power is how close it is to the bell",
 	hand: "This card's power is the number of the cards in your hand",
 }
 
@@ -183,7 +192,7 @@ function countDeckDup(deck) {
 	return out
 }
 
-function coloredString(str) {
+function coloredString(str, raw) {
 	const codeList = {
 		$$g: "\u001b[0;30m",
 		$$r: "\u001b[0;31m",
@@ -212,7 +221,7 @@ function coloredString(str) {
 	for (const code of Object.keys(codeList)) {
 		str = str.replaceAll(code, codeList[code])
 	}
-	return str
+	return raw ? str : `\`\`\`ansi\n${str}\`\`\``
 }
 
 async function genCardEmbed(rawName) {
@@ -220,11 +229,34 @@ async function genCardEmbed(rawName) {
 	let name = rawName.toLowerCase().trim()
 	let selectedSet = "competitive"
 
+	let isSpecial = false
 	// check which ruleset it should be check from
 	for (const code of Object.keys(setList)) {
 		if (name.startsWith(code)) {
-			name = name.slice(1)
-			selectedSet = setList[code]
+			if (setList[code].type == "special") {
+				isSpecial = true
+			} else {
+				name = name.slice(1)
+				selectedSet = setList[code].name
+			}
+		}
+	}
+
+	if (isSpecial) {
+		if (name.startsWith("m")) {
+			let flag = false
+
+			const card = await scryfall
+				.getCardByName(name.slice(1))
+				.catch(async (err) => {
+					flag = true
+				})
+
+			if (flag) {
+				return [`Card ${name.slice(1)} not found`, -2]
+			} else {
+				return [card.image_uris.normal, -3]
+			}
 		}
 	}
 
@@ -238,13 +270,41 @@ async function genCardEmbed(rawName) {
 	const bestMatch = StringSimilarity.findBestMatch(name, setPool).bestMatch
 
 	// find the best match in the ruleset file selected
-	const card = set.cards.find(
+	let card = set.cards.find(
 		(c) =>
 			c.name.toLowerCase() === bestMatch.target && bestMatch.rating >= 0.4
 	)
 
+	// create non existent card / special cases
 	if (name.includes("your mom")) {
 		return [getEmoji("skelemagun"), -2]
+	}
+	if (name == "old_data") {
+		card = {
+			name: "Bone Lord's Horn",
+			description:
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+			sigils: ["Repulsive", "Bone King"],
+			blood_cost: -69,
+			bone_cost: -69,
+			energy_cost: -69,
+			mox_cost: ["Green", "Blue", "Orange"],
+
+			attack: 69,
+			health: 420,
+			atkspecial: "mirror",
+
+			conduit: true,
+			rare: true,
+			nosac: true,
+			nohammer: true,
+			banned: true,
+
+			evolution: "I'm",
+			sheds: "Doing",
+			left_half: "Ur",
+			right_half: "Mom :)",
+		}
 	}
 
 	// if the card doesn't exist or missing exit and go to the next one
@@ -268,6 +328,7 @@ async function genCardEmbed(rawName) {
 		)}.png`
 	)
 
+	// change existing card info
 	if (card.name == "Fox") {
 		cardPortrait = await Canvas.loadImage(
 			"https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
@@ -278,6 +339,17 @@ async function genCardEmbed(rawName) {
 		card.atkspecial = "bell"
 	} else if (card.name == "Hand Tentacle") {
 		card.atkspecial = "hand"
+	} else if (card.name == "Ruby Dragon") {
+		cardPortrait = await Canvas.loadImage(
+			"https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
+		)
+		card.name = "GAY DRAGON (Ruby Dragon)"
+	} else if (card.name == "Horse Mage") {
+		cardPortrait = await Canvas.loadImage(
+			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
+		)
+	} else if (name == "old_data") {
+		card.name = "Lorem"
 	}
 
 	// scale the pfp
@@ -299,7 +371,13 @@ async function genCardEmbed(rawName) {
 
 	let embed = new EmbedBuilder()
 		.setColor(card.rare ? Colors.Green : Colors.Greyple)
-		.setTitle(`${card.name} [${set.ruleset}]`)
+		.setTitle(
+			`${card.name}  ${card.conduit ? getEmoji("conductive") : ""}${
+				card.rare ? getEmoji("rare") : ""
+			}${card.nosac ? getEmoji("unsacable") : ""}${
+				card.nohammer ? getEmoji("unhammerable") : ""
+			}${card.banned ? getEmoji("banned") : ""}  [${set.ruleset}]`
+		)
 		.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
 		)
@@ -315,10 +393,6 @@ async function genCardEmbed(rawName) {
 
 	// bool stuff
 	if (card.description) generalInfo += `*${card.description}*\n`
-	if (card.rare) generalInfo += "**Rare**, "
-	if (card.conduit) generalInfo += "**Conductive**, "
-	if (card.nosac) generalInfo += "**Can't be sacrifice**, "
-	if (card.banned) generalInfo += "**Banned**, "
 
 	// cost stuff
 	if (card.blood_cost)
@@ -352,7 +426,7 @@ async function genCardEmbed(rawName) {
 		generalInfo += "\n**Free**"
 
 	generalInfo += `\n**Stat**: ${
-		card.atkspecial ? `**${specialAttack[card.atkspecial]}**` : card.attack
+		card.atkspecial ? `${getEmoji(card.atkspecial)}` : card.attack
 	} / ${card.health} ${
 		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
 	}`
@@ -360,23 +434,21 @@ async function genCardEmbed(rawName) {
 	embed.setDescription(generalInfo)
 
 	// other
-	if (card.evolution) {
-		extraInfo += `\n**Change into**: ${card.evolution}\n`
-	}
+	if (card.evolution) extraInfo += `**Change into**: ${card.evolution}\n`
+	if (card.sheds) extraInfo += `**Shed**: ${card.sheds}\n`
 	if (card.left_half)
-		extraInfo += `\n**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
-	if (card.sheds) extraInfo += `\n**Shed**: ${card.sheds}\n`
+		extraInfo += `**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
 
 	if (card.sigils)
 		embed.addFields({
-			name: "=============== SIGIL ===============",
+			name: "== SIGIL ==",
 			value: sigilDescription,
 			inline: true,
 		})
 
 	if (extraInfo != "") {
 		embed.addFields({
-			name: "===================== EXTRA INFO =====================",
+			name: "== EXTRA INFO ==",
 			value: extraInfo,
 		})
 	}
@@ -422,7 +494,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			ephemeral: true,
 		})
 	} else if (commandName === "set-code") {
-		await interaction.reply(
+		var temp = await interaction.reply(
 			"Possible set code for searching:\ne: Eternal format\nv: Vanilla"
 		)
 	} else if (commandName === "ping") {
@@ -546,9 +618,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						? "Free"
 						: ""
 				})**\nAttack: ${
-					card.atkspecial
-						? specialAttack[card.atkspecial]
-						: card.attack
+					card.atkspecial ? getEmoji(card.atkspecial) : card.attack
 				}\nHealth: ${card.health}\n${
 					card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
 				}\n\n`
@@ -627,21 +697,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					error = err
 				})
 
+			deck.cards = deck.cards
+				.map((c) => {
+					let out
+					out = c.replaceAll("*", "").trim()
+					if (out === "WILD CARD") {
+						out = ""
+					}
+					return out
+				})
+				.filter((c) => c != "")
+
 			if (flag) {
 				await interaction.editReply({
-					content: `Error: \`\`\`ansi\n\u001b[0;31m${error}\`\`\`\nCurrent deck: \`${deck.cards
-						.map((c) => {
-							let out
-							out = c.replaceAll("*", "").trim()
-							if (out === "WILD CARD") {
-								out = ""
-							}
-							return out
-						})
-						.filter((c) => c != "")
-						.join(", ")}\`\n\nCurrentDeck Json: \`${JSON.stringify(
-						deck
-					)}\``,
+					content: `Error: ${coloredString(
+						`$$r${error}`
+					)}\nCurrent deck: ${deck.cards.join(
+						", "
+					)}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
 					embeds: [],
 					components: [],
 				})
@@ -651,19 +724,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		if (flag) return
 
-		deck.cards = deck.cards
-			.map((c) => {
-				let out
-				out = c.replaceAll("*", "").trim()
-				if (out === "WILD CARD") {
-					out = ""
-				}
-				return out
-			})
-			.filter((c) => c != "")
-
 		await interaction.editReply({
-			content: `**You have ${wildCount} Wild Card. You can replace them with any common card**\nCompleted Deck: ${deck.cards.join(
+			content: `${
+				wildCount > 0
+					? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
+					: ""
+			}Completed Deck: ${deck.cards.join(
 				", "
 			)}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
 			embeds: [],
@@ -812,15 +878,69 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	} else if (commandName === "color-text") {
 		await interaction.reply({
 			content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
+				options.getString("string"),
+				true
+			)}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
 				options.getString("string")
-			)}\\\`\\\`\\\`\n\nThe output will be like this:\n\`\`\`ansi\n${coloredString(
-				options.getString("string")
-			)}\`\`\``,
+			)}`,
 			ephemeral: true,
 		})
+	} else if (commandName === "guess-the-card") {
+		const card = randomChoice(setsData.competitive.cards)
+		// get the card pfp
+		var cardPortrait = await Canvas.loadImage(
+			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+				" ",
+				"%20"
+			)}.png`
+		)
+
+		const scale = 100
+		// get the first crop point
+		const startCropPos = [
+			randInt(0, cardPortrait.width - 15),
+			randInt(0, cardPortrait.height - 15),
+		]
+
+		// scale the pfp
+		const portrait = Canvas.createCanvas(15 * scale, 15 * scale)
+
+		const context = portrait.getContext("2d")
+		context.imageSmoothingEnabled = false
+		context.drawImage(
+			cardPortrait,
+			-startCropPos[0] * scale,
+			-startCropPos[1] * scale,
+			cardPortrait.width * scale,
+			cardPortrait.height * scale
+		)
+
+		await interaction.reply({
+			content:
+				"What card is this? Send a message in this channel to guess",
+			files: [new AttachmentBuilder(await portrait.encode("png"))],
+		})
+		const filter = (i) => i.author.id === interaction.user.id
+		await interaction.channel
+			.awaitMessages({ max: 1, time: 18000, filter })
+			.then(async (collected) => {
+				const i = collected.first()
+				if (
+					StringSimilarity.compareTwoStrings(
+						card.name.toLowerCase(),
+						i.content.toLowerCase()
+					) >= 0.4
+				) {
+					await i.react(getEmoji("thumbup"))
+				} else {
+					await i.react(getEmoji("thumbdown"))
+					await interaction.editReply(`The card is ${card.name}`)
+				}
+			})
 	}
 })
 
+// on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
@@ -838,6 +958,9 @@ client.on(Events.MessageCreate, async (message) => {
 			continue
 		} else if (temp[1] === -2) {
 			msg += temp[0]
+			continue
+		} else if (temp[1] === -3) {
+			attachmentList.push(temp[0])
 			continue
 		}
 

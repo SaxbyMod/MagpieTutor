@@ -44,7 +44,7 @@ const commands = [
 				.setDescription(
 					"The deck size (how many pack do you want to open)"
 				)
-				.setMinValue(20)
+				.setMinValue(1)
 		)
 		.addBooleanOption((option) =>
 			option
@@ -124,6 +124,11 @@ const commands = [
 				.setName("string")
 				.setDescription("The string you want to color")
 				.setRequired(true)
+		),
+	new SlashCommandBuilder()
+		.setName("guess-the-card")
+		.setDescription(
+			"Magpie will send part of a card and you need to guess it"
 		),
 ].map((command) => command.toJSON())
 
