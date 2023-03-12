@@ -69,10 +69,10 @@ const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 
 //define the ruleset shit
 const setList = {
-	comp: { name: "competitive", type: "107" },
+	c: { name: "competitive", type: "107" },
 	e: { name: "eternal", type: "107" },
 	v: { name: "vanilla", type: "107" },
-	m: { name: "Magic The Gathering", type: "special" },
+	m: { name: "magic the gathering", type: "special" },
 }
 let setsData = {}
 let setsCardPool = {}
@@ -494,8 +494,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			ephemeral: true,
 		})
 	} else if (commandName === "set-code") {
-		var temp = await interaction.reply(
-			"Possible set code for searching:\ne: Eternal format\nv: Vanilla"
+		var temp = ""
+		Object.keys(setList).forEach((key) => {
+			temp += `${key}: ${setList[key].name}\n`
+		})
+		await interaction.reply(
+			`Possible set code for searching:\n${temp}`
 		)
 	} else if (commandName === "ping") {
 		await interaction.reply("Pong!")
