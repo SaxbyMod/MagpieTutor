@@ -1,14 +1,9 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js")
 const {
 	clientId,
-	guildId,
 	token,
-	betaToken,
-	betaClientId,
 } = require("./config.json")
 
-const t = token
-const c = clientId
 const commands = [
 	new SlashCommandBuilder()
 		.setName("set-code")
@@ -133,7 +128,7 @@ const commands = [
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module
-const rest = new REST({ version: "10" }).setToken(t)
+const rest = new REST({ version: "10" }).setToken(token)
 
 //deploy your commands!
 ;(async () => {
@@ -143,7 +138,7 @@ const rest = new REST({ version: "10" }).setToken(t)
 		)
 
 		// The put method is used to fully refresh all commands in the guild with the current set
-		const data = await rest.put(Routes.applicationCommands(c), {
+		const data = await rest.put(Routes.applicationCommands(clientId), {
 			body: commands,
 		})
 

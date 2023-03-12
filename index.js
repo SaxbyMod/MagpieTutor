@@ -21,10 +21,8 @@ const Canvas = require("@napi-rs/canvas")
 const fetch = require("node-fetch")
 const http = require("http")
 
-const { betaToken, token, clientId } = require("./config.json")
+const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
-
-const t = token
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -985,4 +983,4 @@ client.on(Events.MessageCreate, async (message) => {
 	await message.reply(replyOption)
 })
 
-client.login(t) // login the bot
+client.login(token) // login the bot
