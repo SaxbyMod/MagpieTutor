@@ -227,7 +227,7 @@ async function fetchCard(name, setName) {
 	let card
 	let set = setsData[setName]
 
-	card = set.cards.find((c) => c.name.toLowerCase() === name) // look for the card in the set
+	card = set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase()) // look for the card in the set
 
 	if (!card) return card
 
@@ -264,17 +264,6 @@ async function fetchMagicCard(name) {}
 
 async function genCardEmbed(card) {
 	// if the card doesn't exist or missing exit and return error
-	if (!card) {
-		return [
-			new EmbedBuilder()
-				.setColor(Colors.Red)
-				.setTitle(`Card not found`)
-				.setDescription(
-					`No card found in selected set that have more than 40% similarity with the search term`
-				),
-			1,
-		]
-	}
 
 	let attachment
 	if (card.url) {
@@ -299,7 +288,9 @@ async function genCardEmbed(card) {
 	let sigilDescription = ""
 	if (card.sigils) {
 		card.sigils.forEach((sigil) => {
-			sigilDescription += `**${sigil}**:\n ${card.set.sigils[sigil]}\n`
+			sigilDescription += `**${sigil}**:\n ${
+				setsData[card.set].sigils[sigil]
+			}\n`
 		})
 	}
 
@@ -310,7 +301,7 @@ async function genCardEmbed(card) {
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}  [${card.set.ruleset}]`
+			}${card.banned ? getEmoji("banned") : ""}  [${setsData[card.set].ruleset}]`
 		)
 		.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
@@ -878,21 +869,56 @@ client.on(Events.MessageCreate, async (message) => {
 	let msg = ""
 
 	for (const cardName of matches) {
-		let temp = await genCardEmbed(await fetchCard(cardName, "competitive"))
-		// Exit Code:
-		// 1: have embed but no attachment
-		// 2: have message but no embed or attachment
-		// 3: have attachment but no embed
-		if (temp[1] === 1) {
-			embedList.push(temp[0])
-			continue
-		} else if (temp[1] === 2) {
-			msg += temp[0]
-			continue
-		} else if (temp[1] === 3) {
-			attachmentList.push(temp[0])
+		let name = cardName.toLowerCase().trim()
+		let selectedSet = "competitive"
+
+		// check which ruleset it should be fetching from
+		for (const code of Object.keys(setList)) {
+			if (name.startsWith(code)) {
+				name = name.slice(1) // remove the set code if one is found
+				selectedSet = setList[code].name // change the set that it fetching
+			}
+		}
+
+		// remove the [[]]
+		name = name.slice(2, name.length - 2)
+
+		// get the best match
+		const bestMatch = StringSimilarity.findBestMatch(
+			name,
+			setsCardPool[selectedSet]
+		).bestMatch
+
+		// if less than 40% match return error and continue to the next match
+		if (bestMatch.rating <= 0.4) {
+			embedList.push(
+				new EmbedBuilder()
+					.setColor(Colors.Red)
+					.setTitle(`Card "${name}" not found`)
+					.setDescription(
+						`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
+					)
+			)
 			continue
 		}
+		let temp = await genCardEmbed(
+			await fetchCard(bestMatch.target, selectedSet)
+		)
+
+		// // Exit Code:
+		// // 1: have embed but no attachment
+		// // 2: have message but no embed or attachment
+		// // 3: have attachment but no embed
+		// if (temp[1] === 1) {
+		// 	embedList.push(temp[0])
+		// 	continue
+		// } else if (temp[1] === 2) {
+		// 	msg += temp[0]
+		// 	continue
+		// } else if (temp[1] === 3) {
+		// 	attachmentList.push(temp[0])
+		// 	continue
+		// }
 
 		embedList.push(temp[0])
 		attachmentList.push(temp[1])
