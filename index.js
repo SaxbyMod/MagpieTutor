@@ -227,7 +227,7 @@ async function fetchCard(name, setName) {
 	let card
 	let set = setsData[setName]
 
-	card = set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase()) // look for the card in the set
+	card = JSON.parse(JSON.stringify(set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase()))) // look for the card in the set
 
 	if (!card) return card
 
@@ -252,6 +252,7 @@ async function fetchCard(name, setName) {
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
 
 		card.name = "GAY DRAGON (Ruby Dragon)"
+		card.description = "Modified portrait by Ener"
 	} else if (card.name == "Horse Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
@@ -260,7 +261,13 @@ async function fetchCard(name, setName) {
 	return card
 }
 
-async function fetchMagicCard(name) {}
+async function fetchMagicCard(name) {
+	let out = await scryfall.getCardByName(name).catch(async (err) => {
+		return -1
+	})
+
+	return out
+}
 
 async function genCardEmbed(card) {
 	// if the card doesn't exist or missing exit and return error
@@ -301,7 +308,9 @@ async function genCardEmbed(card) {
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}  [${setsData[card.set].ruleset}]`
+			}${card.banned ? getEmoji("banned") : ""}  [${
+				setsData[card.set].ruleset
+			}]`
 		)
 		.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
@@ -812,17 +821,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)}.png`
 		)
 
-		const scale = 100
+		const size = options.getInteger("difficulty")
+		const scale = 50
 		// get the first crop point
 		const startCropPos = [
-			randInt(0, cardPortrait.width - 15),
-			randInt(0, cardPortrait.height - 15),
+			randInt(0, cardPortrait.width - size),
+			randInt(0, cardPortrait.height - size),
 		]
 
 		// scale the pfp
-		const portrait = Canvas.createCanvas(15 * scale, 15 * scale)
+		const portrait = Canvas.createCanvas(size * scale, size * scale)
 
-		const context = portrait.getContext("2d")
+		let context = portrait.getContext("2d")
+
 		context.imageSmoothingEnabled = false
 		context.drawImage(
 			cardPortrait,
@@ -832,6 +843,29 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			cardPortrait.height * scale
 		)
 
+		const full = Canvas.createCanvas(
+			cardPortrait.width * scale,
+			cardPortrait.height * scale
+		)
+
+		context = full.getContext("2d")
+
+		context.imageSmoothingEnabled = false
+		context.drawImage(
+			cardPortrait,
+			0,
+			0,
+			cardPortrait.width * scale,
+			cardPortrait.height * scale
+		)
+		context.strokeStyle = "#03a9f4"
+		context.lineWidth = scale / 10
+		context.strokeRect(
+			startCropPos[0] * scale,
+			startCropPos[1] * scale,
+			size * scale,
+			size * scale
+		)
 		await interaction.reply({
 			content:
 				"What card is this? Send a message in this channel to guess",
@@ -839,7 +873,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 		const filter = (i) => i.author.id === interaction.user.id
 		await interaction.channel
-			.awaitMessages({ max: 1, time: 18000, filter })
+			.awaitMessages({ max: 1, time: 180000, filter })
 			.then(async (collected) => {
 				const i = collected.first()
 				if (
@@ -849,9 +883,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					) >= 0.4
 				) {
 					await i.react(getEmoji("thumbup"))
+					await i.reply({
+						files: [
+							new AttachmentBuilder(await full.encode("png")),
+						],
+					})
 				} else {
 					await i.react(getEmoji("thumbdown"))
-					await interaction.editReply(`The card is ${card.name}`)
+					await i.reply({
+						content: `The card is ${card.name}`,
+						files: [
+							new AttachmentBuilder(await full.encode("png")),
+						],
+					})
 				}
 			})
 	}
@@ -872,11 +916,36 @@ client.on(Events.MessageCreate, async (message) => {
 		let name = cardName.toLowerCase().trim()
 		let selectedSet = "competitive"
 
+		let isSpecial = false
 		// check which ruleset it should be fetching from
 		for (const code of Object.keys(setList)) {
 			if (name.startsWith(code)) {
-				name = name.slice(1) // remove the set code if one is found
-				selectedSet = setList[code].name // change the set that it fetching
+				if (setList[code].type == "special") {
+					isSpecial = true
+				} else {
+					name = name.slice(1) // remove the set code if one is found
+					selectedSet = setList[code].name // change the set that it fetching
+				}
+			}
+		}
+
+		if (isSpecial) {
+			if (name.startsWith("m")) {
+				name = name.slice(1)
+				name = name.slice(2, name.length - 2)
+				const card = await fetchMagicCard(name)
+
+				if (card == -1) {
+					embedList.push(
+						new EmbedBuilder()
+							.setColor(Colors.Red)
+							.setTitle(`Card "${name}" not found`)
+							.setDescription(`Magic card ${name} not found\n`)
+					)
+				} else {
+					attachmentList.push(card.image_uris.normal)
+				}
+				continue
 			}
 		}
 
@@ -901,24 +970,10 @@ client.on(Events.MessageCreate, async (message) => {
 			)
 			continue
 		}
+
 		let temp = await genCardEmbed(
 			await fetchCard(bestMatch.target, selectedSet)
 		)
-
-		// // Exit Code:
-		// // 1: have embed but no attachment
-		// // 2: have message but no embed or attachment
-		// // 3: have attachment but no embed
-		// if (temp[1] === 1) {
-		// 	embedList.push(temp[0])
-		// 	continue
-		// } else if (temp[1] === 2) {
-		// 	msg += temp[0]
-		// 	continue
-		// } else if (temp[1] === 3) {
-		// 	attachmentList.push(temp[0])
-		// 	continue
-		// }
 
 		embedList.push(temp[0])
 		attachmentList.push(temp[1])
