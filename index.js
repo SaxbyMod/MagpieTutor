@@ -222,115 +222,25 @@ function coloredString(str, raw) {
 	return raw ? str : `\`\`\`ansi\n${str}\`\`\``
 }
 
-async function genCardEmbed(rawName) {
-	// get important shit
-	let name = rawName.toLowerCase().trim()
-	let selectedSet = "competitive"
+// fetch the card and its url
+async function fetchCard(name, setName) {
+	let card
+	let set = setsData[setName]
 
-	let isSpecial = false
-	// check which ruleset it should be check from
-	for (const code of Object.keys(setList)) {
-		if (name.startsWith(code)) {
-			if (setList[code].type == "special") {
-				isSpecial = true
-			} else {
-				name = name.slice(1)
-				selectedSet = setList[code].name
-			}
-		}
-	}
+	card = set.cards.find((c) => c.name.toLowerCase() === name) // look for the card in the set
 
-	if (isSpecial) {
-		if (name.startsWith("m")) {
-			let flag = false
+	if (!card) return card
 
-			const card = await scryfall
-				.getCardByName(name.slice(1))
-				.catch(async (err) => {
-					flag = true
-				})
+	card.set = setName
+	card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+		" ",
+		"%20"
+	)}.png`
 
-			if (flag) {
-				return [`Card ${name.slice(1)} not found`, -2]
-			} else {
-				return [card.image_uris.normal, -3]
-			}
-		}
-	}
-
-	let setPool = setsCardPool[selectedSet]
-	let set = setsData[selectedSet]
-
-	// format the name
-	name = name.slice(2, name.length - 2)
-
-	// get the best match
-	const bestMatch = StringSimilarity.findBestMatch(name, setPool).bestMatch
-
-	// find the best match in the ruleset file selected
-	let card = set.cards.find(
-		(c) =>
-			c.name.toLowerCase() === bestMatch.target && bestMatch.rating >= 0.4
-	)
-
-	// create non existent card / special cases
-	if (name.includes("your mom")) {
-		return [getEmoji("skelemagun"), -2]
-	}
-	if (name == "old_data") {
-		card = {
-			name: "Bone Lord's Horn",
-			description:
-				"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-			sigils: ["Repulsive", "Bone King"],
-			blood_cost: -69,
-			bone_cost: -69,
-			energy_cost: -69,
-			mox_cost: ["Green", "Blue", "Orange"],
-
-			attack: 69,
-			health: 420,
-			atkspecial: "mirror",
-
-			conduit: true,
-			rare: true,
-			nosac: true,
-			nohammer: true,
-			banned: true,
-
-			evolution: "I'm",
-			sheds: "Doing",
-			left_half: "Ur",
-			right_half: "Mom :)",
-		}
-	}
-
-	// if the card doesn't exist or missing exit and go to the next one
-	if (!card) {
-		return [
-			new EmbedBuilder()
-				.setColor(Colors.Red)
-				.setTitle(`Card "${name}" not found`)
-				.setDescription(
-					`No card found in selected set (${set.ruleset}) that have more than 40% similarity with the search term(${name})`
-				),
-			-1,
-		]
-	}
-
-	// get the card pfp
-	var cardPortrait = await Canvas.loadImage(
-		`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-			" ",
-			"%20"
-		)}.png`
-	)
-
-	// change existing card info
+	// change existing card info and custom url
 	if (card.name == "Fox") {
-		cardPortrait = await Canvas.loadImage(
+		card.url =
 			"https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
-		)
 	} else if (card.name == "Geck") {
 		card.sigils = ["Omni Strike"]
 	} else if (card.name == "Bell Tentacle") {
@@ -338,32 +248,58 @@ async function genCardEmbed(rawName) {
 	} else if (card.name == "Hand Tentacle") {
 		card.atkspecial = "hand"
 	} else if (card.name == "Ruby Dragon") {
-		cardPortrait = await Canvas.loadImage(
+		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
-		)
+
 		card.name = "GAY DRAGON (Ruby Dragon)"
 	} else if (card.name == "Horse Mage") {
-		cardPortrait = await Canvas.loadImage(
+		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
-		)
-	} else if (name == "old_data") {
-		card.name = "Lorem"
 	}
 
-	// scale the pfp
-	const portrait = Canvas.createCanvas(
-		cardPortrait.width * 10,
-		cardPortrait.height * 10
-	)
-	const context = portrait.getContext("2d")
-	context.imageSmoothingEnabled = false
-	context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
+	return card
+}
+
+async function fetchMagicCard(name) {}
+
+async function genCardEmbed(card) {
+	// if the card doesn't exist or missing exit and return error
+	if (!card) {
+		return [
+			new EmbedBuilder()
+				.setColor(Colors.Red)
+				.setTitle(`Card not found`)
+				.setDescription(
+					`No card found in selected set that have more than 40% similarity with the search term`
+				),
+			1,
+		]
+	}
+
+	let attachment
+	if (card.url) {
+		// get the card pfp
+		var cardPortrait = await Canvas.loadImage(card.url)
+
+		// scale the pfp
+		const portrait = Canvas.createCanvas(
+			cardPortrait.width * 10,
+			cardPortrait.height * 10
+		)
+		const context = portrait.getContext("2d")
+		context.imageSmoothingEnabled = false
+		context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
+
+		attachment = new AttachmentBuilder(await portrait.encode("png"), {
+			name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
+		})
+	}
 
 	// generate sigil description
 	let sigilDescription = ""
 	if (card.sigils) {
 		card.sigils.forEach((sigil) => {
-			sigilDescription += `**${sigil}**:\n ${set.sigils[sigil]}\n`
+			sigilDescription += `**${sigil}**:\n ${card.set.sigils[sigil]}\n`
 		})
 	}
 
@@ -374,16 +310,11 @@ async function genCardEmbed(rawName) {
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}  [${set.ruleset}]`
+			}${card.banned ? getEmoji("banned") : ""}  [${card.set.ruleset}]`
 		)
 		.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
 		)
-		.setFooter({
-			text: `*This card was selected because it matches ${
-				Math.round(bestMatch.rating * 10000) / 100
-			}% with the search term (${name})*`,
-		})
 
 	// generate the description
 	let generalInfo = ""
@@ -450,12 +381,7 @@ async function genCardEmbed(rawName) {
 			value: extraInfo,
 		})
 	}
-	return [
-		embed,
-		new AttachmentBuilder(await portrait.encode("png"), {
-			name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
-		}),
-	]
+	return [embed, attachment ? attachment : 1] // if there an attachment (portrait/image) return it if not give exit code 1
 }
 
 // on ready call
@@ -496,9 +422,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		Object.keys(setList).forEach((key) => {
 			temp += `${key}: ${setList[key].name}\n`
 		})
-		await interaction.reply(
-			`Possible set code for searching:\n${temp}`
-		)
+		await interaction.reply(`Possible set code for searching:\n${temp}`)
 	} else if (commandName === "ping") {
 		await interaction.reply("Pong!")
 	} else if (commandName === "restart") {
@@ -946,22 +870,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 
-	const m = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
-	if (!m) return
+	const matches = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
+	if (!matches) return
 
 	let embedList = []
 	let attachmentList = []
 	let msg = ""
 
-	for (const cn of m) {
-		const temp = await genCardEmbed(cn)
-		if (temp[1] === -1) {
+	for (const cardName of matches) {
+		let temp = await genCardEmbed(await fetchCard(cardName, "competitive"))
+		// Exit Code:
+		// 1: have embed but no attachment
+		// 2: have message but no embed or attachment
+		// 3: have attachment but no embed
+		if (temp[1] === 1) {
 			embedList.push(temp[0])
 			continue
-		} else if (temp[1] === -2) {
+		} else if (temp[1] === 2) {
 			msg += temp[0]
 			continue
-		} else if (temp[1] === -3) {
+		} else if (temp[1] === 3) {
 			attachmentList.push(temp[0])
 			continue
 		}
