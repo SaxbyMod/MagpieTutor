@@ -27,12 +27,12 @@ If you don't know how to setup a discord bot follow these step:
     "token": "Your Bot Token here",
 }
 ```
-10.     You can put the token that you copy and replace the text `Your Bot Token here`
-11.     Go into your discord client `Setting` > `Advance` and turn on `Developer Mode`
-12.     You can now copy the bot client ID by right clicking and select `Copy ID`. You can replace the text `Your Client ID here` in `config.json` with this ID. Save the file if you haven't already. 
-13.    Right click and choose `Open in Terminal` option or go to the path text box and type in `cmd`.
-14.    Run the command `npm setup` to install all the necessary packet for the bot and install the commands.
-15.    Finally run `npm start` to host the bot.
+10. You can put the token that you copy and replace the text `Your Bot Token here`
+11. Go into your discord client `Setting` > `Advance` and turn on `Developer Mode`
+12. You can now copy the bot client ID by right clicking and select `Copy ID`. You can replace the text `Your Client ID here` in `config.json` with this ID. Save the file if you haven't already. 
+13. Right click and choose `Open in Terminal` option or go to the path text box and type in `cmd`.
+14. Run the command `npm setup` to install all the necessary packet for the bot and install the commands.
+15. Finally run `npm start` to host the bot.
 
 If you have any problem ask me on Discord my DM should be open. `Stoat#3922`
 
