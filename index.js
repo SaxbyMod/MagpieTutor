@@ -227,7 +227,11 @@ async function fetchCard(name, setName) {
 	let card
 	let set = setsData[setName]
 
-	card = JSON.parse(JSON.stringify(set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase()))) // look for the card in the set
+	card = JSON.parse(
+		JSON.stringify(
+			set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase())
+		)
+	) // look for the card in the set
 
 	if (!card) return card
 
@@ -256,6 +260,9 @@ async function fetchCard(name, setName) {
 	} else if (card.name == "Horse Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
+		card.description = `Not make by ener ${getEmoji("trolled")}`
+	} else if (card.name == "The Moon") {
+		card.sigils = ["Omni Strike"]
 	}
 
 	return card

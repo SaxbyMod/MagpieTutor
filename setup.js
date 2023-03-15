@@ -1,8 +1,5 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js")
-const {
-	clientId,
-	token,
-} = require("./config.json")
+const { clientId, token } = require("./config.json")
 
 const commands = [
 	new SlashCommandBuilder()
@@ -124,6 +121,20 @@ const commands = [
 		.setName("guess-the-card")
 		.setDescription(
 			"Magpie will send part of a card and you need to guess it"
+		)
+		.addIntegerOption((option) =>
+			option
+				.setName("difficulty")
+				.setDescription(
+					"The difficulty you want. Easy is 20, Normal is 15, Hard is 10 and VERY FUCKING HARD ia 5"
+				)
+				.addChoices(
+					{ name: "Easy", value: 20 },
+					{ name: "Normal", value: 15 },
+					{ name: "Hard", value: 10 },
+					{ name: "VERY FUCKING HARD", value: 5 }
+				)
+				.setRequired(true)
 		),
 ].map((command) => command.toJSON())
 
