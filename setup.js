@@ -135,6 +135,17 @@ const commands = [
 					{ name: "VERY FUCKING HARD", value: 5 }
 				)
 				.setRequired(true)
+		)
+		.addStringOption((option) =>
+			option
+				.setName("set")
+				.setDescription("The set where magpie pull card from")
+				.addChoices(
+					{ name: "Competitive", value: "competitive" },
+					{ name: "Eternal", value: "eternal" },
+					{ name: "Vanilla", value: "vanilla" }
+				)
+				.setRequired(true)
 		),
 ].map((command) => command.toJSON())
 

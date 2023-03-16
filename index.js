@@ -276,7 +276,7 @@ async function fetchMagicCard(name) {
 	return out
 }
 
-async function genCardEmbed(card) {
+async function genCardEmbed(card, showSet) {
 	// if the card doesn't exist or missing exit and return error
 
 	let attachment
@@ -315,11 +315,13 @@ async function genCardEmbed(card) {
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}  [${
-				setsData[card.set].ruleset
-			}]`
+			}${card.banned ? getEmoji("banned") : ""}  ${
+				showSet ? `[${setsData[card.set].ruleset}]` : ""
+			}`
 		)
-		.setThumbnail(
+
+	if (attachment)
+		embed.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
 		)
 
@@ -819,7 +821,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			ephemeral: true,
 		})
 	} else if (commandName === "guess-the-card") {
-		const card = randomChoice(setsData.competitive.cards)
+		const card = randomChoice(setsData[options.getString("set")].cards)
 		// get the card pfp
 		var cardPortrait = await Canvas.loadImage(
 			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
@@ -836,7 +838,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			randInt(0, cardPortrait.height - size),
 		]
 
-		// scale the pfp
+		// make the canvas
 		const portrait = Canvas.createCanvas(size * scale, size * scale)
 
 		let context = portrait.getContext("2d")
@@ -878,6 +880,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				"What card is this? Send a message in this channel to guess",
 			files: [new AttachmentBuilder(await portrait.encode("png"))],
 		})
+
 		const filter = (i) => i.author.id === interaction.user.id
 		await interaction.channel
 			.awaitMessages({ max: 1, time: 180000, filter })
@@ -905,6 +908,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					})
 				}
 			})
+			.catch(async (e) => await interaction.editReply("Error happened"))
+	} else if (commandName === "duel") {
 	}
 })
 
@@ -922,6 +927,7 @@ client.on(Events.MessageCreate, async (message) => {
 	for (const cardName of matches) {
 		let name = cardName.toLowerCase().trim()
 		let selectedSet = "competitive"
+		let card
 
 		let isSpecial = false
 		// check which ruleset it should be fetching from
@@ -967,20 +973,51 @@ client.on(Events.MessageCreate, async (message) => {
 
 		// if less than 40% match return error and continue to the next match
 		if (bestMatch.rating <= 0.4) {
-			embedList.push(
-				new EmbedBuilder()
-					.setColor(Colors.Red)
-					.setTitle(`Card "${name}" not found`)
-					.setDescription(
-						`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
-					)
-			)
-			continue
+			if (name == "old_data") {
+				card = {
+					name: "Lorem",
+					description:
+						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+					sigils: ["Repulsive", "Bone King"],
+					blood_cost: -69,
+					bone_cost: -69,
+					energy_cost: -69,
+					mox_cost: ["Green", "Blue", "Orange"],
+
+					attack: 69,
+					health: 420,
+					atkspecial: "mirror",
+
+					conduit: true,
+					rare: true,
+					nosac: true,
+					nohammer: true,
+					banned: true,
+
+					evolution: "I'm",
+					sheds: "Doing",
+					left_half: "Ur",
+					right_half: "Mom :)",
+
+					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
+					set: "competitive",
+				}
+			} else {
+				embedList.push(
+					new EmbedBuilder()
+						.setColor(Colors.Red)
+						.setTitle(`Card "${name}" not found`)
+						.setDescription(
+							`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
+						)
+				)
+				continue
+			}
+		} else {
+			card = await fetchCard(bestMatch.target, selectedSet)
 		}
 
-		let temp = await genCardEmbed(
-			await fetchCard(bestMatch.target, selectedSet)
-		)
+		let temp = await genCardEmbed(card)
 
 		embedList.push(temp[0])
 		attachmentList.push(temp[1])
