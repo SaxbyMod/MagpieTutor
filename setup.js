@@ -119,34 +119,75 @@ const commands = [
 		),
 	new SlashCommandBuilder()
 		.setName("guess-the-card")
-		.setDescription(
-			"Magpie will send part of a card and you need to guess it"
-		)
-		.addIntegerOption((option) =>
-			option
-				.setName("difficulty")
+		.setDescription("Minigame where you guess cards")
+		.addSubcommand((sub) =>
+			sub
+				.setName("normal")
 				.setDescription(
-					"The difficulty you want. Easy is 20, Normal is 15, Hard is 10 and VERY FUCKING HARD ia 5"
+					"Magpie will send part of a card and you guess it"
 				)
-				.addChoices(
-					{ name: "Easy", value: 20 },
-					{ name: "Normal", value: 15 },
-					{ name: "Hard", value: 10 },
-					{ name: "VERY FUCKING HARD", value: 5 }
+				.addIntegerOption((option) =>
+					option
+						.setName("difficulty")
+						.setDescription(
+							"The difficulty you want. Easy is 20, Normal is 15, Hard is 10 and VERY FUCKING HARD ia 5"
+						)
+						.addChoices(
+							{ name: "Easy", value: 20 },
+							{ name: "Normal", value: 15 },
+							{ name: "Hard", value: 10 },
+							{ name: "VERY FUCKING HARD", value: 5 }
+						)
+						.setRequired(true)
 				)
-				.setRequired(true)
+				.addStringOption((option) =>
+					option
+						.setName("set")
+						.setDescription("The set where magpie pull card from")
+						.addChoices(
+							{ name: "Competitive", value: "competitive" },
+							{ name: "Eternal", value: "eternal" },
+							{ name: "Vanilla", value: "vanilla" }
+						)
+						.setRequired(true)
+				)
 		)
-		.addStringOption((option) =>
-			option
-				.setName("set")
-				.setDescription("The set where magpie pull card from")
-				.addChoices(
-					{ name: "Competitive", value: "competitive" },
-					{ name: "Eternal", value: "eternal" },
-					{ name: "Vanilla", value: "vanilla" }
+		.addSubcommand((sub) =>
+			sub
+				.setName("scramble")
+				.setDescription(
+					"Magpie will scramble a portrait up and you guess it"
 				)
-				.setRequired(true)
+				.addStringOption((option) =>
+					option
+						.setName("difficulty")
+						.setDescription(
+							"The difficulty you want."
+						)
+						.addChoices(
+							{ name: "Easy", value: "3,2" },
+							{ name: "Normal", value: "5,3" },
+							{ name: "Hard", value: "7,5" },
+							{ name: "Very Hard", value: "9,7" },
+							{ name: "IMPOSSIBLE", value: "41,28" }
+						)
+						.setRequired(true)
+				)
+				.addStringOption((option) =>
+					option
+						.setName("set")
+						.setDescription("The set where magpie pull card from")
+						.addChoices(
+							{ name: "Competitive", value: "competitive" },
+							{ name: "Eternal", value: "eternal" },
+							{ name: "Vanilla", value: "vanilla" }
+						)
+						.setRequired(true)
+				)
 		),
+	new SlashCommandBuilder()
+		.setName("test")
+		.setDescription("Testing commands"),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

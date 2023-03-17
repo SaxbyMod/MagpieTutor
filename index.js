@@ -62,6 +62,14 @@ const drawList = (list, num) => {
 	return out
 }
 
+const shuffleList = (list) => {
+	for (let i = list.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1))
+		;[list[i], list[j]] = [list[j], list[i]]
+	}
+	return list
+}
+
 const listDiff = (list1, list2) => list1.filter((x) => !list2.includes(x))
 const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 
@@ -821,95 +829,180 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			ephemeral: true,
 		})
 	} else if (commandName === "guess-the-card") {
-		const card = randomChoice(setsData[options.getString("set")].cards)
-		// get the card pfp
-		var cardPortrait = await Canvas.loadImage(
-			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-				" ",
-				"%20"
-			)}.png`
-		)
+		if (options.getSubcommand() === "normal") {
+			const card = randomChoice(setsData.competitive.cards)
+			// get the card pfp
+			let cardPortrait = await Canvas.loadImage(
+				`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+					" ",
+					"%20"
+				)}.png`
+			)
 
-		const size = options.getInteger("difficulty")
-		const scale = 50
-		// get the first crop point
-		const startCropPos = [
-			randInt(0, cardPortrait.width - size),
-			randInt(0, cardPortrait.height - size),
-		]
+			const size = options.getInteger("difficulty")
+			const scale = 50
+			// get the first crop point
+			const startCropPos = [
+				randInt(0, cardPortrait.width - size),
+				randInt(0, cardPortrait.height - size),
+			]
 
-		// make the canvas
-		const portrait = Canvas.createCanvas(size * scale, size * scale)
+			// make the canvas
+			const portrait = Canvas.createCanvas(size * scale, size * scale)
 
-		let context = portrait.getContext("2d")
+			let context = portrait.getContext("2d")
 
-		context.imageSmoothingEnabled = false
-		context.drawImage(
-			cardPortrait,
-			-startCropPos[0] * scale,
-			-startCropPos[1] * scale,
-			cardPortrait.width * scale,
-			cardPortrait.height * scale
-		)
+			context.imageSmoothingEnabled = false
+			context.drawImage(
+				cardPortrait,
+				startCropPos[0],
+				startCropPos[1],
+				size,
+				size,
+				0,
+				0,
+				size * scale,
+				size * scale
+			)
 
-		const full = Canvas.createCanvas(
-			cardPortrait.width * scale,
-			cardPortrait.height * scale
-		)
+			const full = Canvas.createCanvas(
+				cardPortrait.width * scale,
+				cardPortrait.height * scale
+			)
 
-		context = full.getContext("2d")
+			context = full.getContext("2d")
 
-		context.imageSmoothingEnabled = false
-		context.drawImage(
-			cardPortrait,
-			0,
-			0,
-			cardPortrait.width * scale,
-			cardPortrait.height * scale
-		)
-		context.strokeStyle = "#03a9f4"
-		context.lineWidth = scale / 10
-		context.strokeRect(
-			startCropPos[0] * scale,
-			startCropPos[1] * scale,
-			size * scale,
-			size * scale
-		)
-		await interaction.reply({
-			content:
-				"What card is this? Send a message in this channel to guess",
-			files: [new AttachmentBuilder(await portrait.encode("png"))],
-		})
-
-		const filter = (i) => i.author.id === interaction.user.id
-		await interaction.channel
-			.awaitMessages({ max: 1, time: 180000, filter })
-			.then(async (collected) => {
-				const i = collected.first()
-				if (
-					StringSimilarity.compareTwoStrings(
-						card.name.toLowerCase(),
-						i.content.toLowerCase()
-					) >= 0.4
-				) {
-					await i.react(getEmoji("thumbup"))
-					await i.reply({
-						files: [
-							new AttachmentBuilder(await full.encode("png")),
-						],
-					})
-				} else {
-					await i.react(getEmoji("thumbdown"))
-					await i.reply({
-						content: `The card is ${card.name}`,
-						files: [
-							new AttachmentBuilder(await full.encode("png")),
-						],
-					})
-				}
+			context.imageSmoothingEnabled = false
+			context.drawImage(
+				cardPortrait,
+				0,
+				0,
+				cardPortrait.width * scale,
+				cardPortrait.height * scale
+			)
+			context.strokeStyle = "#03a9f4"
+			context.lineWidth = scale / 10
+			context.strokeRect(
+				startCropPos[0] * scale,
+				startCropPos[1] * scale,
+				size * scale,
+				size * scale
+			)
+			await interaction.reply({
+				content:
+					"What card is this? Send a message in this channel to guess",
+				files: [new AttachmentBuilder(await portrait.encode("png"))],
 			})
-			.catch(async (e) => await interaction.editReply("Error happened"))
+
+			const filter = (i) => i.author.id === interaction.user.id
+			await interaction.channel
+				.awaitMessages({ max: 1, time: 180000, filter })
+				.then(async (collected) => {
+					const i = collected.first()
+					if (
+						StringSimilarity.compareTwoStrings(
+							card.name.toLowerCase(),
+							i.content.toLowerCase()
+						) >= 0.4
+					) {
+						await i.react(getEmoji("thumbup"))
+						await i.reply({
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
+					} else {
+						await i.react(getEmoji("thumbdown"))
+						await i.reply({
+							content: `The card is ${card.name}`,
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
+					}
+				})
+				.catch(
+					async (e) => await interaction.editReply("Error happened")
+				)
+		} else if (options.getSubcommand() === "scramble") {
+			const card = randomChoice(setsData.competitive.cards)
+			// get the card pfp
+			let cardPortrait = await Canvas.loadImage(
+				`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+					" ",
+					"%20"
+				)}.png`
+			)
+
+			const scale = 50
+			const col = parseInt(options.getString("difficulty").split(",")[0])
+			const row = parseInt(options.getString("difficulty").split(",")[1])
+			console.log(col, row)
+			// make the canvas
+			const portrait = Canvas.createCanvas(
+				cardPortrait.width * scale,
+				cardPortrait.height * scale
+			)
+
+			const context = portrait.getContext("2d")
+
+			context.imageSmoothingEnabled = false
+			let i = 0
+			let lst = shuffleList(
+				(() => {
+					let out = []
+					;[...Array(row).keys()].forEach((i) =>
+						[...Array(col).keys()].forEach((j) => out.push([i, j]))
+					)
+					return out
+				})()
+			)
+			console.log(lst)
+
+			for (let x = 0; x < col; x++) {
+				for (let y = 0; y < row; y++) {
+					context.drawImage(
+						cardPortrait,
+						(cardPortrait.width / col) * lst[i][1],
+						(cardPortrait.height / row) * lst[i][0],
+						cardPortrait.width / col,
+						cardPortrait.height / row,
+						(cardPortrait.width / col) * scale * x,
+						(cardPortrait.height / row) * scale * y,
+						(cardPortrait.width / col) * scale,
+						(cardPortrait.height / row) * scale
+					)
+					i++
+				}
+			}
+
+			await interaction.reply({
+				files: [new AttachmentBuilder(await portrait.encode("png"))],
+			})
+
+			const filter = (i) => i.author.id === interaction.user.id
+			await interaction.channel
+				.awaitMessages({ max: 1, time: 180000, filter })
+				.then(async (collected) => {
+					const i = collected.first()
+					if (
+						StringSimilarity.compareTwoStrings(
+							card.name.toLowerCase(),
+							i.content.toLowerCase()
+						) >= 0.4
+					) {
+						await i.react(getEmoji("thumbup"))
+					} else {
+						await i.react(getEmoji("thumbdown"))
+						await i.reply(`The card is ${card.name}`)
+					}
+				})
+				.catch(
+					async (e) => await interaction.editReply("Error happened")
+				)
+		}
 	} else if (commandName === "duel") {
+	} else if (commandName === "test") {
 	}
 })
 
