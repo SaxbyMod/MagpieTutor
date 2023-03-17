@@ -937,14 +937,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			const scale = 50
 			const col = parseInt(options.getString("difficulty").split(",")[0])
 			const row = parseInt(options.getString("difficulty").split(",")[1])
-			console.log(col, row)
+
 			// make the canvas
 			const portrait = Canvas.createCanvas(
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
 			)
 
-			const context = portrait.getContext("2d")
+			let context = portrait.getContext("2d")
 
 			context.imageSmoothingEnabled = false
 			let i = 0
@@ -957,7 +957,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					return out
 				})()
 			)
-			console.log(lst)
 
 			for (let x = 0; x < col; x++) {
 				for (let y = 0; y < row; y++) {
@@ -976,6 +975,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}
 			}
 
+			const full = Canvas.createCanvas(
+				cardPortrait.width * scale,
+				cardPortrait.height * scale
+			)
+
+			context = full.getContext("2d")
+
+			context.imageSmoothingEnabled = false
+			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
+
 			await interaction.reply({
 				files: [new AttachmentBuilder(await portrait.encode("png"))],
 			})
@@ -992,9 +1001,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						) >= 0.4
 					) {
 						await i.react(getEmoji("thumbup"))
+						await i.reply({
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
 					} else {
 						await i.react(getEmoji("thumbdown"))
-						await i.reply(`The card is ${card.name}`)
+						await i.reply({
+							content: `The card is ${card.name}`,
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
 					}
 				})
 				.catch(
