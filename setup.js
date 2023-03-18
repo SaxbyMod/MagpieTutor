@@ -126,6 +126,17 @@ const commands = [
 				.setDescription(
 					"Magpie will send part of a card and you guess it"
 				)
+				.addStringOption((option) =>
+					option
+						.setName("set")
+						.setDescription("The set where magpie pull card from")
+						.addChoices(
+							{ name: "Competitive", value: "competitive" },
+							{ name: "Eternal", value: "eternal" },
+							{ name: "Vanilla", value: "vanilla" }
+						)
+						.setRequired(true)
+				)
 				.addIntegerOption((option) =>
 					option
 						.setName("difficulty")
@@ -138,18 +149,13 @@ const commands = [
 							{ name: "Hard", value: 10 },
 							{ name: "VERY FUCKING HARD", value: 5 }
 						)
-						.setRequired(true)
 				)
-				.addStringOption((option) =>
+				.addIntegerOption((option) =>
 					option
-						.setName("set")
-						.setDescription("The set where magpie pull card from")
-						.addChoices(
-							{ name: "Competitive", value: "competitive" },
-							{ name: "Eternal", value: "eternal" },
-							{ name: "Vanilla", value: "vanilla" }
-						)
-						.setRequired(true)
+						.setName("size")
+						.setDescription("The size of the piece")
+						.setMinValue(1)
+						.setMaxValue(28)
 				)
 		)
 		.addSubcommand((sub) =>
@@ -160,21 +166,6 @@ const commands = [
 				)
 				.addStringOption((option) =>
 					option
-						.setName("difficulty")
-						.setDescription(
-							"The difficulty you want."
-						)
-						.addChoices(
-							{ name: "Easy", value: "3,2" },
-							{ name: "Normal", value: "5,3" },
-							{ name: "Hard", value: "7,5" },
-							{ name: "Very Hard", value: "9,7" },
-							{ name: "IMPOSSIBLE", value: "41,28" }
-						)
-						.setRequired(true)
-				)
-				.addStringOption((option) =>
-					option
 						.setName("set")
 						.setDescription("The set where magpie pull card from")
 						.addChoices(
@@ -183,6 +174,23 @@ const commands = [
 							{ name: "Vanilla", value: "vanilla" }
 						)
 						.setRequired(true)
+				)
+				.addStringOption((option) =>
+					option
+						.setName("difficulty")
+						.setDescription("The difficulty you want.")
+						.addChoices(
+							{ name: "Easy", value: "3,2" },
+							{ name: "Normal", value: "5,3" },
+							{ name: "Hard", value: "7,5" },
+							{ name: "Very Hard", value: "9,7" },
+							{ name: "IMPOSSIBLE", value: "41,28" }
+						)
+				)
+				.addStringOption((option) =>
+					option
+						.setName("size")
+						.setDescription("The pieces size. Col first then row")
 				)
 		),
 	new SlashCommandBuilder()

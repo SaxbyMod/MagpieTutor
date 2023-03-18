@@ -829,6 +829,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			ephemeral: true,
 		})
 	} else if (commandName === "guess-the-card") {
+		const card = randomChoice(setsData[options.getString("set")].cards)
+		// get the card pfp
+		let cardPortrait = await Canvas.loadImage(
+			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+				" ",
+				"%20"
+			)}.png`
+		)
 		if (options.getSubcommand() === "normal") {
 			const card = randomChoice(setsData.competitive.cards)
 			// get the card pfp
@@ -840,6 +848,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)
 
 			const size = options.getInteger("difficulty")
+				? options.getInteger("difficulty")
+				: options.getInteger("size")
+				? options.getInteger("size")
+				: 15
+
 			const scale = 50
 			// get the first crop point
 			const startCropPos = [
@@ -861,8 +874,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				size,
 				0,
 				0,
-				size * scale,
-				size * scale
+				portrait.width,
+				portrait.height
 			)
 
 			const full = Canvas.createCanvas(
@@ -925,18 +938,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					async (e) => await interaction.editReply("Error happened")
 				)
 		} else if (options.getSubcommand() === "scramble") {
-			const card = randomChoice(setsData.competitive.cards)
-			// get the card pfp
-			let cardPortrait = await Canvas.loadImage(
-				`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-					" ",
-					"%20"
-				)}.png`
+			const scale = 50
+			const col = parseInt(
+				(options.getString("difficulty")
+					? options.getString("difficulty")
+					: options.getString("size")
+					? options.getString("size")
+					: "5,3"
+				).split(",")[0]
+			)
+			const row = parseInt(
+				(options.getString("difficulty")
+					? options.getString("difficulty")
+					: options.getString("size")
+					? options.getString("size")
+					: "5,3"
+				).split(",")[1]
 			)
 
-			const scale = 50
-			const col = parseInt(options.getString("difficulty").split(",")[0])
-			const row = parseInt(options.getString("difficulty").split(",")[1])
+			const pieceWidth = cardPortrait.width / col
+			const pieceHeight = cardPortrait.height / row
 
 			// make the canvas
 			const portrait = Canvas.createCanvas(
@@ -962,14 +983,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				for (let y = 0; y < row; y++) {
 					context.drawImage(
 						cardPortrait,
-						(cardPortrait.width / col) * lst[i][1],
-						(cardPortrait.height / row) * lst[i][0],
-						cardPortrait.width / col,
-						cardPortrait.height / row,
-						(cardPortrait.width / col) * scale * x,
-						(cardPortrait.height / row) * scale * y,
-						(cardPortrait.width / col) * scale,
-						(cardPortrait.height / row) * scale
+						pieceWidth * lst[i][1],
+						pieceHeight * lst[i][0],
+						pieceWidth,
+						pieceHeight,
+						pieceWidth * scale * x,
+						pieceHeight * scale * y,
+						pieceWidth * scale,
+						pieceHeight * scale
 					)
 					i++
 				}
@@ -1020,8 +1041,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					async (e) => await interaction.editReply("Error happened")
 				)
 		}
-	} else if (commandName === "duel") {
 	} else if (commandName === "test") {
+		await interaction.reply({
+			content:
+				"This command currently have no code in it. Check back later",
+			ephemeral: true,
+		})
 	}
 })
 
