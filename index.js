@@ -685,22 +685,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		let fullDeck = []
 
 		if (options.getAttachment("deck-file")) {
-			fullDeck = JSON.parse(
+			let temp = JSON.parse(
 				await (
 					await fetch(options.getAttachment("deck-file").url)
 				).text()
-			).cards
+			)
+			fullDeck = temp.cards
+
 		} else if (options.getString("deck-list")) {
-			fullDeck = options
-				.getString("deck-list")
-				.split(",")
-				.map((c) => c.trim())
+			let temp = options.getString("deck-list").split(";")
+			temp.map((i) => i.split(","))
+			fullDeck = temp[0]
+
 		} else {
 			await interaction.reply("Deck missing")
 			return
 		}
 
 		let currDeck = JSON.parse(JSON.stringify(fullDeck))
+
 
 		const message = await interaction.reply({
 			content: "Doing stuff please wait",
@@ -759,11 +762,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					new ActionRowBuilder().addComponents(selectionList),
 					new ActionRowBuilder().addComponents(
 						new ButtonBuilder()
-							.setLabel("Draw")
+							.setLabel("Draw Main")
 							.setStyle(ButtonStyle.Success)
 							.setCustomId("draw"),
 						new ButtonBuilder()
-							.setLabel("Create Card in Hand")
+							.setLabel("Draw Side")
+							.setStyle(ButtonStyle.Secondary),
+						new ButtonBuilder()
+							.setLabel("Create Card")
 							.setStyle(ButtonStyle.Secondary)
 							.setCustomId("create"),
 						new ButtonBuilder()
@@ -802,9 +808,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						modal.addComponents(
 							new ActionRowBuilder().addComponents(
 								new TextInputBuilder()
-									.setLabel(
-										"What card do you want to create into your hand"
-									)
+									.setLabel("What card do you want to create")
 									.setPlaceholder("Enter Card Name!")
 									.setStyle(TextInputStyle.Short)
 									.setCustomId("card")
@@ -818,6 +822,49 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							.awaitModalSubmit({ time: 60000, filter })
 							.then(async (i) => {
 								hand.push(i.fields.getTextInputValue("card"))
+								await i.update("")
+							})
+					} else if (inter.customId === "fetch") {
+						// Create the modal
+						const modal = new ModalBuilder()
+							.setCustomId("fetch")
+							.setTitle("Fetch Card")
+
+						// Add components to modal
+						modal.addComponents(
+							new ActionRowBuilder().addComponents(
+								new TextInputBuilder()
+									.setLabel("Card in deck (not to be edit)")
+									.setValue([...new Set(currDeck)].join("\n"))
+									.setStyle(TextInputStyle.Paragraph)
+									.setCustomId("eeeee")
+							),
+							new ActionRowBuilder().addComponents(
+								new TextInputBuilder()
+									.setLabel("What card do you want to create")
+									.setPlaceholder("Enter Card Name!")
+									.setStyle(TextInputStyle.Short)
+									.setCustomId("card")
+									.setRequired(true)
+							)
+						)
+
+						// Show the modal to the user
+						await inter.showModal(modal)
+
+						await inter
+							.awaitModalSubmit({ time: 60000, filter })
+							.then(async (i) => {
+								const bestMatch =
+									StringSimilarity.findBestMatch(
+										i.fields
+											.getTextInputValue("card")
+											.toLowerCase(),
+										currDeck
+									)
+								hand.push(currDeck[bestMatch.bestMatchIndex])
+								currDeck.splice(bestMatch.bestMatchIndex, 1)
+
 								await i.update("")
 							})
 					} else if (inter.customId === "end") {
