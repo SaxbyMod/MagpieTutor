@@ -12,6 +12,9 @@ const {
 	ComponentType,
 	StringSelectMenuBuilder,
 	ButtonStyle,
+	TextInputBuilder,
+	ModalBuilder,
+	TextInputStyle,
 } = require("discord.js")
 
 const StringSimilarity = require("string-similarity")
@@ -726,23 +729,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			if (detailMode) {
 				tempstr = ""
-				temp = [countDeckDup(fullDeck), countDeckDup(currDeck)]
-				Object.keys(temp[0]).forEach((c) => {
-					tempstr += `${!temp[1][c] ? `~~0` : temp[1][c]}/${
-						temp[0][c]
-					}) **${c}** (${
-						Math.round(
-							((!temp[1][c] ? 0 : temp[1][c]) / currDeck.length) *
-								100
-						) === 0
-							? `0%)~~`
-							: `${Math.round(
-									((!temp[1][c] ? 0 : temp[1][c]) /
-										currDeck.length) *
-										100
-							  )}%)`
-					}\n`
+				temp = countDeckDup(currDeck)
+				Object.keys(temp).forEach((c) => {
+					const percentage = (temp[c] / currDeck.length) * 100
+					tempstr += `${temp[c]}x ${c} (${Math.round(percentage)}%)\n`
 				})
+
 				embed.addFields({
 					name: "====== DRAW PERCENTAGE ======",
 					value: tempstr,
@@ -771,6 +763,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							.setStyle(ButtonStyle.Success)
 							.setCustomId("draw"),
 						new ButtonBuilder()
+							.setLabel("Create Card in Hand")
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("create"),
+						new ButtonBuilder()
+							.setLabel("Fetch Card")
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("fetch"),
+						new ButtonBuilder()
 							.setLabel("End")
 							.setStyle(ButtonStyle.Danger)
 							.setCustomId("end")
@@ -782,24 +782,55 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			await message
 				.awaitMessageComponent({
-					time: 60000,
+					time: 180000,
 					filter,
 				})
-				.then(async (i) => {
-					if (i.customId === "draw") {
+				.then(async (inter) => {
+					if (inter.customId === "draw") {
 						hand.push(drawList(currDeck, 1)[0])
-					} else if (i.customId === "play") {
-						hand.splice(hand.indexOf(i.values[0]), 1)
-					} else if (i.customId === "end") {
+						await inter.update("")
+					} else if (inter.customId === "play") {
+						hand.splice(hand.indexOf(inter.values[0]), 1)
+						await inter.update("")
+					} else if (inter.customId === "create") {
+						// Create the modal
+						const modal = new ModalBuilder()
+							.setCustomId("create")
+							.setTitle("Create Card")
+
+						// Add components to modal
+						modal.addComponents(
+							new ActionRowBuilder().addComponents(
+								new TextInputBuilder()
+									.setLabel(
+										"What card do you want to create into your hand"
+									)
+									.setPlaceholder("Enter Card Name!")
+									.setStyle(TextInputStyle.Short)
+									.setCustomId("card")
+							)
+						)
+
+						// Show the modal to the user
+						await inter.showModal(modal)
+
+						await inter
+							.awaitModalSubmit({ time: 60000, filter })
+							.then(async (i) => {
+								hand.push(i.fields.getTextInputValue("card"))
+								await i.update("")
+							})
+					} else if (inter.customId === "end") {
 						stillRunning = false
+						await inter.update("")
 					}
-					await i.update("updating")
 				})
 				.catch((err) => {
 					console.log(err)
 					stillRunning = false
 				})
 		}
+
 		await interaction.editReply({
 			embeds: [
 				new EmbedBuilder()
@@ -807,6 +838,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					.setTitle("Deck Simulation Ended")
 					.setDescription("The simulation Ended"),
 			],
+			components: [],
 		})
 	} else if (commandName === "tunnel-status") {
 		await http
@@ -1042,11 +1074,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 		}
 	} else if (commandName === "test") {
-		await interaction.reply({
-			content:
-				"This command currently have no code in it. Check back later",
-			ephemeral: true,
-		})
+		// await interaction.reply({
+		// 	content:
+		// 		"This command currently have no code in it. Check back later",
+		// 	ephemeral: true,
+		// })
 	}
 })
 
