@@ -718,7 +718,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			return
 		}
 
-		console.log(fullSide)
 		let currDeck = JSON.parse(JSON.stringify(fullDeck))
 		let currSide = JSON.parse(JSON.stringify(fullSide))
 
@@ -1138,11 +1137,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 		}
 	} else if (commandName === "test") {
-		// await interaction.reply({
-		// 	content:
-		// 		"This command currently have no code in it. Check back later",
-		// 	ephemeral: true,
-		// })
+		await interaction.reply({
+			content:
+				"This command currently have no code in it. Check back later",
+			ephemeral: true,
+		})
 	}
 })
 
