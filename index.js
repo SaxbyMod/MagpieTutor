@@ -58,6 +58,7 @@ const randomChoices = (list, num) => {
 const drawList = (list, num) => {
 	let out = []
 	for (let choice = 0; choice < num; choice++) {
+		if (list.length < 1) return out
 		let e = Math.floor(Math.random() * list.length)
 		out.push(list[e])
 		list.splice(e, 1)
@@ -71,6 +72,17 @@ const shuffleList = (list) => {
 		;[list[i], list[j]] = [list[j], list[i]]
 	}
 	return list
+}
+
+const countDeckDup = (deck) => {
+	const singleDeck = new Set(deck)
+	var out = {}
+	for (const card of singleDeck) {
+		out[card] = deck.filter(
+			(c) => c.toLowerCase() === card.toLowerCase()
+		).length
+	}
+	return out
 }
 
 const listDiff = (list1, list2) => list1.filter((x) => !list2.includes(x))
@@ -186,17 +198,6 @@ function numToEmoji(num) {
 		if (digit === "-") {
 			out += getEmoji("negative")
 		} else out += getEmoji(`${digit}_`)
-	}
-	return out
-}
-
-function countDeckDup(deck) {
-	const singleDeck = new Set(deck)
-	var out = {}
-	for (const card of singleDeck) {
-		out[card] = deck.filter(
-			(c) => c.toLowerCase() === card.toLowerCase()
-		).length
 	}
 	return out
 }
@@ -710,7 +711,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			}
 		} else if (options.getString("deck-list")) {
 			let temp = options.getString("deck-list").split(";")
-			temp.map((i) => i.split(","))
+			temp = temp.map((i) => i.split(","))
+			console.log(temp)
 			fullDeck = temp[0]
 			fullSide = temp[1] ? temp[1] : []
 		} else {
@@ -729,11 +731,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		const detailMode = options.getBoolean("detail")
 
 		let hand = drawList(currDeck, 3)
+
 		while (stillRunning) {
 			let tempstr = ""
-			let temp
-			Object.keys(countDeckDup(hand)).forEach((c) => {
-				tempstr += `${countDeckDup(hand)[c]}x ${c}\n`
+			let temp = countDeckDup(hand)
+			Object.keys(temp).forEach((c) => {
+				tempstr += `${temp[c]}x ${c}\n`
 			})
 
 			let embed = new EmbedBuilder()
@@ -753,7 +756,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					const percentage = (temp[c] / currDeck.length) * 100
 					tempstr += `${temp[c]}x ${c} (${Math.round(percentage)}%)\n`
 				})
-
+				if (tempstr === "") {
+					tempstr += "No Card Left"
+				}
 				embed.addFields({
 					name: "====== DRAW PERCENTAGE ======",
 					value: tempstr,
@@ -780,10 +785,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						new ButtonBuilder()
 							.setLabel("Draw Main")
 							.setStyle(ButtonStyle.Success)
-							.setCustomId("draw"),
+							.setCustomId("main"),
 						new ButtonBuilder()
 							.setLabel("Draw Side")
-							.setStyle(ButtonStyle.Secondary),
+							.setStyle(ButtonStyle.Secondary)
+							.setCustomId("side"),
 						new ButtonBuilder()
 							.setLabel("Create Card")
 							.setStyle(ButtonStyle.Secondary)
@@ -808,8 +814,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					filter,
 				})
 				.then(async (inter) => {
-					if (inter.customId === "draw") {
-						hand.push(drawList(currDeck, 1)[0])
+					if (inter.customId === "main") {
+						temp = drawList(currDeck, 1)[0]
+						if (temp) hand.push(temp)
 						await inter.update("")
 					} else if (inter.customId === "play") {
 						hand.splice(hand.indexOf(inter.values[0]), 1)
@@ -854,10 +861,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 									.setValue([...new Set(currDeck)].join("\n"))
 									.setStyle(TextInputStyle.Paragraph)
 									.setCustomId("eeeee")
+									.setRequired(false)
 							),
 							new ActionRowBuilder().addComponents(
 								new TextInputBuilder()
-									.setLabel("What card do you want to create")
+									.setLabel("What card do you want to fetch")
 									.setPlaceholder("Enter Card Name!")
 									.setStyle(TextInputStyle.Short)
 									.setCustomId("card")
@@ -871,15 +879,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						await inter
 							.awaitModalSubmit({ time: 60000, filter })
 							.then(async (i) => {
-								const bestMatch =
-									StringSimilarity.findBestMatch(
-										i.fields
-											.getTextInputValue("card")
-											.toLowerCase(),
-										currDeck
+								if (currDeck.length > 1) {
+									const bestMatch =
+										StringSimilarity.findBestMatch(
+											i.fields
+												.getTextInputValue("card")
+												.toLowerCase(),
+											currDeck
+										)
+									hand.push(
+										currDeck[bestMatch.bestMatchIndex]
 									)
-								hand.push(currDeck[bestMatch.bestMatchIndex])
-								currDeck.splice(bestMatch.bestMatchIndex, 1)
+									currDeck.splice(bestMatch.bestMatchIndex, 1)
+								}
 
 								await i.update("")
 							})
