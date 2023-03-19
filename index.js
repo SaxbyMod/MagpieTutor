@@ -683,27 +683,44 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 	} else if (commandName === "deck-sim") {
 		let fullDeck = []
-
+		let fullSide = []
 		if (options.getAttachment("deck-file")) {
-			let temp = JSON.parse(
+			const deckFile = JSON.parse(
 				await (
 					await fetch(options.getAttachment("deck-file").url)
 				).text()
 			)
-			fullDeck = temp.cards
-
+			fullDeck = deckFile.cards
+			if (deckFile.side_deck_cards) {
+				fullSide = deckFile.side_deck_cards
+			} else if (deckFile.side_deck_cat) {
+				fullSide = Array(
+					setsData.competitive.side_decks[deckFile.side_deck].cards[
+						deckFile.side_deck_cat
+					].count
+				).fill(
+					setsData.competitive.side_decks[deckFile.side_deck].cards[
+						deckFile.side_deck_cat
+					].card
+				)
+			} else {
+				fullSide = Array(
+					setsData.competitive.side_decks[deckFile.side_deck].count
+				).fill(setsData.competitive.side_decks[deckFile.side_deck].card)
+			}
 		} else if (options.getString("deck-list")) {
 			let temp = options.getString("deck-list").split(";")
 			temp.map((i) => i.split(","))
 			fullDeck = temp[0]
-
+			fullSide = temp[1] ? temp[1] : []
 		} else {
 			await interaction.reply("Deck missing")
 			return
 		}
 
+		console.log(fullSide)
 		let currDeck = JSON.parse(JSON.stringify(fullDeck))
-
+		let currSide = JSON.parse(JSON.stringify(fullSide))
 
 		const message = await interaction.reply({
 			content: "Doing stuff please wait",
