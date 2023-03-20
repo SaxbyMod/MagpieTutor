@@ -816,11 +816,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				.then(async (inter) => {
 					if (inter.customId === "main") {
 						temp = drawList(currDeck, 1)[0]
-						if (temp) hand.push(temp)
-						await inter.update("")
+						if (temp) {
+							hand.push(temp)
+							await inter.update(`You've drawn ${temp}`)
+						} else {
+							await inter.update(`Main is Empty`)
+						}
+					} else if (inter.customId === "side") {
+						temp = drawList(currSide, 1)[0]
+						if (temp) {
+							hand.push(temp)
+							await inter.update(`You've drawn ${temp}`)
+						} else {
+							await inter.update(`Side is Empty`)
+						}
 					} else if (inter.customId === "play") {
 						hand.splice(hand.indexOf(inter.values[0]), 1)
-						await inter.update("")
+						await inter.update(`Played ${inter.values[0]}`)
 					} else if (inter.customId === "create") {
 						// Create the modal
 						const modal = new ModalBuilder()
@@ -842,11 +854,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						await inter.showModal(modal)
 
 						await inter
-							.awaitModalSubmit({ time: 60000, filter })
+							.awaitModalSubmit({ time: 10000, filter })
 							.then(async (i) => {
 								hand.push(i.fields.getTextInputValue("card"))
-								await i.update("")
+								await i.update(
+									`Created ${i.fields.getTextInputValue(
+										"card"
+									)}`
+								)
 							})
+							.catch((e) => inter.update())
 					} else if (inter.customId === "fetch") {
 						// Create the modal
 						const modal = new ModalBuilder()
@@ -877,7 +894,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						await inter.showModal(modal)
 
 						await inter
-							.awaitModalSubmit({ time: 60000, filter })
+							.awaitModalSubmit({ time: 10000, filter })
 							.then(async (i) => {
 								if (currDeck.length > 1) {
 									const bestMatch =
@@ -891,9 +908,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 										currDeck[bestMatch.bestMatchIndex]
 									)
 									currDeck.splice(bestMatch.bestMatchIndex, 1)
-								}
 
-								await i.update("")
+									await i.update(
+										`Fetched ${bestMatch.bestMatch.target}`
+									)
+								} else {
+									await i.update("")
+								}
 							})
 					} else if (inter.customId === "end") {
 						stillRunning = false
