@@ -456,8 +456,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			throw new Error("death")
 		} else await interaction.reply("no")
 	} else if (commandName === "draft") {
-		const set = options.getString("set")
-		const deckSize = options.getInteger("size")
+		// grab the important shit
+		const set = options.getString("set") // get the set
+		const deckSize = options.getInteger("size") // size of deck
 			? options.getInteger("size")
 			: 20
 		const pool = listDiff(
@@ -467,7 +468,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				.concat(options.getBoolean("undead") ? setsUndeadPool[set] : [])
 				.concat(options.getBoolean("tech") ? setsTechPool[set] : [])
 				.concat(options.getBoolean("magick") ? setsMagickPool[set] : [])
-		)
+		) // load the pool by adding in the selected type pool
+
 		const message = await interaction.reply({
 			content: "Loading...",
 			fetchReply: true,
@@ -477,6 +479,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		var wildCount = 0
 		let flag = false
 
+		// repeat for deck size
 		for (let cycle = 0; cycle < deckSize; cycle++) {
 			// take 4 random common
 			let temp = randomChoices(
@@ -509,13 +512,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let pack = setsData[set].cards.filter((c) =>
 				temp.includes(c.name.toLowerCase())
 			)
+			// sort the pack by rare first then alphabetical
 			pack.sort((a, b) =>
 				a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
 			)
 
 			//adding in wild if duplicate is found
 			if (pack.length < 5) {
+				// for every duplicate add in a different one
 				for (let card = 0; card < 5 - pack.length; card++) {
+					// get a new card by subtracting the already found pool and the full pool
 					const newCard = randomChoice(
 						listDiff(
 							listDiff(
@@ -525,6 +531,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							temp
 						)
 					)
+
+					// add it in
 					pack.push(
 						setsData[set].cards.find(
 							(c) => c.name.toLowerCase() === newCard
@@ -577,6 +585,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 			}
 
+			// load the deck list
 			let deckStr = ""
 			temp = countDeckDup(
 				deck.cards.sort((a, b) =>
@@ -587,9 +596,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						: a.localeCompare(b)
 				)
 			)
+
+			// print it out
 			for (const card of Object.keys(temp)) {
 				deckStr += `${temp[card]}x | ${card}\n`
 			}
+
+			// add it into embed
 			embed.addFields(
 				{
 					name: "=============== PACK ===============",
@@ -611,6 +624,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				],
 				embeds: [embed],
 			})
+			
 			const filter = (i) => i.user.id === interaction.user.id
 
 			let error = ""
@@ -757,7 +771,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				let fullDup = countDeckDup(fullDeck)
 				Object.keys(currDup).forEach((c) => {
 					const percentage = (currDup[c] / currDeck.length) * 100
-					tempstr += `${currDup[c]}/${fullDup[c]}) ${c} (${Math.round(percentage)}%)\n`
+					tempstr += `${currDup[c]}/${fullDup[c]}) ${c} (${Math.round(
+						percentage
+					)}%)\n`
 				})
 				if (tempstr === "") {
 					tempstr += "No Card Left"
@@ -961,7 +977,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 	} else if (commandName === "guess-the-card") {
 		const card = randomChoice(setsData[options.getString("set")].cards)
-		// get the card pfp
+		// get the card picture
 		let cardPortrait = await Canvas.loadImage(
 			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
 				" ",
@@ -976,6 +992,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				: 15
 
 			const scale = 50
+
 			// get the first crop point
 			const startCropPos = [
 				randInt(0, cardPortrait.width - size),
@@ -988,18 +1005,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let context = portrait.getContext("2d")
 
 			context.imageSmoothingEnabled = false
+
 			context.drawImage(
 				cardPortrait,
+				// source region
 				startCropPos[0],
 				startCropPos[1],
+
+				// size of the crop region
 				size,
 				size,
+
+				// position to place the region to
 				0,
 				0,
+
+				// size of the final
 				portrait.width,
 				portrait.height
 			)
 
+			// create full version canvas
 			const full = Canvas.createCanvas(
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
@@ -1008,6 +1034,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			context = full.getContext("2d")
 
 			context.imageSmoothingEnabled = false
+
+			// draw the portrait
 			context.drawImage(
 				cardPortrait,
 				0,
@@ -1015,14 +1043,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
 			)
+
+			// set the color and size of the box
 			context.strokeStyle = "#03a9f4"
 			context.lineWidth = scale / 10
+
+			// draw the box
 			context.strokeRect(
 				startCropPos[0] * scale,
 				startCropPos[1] * scale,
 				size * scale,
 				size * scale
 			)
+
 			await interaction.reply({
 				content:
 					"What card is this? Send a message in this channel to guess",
@@ -1061,6 +1094,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 		} else if (options.getSubcommand() === "scramble") {
 			const scale = 50
+			// grab the column
 			const col = parseInt(
 				(options.getString("difficulty")
 					? options.getString("difficulty")
@@ -1069,6 +1103,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					: "5,3"
 				).split(",")[0]
 			)
+
+			//grab the row
 			const row = parseInt(
 				(options.getString("difficulty")
 					? options.getString("difficulty")
@@ -1078,6 +1114,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				).split(",")[1]
 			)
 
+			// get each piece height and width
 			const pieceWidth = cardPortrait.width / col
 			const pieceHeight = cardPortrait.height / row
 
@@ -1090,7 +1127,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let context = portrait.getContext("2d")
 
 			context.imageSmoothingEnabled = false
+
 			let i = 0
+			// make an array with all the position to grab piece from
+
+			// list comprehension and shuffle it
+			// [[i, j] for i in range(row) for j in range(col)]
 			let lst = shuffleList(
 				(() => {
 					let out = []
@@ -1101,6 +1143,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})()
 			)
 
+			// for all the piece
 			for (let x = 0; x < col; x++) {
 				for (let y = 0; y < row; y++) {
 					context.drawImage(
@@ -1136,7 +1179,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.channel
 				.awaitMessages({ max: 1, time: 180000, filter })
 				.then(async (collected) => {
-					const i = collected.first()
+					const i = collected.first() // grab the interaction
+					//if it correct react with thumb up and send the full portrait
 					if (
 						StringSimilarity.compareTwoStrings(
 							card.name.toLowerCase(),
@@ -1149,7 +1193,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 								new AttachmentBuilder(await full.encode("png")),
 							],
 						})
-					} else {
+					}
+					// if it wrong react with thump down and send the full portrait
+					else {
 						await i.react(getEmoji("thumbdown"))
 						await i.reply({
 							content: `The card is ${card.name}`,
