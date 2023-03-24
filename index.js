@@ -734,15 +734,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		while (stillRunning) {
 			let tempstr = ""
-			let temp = countDeckDup(hand)
-			Object.keys(temp).forEach((c) => {
-				tempstr += `${temp[c]}x ${c}\n`
+			let currDup = countDeckDup(hand)
+			Object.keys(currDup).forEach((c) => {
+				tempstr += `${currDup[c]}x ${c}\n`
 			})
 
 			let embed = new EmbedBuilder()
 				.setColor(Colors.Orange)
 				.setTitle("Thingy")
-				.setDescription("Here you hand")
+				.setDescription(
+					`Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`
+				)
 				.addFields({
 					name: "====== HAND ======",
 					value: tempstr,
@@ -751,10 +753,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			if (detailMode) {
 				tempstr = ""
-				temp = countDeckDup(currDeck)
-				Object.keys(temp).forEach((c) => {
-					const percentage = (temp[c] / currDeck.length) * 100
-					tempstr += `${temp[c]}x ${c} (${Math.round(percentage)}%)\n`
+				let currDup = countDeckDup(currDeck)
+				let fullDup = countDeckDup(fullDeck)
+				Object.keys(currDup).forEach((c) => {
+					const percentage = (currDup[c] / currDeck.length) * 100
+					tempstr += `${currDup[c]}/${fullDup[c]}) ${c} (${Math.round(percentage)}%)\n`
 				})
 				if (tempstr === "") {
 					tempstr += "No Card Left"
@@ -815,18 +818,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 				.then(async (inter) => {
 					if (inter.customId === "main") {
-						temp = drawList(currDeck, 1)[0]
-						if (temp) {
-							hand.push(temp)
-							await inter.update(`You've drawn ${temp}`)
+						currDup = drawList(currDeck, 1)[0]
+						if (currDup) {
+							hand.push(currDup)
+							await inter.update(`You've drawn ${currDup}`)
 						} else {
 							await inter.update(`Main is Empty`)
 						}
 					} else if (inter.customId === "side") {
-						temp = drawList(currSide, 1)[0]
-						if (temp) {
-							hand.push(temp)
-							await inter.update(`You've drawn ${temp}`)
+						currDup = drawList(currSide, 1)[0]
+						if (currDup) {
+							hand.push(currDup)
+							await inter.update(`You've drawn ${currDup}`)
 						} else {
 							await inter.update(`Side is Empty`)
 						}
@@ -966,15 +969,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)}.png`
 		)
 		if (options.getSubcommand() === "normal") {
-			const card = randomChoice(setsData.competitive.cards)
-			// get the card pfp
-			let cardPortrait = await Canvas.loadImage(
-				`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-					" ",
-					"%20"
-				)}.png`
-			)
-
 			const size = options.getInteger("difficulty")
 				? options.getInteger("difficulty")
 				: options.getInteger("size")
