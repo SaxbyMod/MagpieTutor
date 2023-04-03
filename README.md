@@ -79,35 +79,76 @@ Simulate deck draw for whatever reason
 ### Tunnel Status Command
 Current Status of tunnel
 
+#### Note
+The tunnel is check by sending a request to the [website](http://localtunnel.me). It may not be accurate because my laptop may not reach the website [check it yourself just to be sure](https://isitdownorjust.me/localtunnel-me/).
+
 ### Color Text Command
 Generate a color text thing for discord
 
 #### Color Tag
-- $$g: Make the text after this tag gray
-- $$r: Make the text after this tag red
-- $$e: Make the text after this tag green
-- $$y: Make the text after this tag yellow
-- $$b: Make the text after this tag blue
-- $$p: Make the text after this tag pink
-- $$c: Make the text after this tag cyan
-- $$w: Make the text after this tag white
+- \$$g: Make the text after this tag gray
+- \$$r: Make the text after this tag red
+- \$$e: Make the text after this tag green
+- \$$y: Make the text after this tag yellow
+- \$$b: Make the text after this tag blue
+- \$$p: Make the text after this tag pink
+- \$$c: Make the text after this tag cyan
+- \$$w: Make the text after this tag white
 
-- $$1: Make the background of the text after this tag Firefly Dark Blue
-- $$2: Make the background of the text after this tag Orange
-- $$3: Make the background of the text after this tag Marble Blue
-- $$4: Make the background of the text after this tag Greyish Turquoise
-- $$5: Make the background of the text after this tag Gray
-- $$6: Make the background of the text after this tag Indigo
-- $$7: Make the background of the text after this tag Light Gray
-- $$8: Make the background of the text after this tag White
+- \$$1: Make the background of the text after this tag Firefly Dark Blue
+- \$$2: Make the background of the text after this tag Orange
+- \$$3: Make the background of the text after this tag Marble Blue
+- \$$4: Make the background of the text after this tag Greyish Turquoise
+- \$$5: Make the background of the text after this tag Gray
+- \$$6: Make the background of the text after this tag Indigo
+- \$$7: Make the background of the text after this tag Light Gray
+- \$$8: Make the background of the text after this tag White
 
-- $$l: Bold the text after this tag
-- $$u: Underline the text after this tag
+- \$$l: Bold the text after this tag
+- \$$u: Underline the text after this tag
 
-- $$0: Reset everything
+- \$$0: Reset everything
 
 #### Note
 If you want to see what the color look like or how this command work in the background check out this [guide](https://gist.github.com/kkrypt0nn/a02506f3712ff2d1c8ca7c9e0aed7c06)
 
 ### Guess the Card Command
-Magpie will send you part of a card and you need to guess the card
+
+#### Normal
+Send part of a card and you can guess it
+
+##### Argument
+- `set`: The set where magpie pull the card from
+- `difficulty`: Optional if you already choose `size`. The size of each difficulty is as follow:
+  - `Easy`: 20x20
+  - `Normal`: 15x15
+  - `Hard`: 10x10
+  - `VERY FUCKING HARD`: 5x5
+- `size`: Optional if you already choose `difficulty`. The size of the crop region.
+
+##### Note
+If both `difficulty` and `size` are selected `difficulty` will overwrite the `size`.
+
+#### Scramble
+Send the card scramble
+
+##### Argument
+- `set`: The set where magpie pull the card from
+- `difficulty`: Optional if you already choose `size`. The size of each difficulty is as follow:
+  - `Easy`: 20 pieces (3 cols and 2 rows)
+  - `Normal`: 15 pieces (5 cols and 3 rows)
+  - `Hard`: 35 pieces (7 cols and 5 rows)
+  - `Very Hard`: 63 pieces (9 cols and 7 rows)
+  - `IMPOSSIBLE`: 1148 pieces (scamble every pixle)
+- `size`: Optional if you already choose `difficulty`. The cols and rows you want. Cols go first then rows follow with a comma in between
+
+##### Note
+If both `difficulty` and `size` are selected `difficulty` will overwrite the `size`.
+
+Example on size: `6,5` will have 6 cols and 3 rows
+
+### Retry Command
+Magpie will look at a message again in case you edit or mess up.
+
+#### Argument
+- `id`: Id of the message can access by using Developer mode and click `Copy ID` on message.
