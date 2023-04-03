@@ -194,6 +194,17 @@ const commands = [
 				)
 		),
 	new SlashCommandBuilder()
+		.setName("retry")
+		.setDescription(
+			"Let magpie look at a message again in case you fuck up"
+		)
+		.addStringOption((option) =>
+			option
+				.setName("message")
+				.setDescription("The message id to retry")
+				.setRequired(true)
+		),
+	new SlashCommandBuilder()
 		.setName("test")
 		.setDescription("Testing commands"),
 ].map((command) => command.toJSON())

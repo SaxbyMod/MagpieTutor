@@ -234,6 +234,126 @@ function coloredString(str, raw) {
 	return raw ? str : `\`\`\`ansi\n${str}\`\`\``
 }
 
+async function messageSearch(message) {
+	const matches = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
+	if (!matches) return
+
+	let embedList = []
+	let attachmentList = []
+	let msg = ""
+
+	for (const cardName of matches) {
+		let name = cardName.toLowerCase().trim()
+		let selectedSet = "competitive"
+		let card
+
+		let isSpecial = false
+		// check which ruleset it should be fetching from
+		for (const code of Object.keys(setList)) {
+			if (name.startsWith(code)) {
+				if (setList[code].type == "special") {
+					isSpecial = true
+				} else {
+					name = name.slice(1) // remove the set code if one is found
+					selectedSet = setList[code].name // change the set that it fetching
+				}
+			}
+		}
+
+		if (isSpecial) {
+			if (name.startsWith("m")) {
+				name = name.slice(1)
+				name = name.slice(2, name.length - 2)
+				const card = await fetchMagicCard(name)
+
+				if (card == -1) {
+					embedList.push(
+						new EmbedBuilder()
+							.setColor(Colors.Red)
+							.setTitle(`Card "${name}" not found`)
+							.setDescription(`Magic card ${name} not found\n`)
+					)
+				} else {
+					attachmentList.push(card.image_uris.normal)
+				}
+				continue
+			}
+		}
+
+		// remove the [[]]
+		name = name.slice(2, name.length - 2)
+
+		// get the best match
+		const bestMatch = StringSimilarity.findBestMatch(
+			name,
+			setsCardPool[selectedSet]
+		).bestMatch
+
+		// if less than 40% match return error and continue to the next match
+		if (bestMatch.rating <= 0.4) {
+			if (name == "old_data") {
+				card = {
+					name: "Lorem",
+					description:
+						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+					sigils: ["Repulsive", "Bone King"],
+					blood_cost: -69,
+					bone_cost: -69,
+					energy_cost: -69,
+					mox_cost: ["Green", "Blue", "Orange"],
+
+					attack: 69,
+					health: 420,
+					atkspecial: "mirror",
+
+					conduit: true,
+					rare: true,
+					nosac: true,
+					nohammer: true,
+					banned: true,
+
+					evolution: "I'm",
+					sheds: "Doing",
+					left_half: "Ur",
+					right_half: "Mom :)",
+
+					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
+					set: "competitive",
+				}
+			} else {
+				embedList.push(
+					new EmbedBuilder()
+						.setColor(Colors.Red)
+						.setTitle(`Card "${name}" not found`)
+						.setDescription(
+							`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
+						)
+				)
+				continue
+			}
+		} else {
+			card = await fetchCard(bestMatch.target, selectedSet)
+		}
+
+		let temp = await genCardEmbed(card)
+
+		embedList.push(temp[0])
+		attachmentList.push(temp[1])
+	}
+
+	var replyOption = {
+		allowedMentions: {
+			repliedUser: false,
+		},
+	}
+
+	if (msg !== "") replyOption["content"] = msg
+	if (embedList.length > 0) replyOption["embeds"] = embedList
+	if (attachmentList.length > 0) replyOption["files"] = attachmentList
+
+	await message.reply(replyOption)
+}
+
 // fetch the card and its url
 async function fetchCard(name, setName) {
 	let card
@@ -624,7 +744,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				],
 				embeds: [embed],
 			})
-			
+
 			const filter = (i) => i.user.id === interaction.user.id
 
 			let error = ""
@@ -984,6 +1104,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				"%20"
 			)}.png`
 		)
+		let portrait
+		let full
 		if (options.getSubcommand() === "normal") {
 			const size = options.getInteger("difficulty")
 				? options.getInteger("difficulty")
@@ -1000,7 +1122,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			]
 
 			// make the canvas
-			const portrait = Canvas.createCanvas(size * scale, size * scale)
+			portrait = Canvas.createCanvas(size * scale, size * scale)
 
 			let context = portrait.getContext("2d")
 
@@ -1026,7 +1148,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)
 
 			// create full version canvas
-			const full = Canvas.createCanvas(
+			full = Canvas.createCanvas(
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
 			)
@@ -1055,43 +1177,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				size * scale,
 				size * scale
 			)
-
-			await interaction.reply({
-				content:
-					"What card is this? Send a message in this channel to guess",
-				files: [new AttachmentBuilder(await portrait.encode("png"))],
-			})
-
-			const filter = (i) => i.author.id === interaction.user.id
-			await interaction.channel
-				.awaitMessages({ max: 1, time: 180000, filter })
-				.then(async (collected) => {
-					const i = collected.first()
-					if (
-						StringSimilarity.compareTwoStrings(
-							card.name.toLowerCase(),
-							i.content.toLowerCase()
-						) >= 0.4
-					) {
-						await i.react(getEmoji("thumbup"))
-						await i.reply({
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					} else {
-						await i.react(getEmoji("thumbdown"))
-						await i.reply({
-							content: `The card is ${card.name}`,
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					}
-				})
-				.catch(
-					async (e) => await interaction.editReply("Error happened")
-				)
 		} else if (options.getSubcommand() === "scramble") {
 			const scale = 50
 			// grab the column
@@ -1119,7 +1204,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			const pieceHeight = cardPortrait.height / row
 
 			// make the canvas
-			const portrait = Canvas.createCanvas(
+			portrait = Canvas.createCanvas(
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
 			)
@@ -1161,7 +1246,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}
 			}
 
-			const full = Canvas.createCanvas(
+			full = Canvas.createCanvas(
 				cardPortrait.width * scale,
 				cardPortrait.height * scale
 			)
@@ -1170,175 +1255,63 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			context.imageSmoothingEnabled = false
 			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
-
-			await interaction.reply({
-				files: [new AttachmentBuilder(await portrait.encode("png"))],
-			})
-
-			const filter = (i) => i.author.id === interaction.user.id
-			await interaction.channel
-				.awaitMessages({ max: 1, time: 180000, filter })
-				.then(async (collected) => {
-					const i = collected.first() // grab the interaction
-					//if it correct react with thumb up and send the full portrait
-					if (
-						StringSimilarity.compareTwoStrings(
-							card.name.toLowerCase(),
-							i.content.toLowerCase()
-						) >= 0.4
-					) {
-						await i.react(getEmoji("thumbup"))
-						await i.reply({
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					}
-					// if it wrong react with thump down and send the full portrait
-					else {
-						await i.react(getEmoji("thumbdown"))
-						await i.reply({
-							content: `The card is ${card.name}`,
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					}
-				})
-				.catch(
-					async (e) => await interaction.editReply("Error happened")
-				)
 		}
-	} else if (commandName === "test") {
+
 		await interaction.reply({
 			content:
-				"This command currently have no code in it. Check back later",
-			ephemeral: true,
+				"What card is this? Send a message in this channel to guess",
+			files: [new AttachmentBuilder(await portrait.encode("png"))],
 		})
+
+		const filter = (i) => i.author.id === interaction.user.id
+		await interaction.channel
+			.awaitMessages({ max: 1, time: 180000, filter })
+			.then(async (collected) => {
+				const i = collected.first()
+				if (
+					StringSimilarity.compareTwoStrings(
+						card.name.toLowerCase(),
+						i.content.toLowerCase()
+					) >= 0.4
+				) {
+					await i.react(getEmoji("thumbup"))
+					await i.reply({
+						files: [
+							new AttachmentBuilder(await full.encode("png")),
+						],
+					})
+				} else {
+					await i.react(getEmoji("thumbdown"))
+					await i.reply({
+						content: `The card is ${card.name}`,
+						files: [
+							new AttachmentBuilder(await full.encode("png")),
+						],
+					})
+				}
+			})
+			.catch(
+				async (e) =>
+					await interaction.editReply(
+						`Error: ${coloredString(`$$r${e}`)}`
+					)
+			)
+	} else if (commandName === "retry") {
+		await messageSearch(
+			await interaction.channel.messages.fetch(
+				options.getString("message")
+			)
+		)
+		await interaction.reply("Retried")
+	} else if (commandName === "test") {
+		await interaction.reply("Nothing suspicion here")
 	}
 })
 
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-
-	const matches = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
-	if (!matches) return
-
-	let embedList = []
-	let attachmentList = []
-	let msg = ""
-
-	for (const cardName of matches) {
-		let name = cardName.toLowerCase().trim()
-		let selectedSet = "competitive"
-		let card
-
-		let isSpecial = false
-		// check which ruleset it should be fetching from
-		for (const code of Object.keys(setList)) {
-			if (name.startsWith(code)) {
-				if (setList[code].type == "special") {
-					isSpecial = true
-				} else {
-					name = name.slice(1) // remove the set code if one is found
-					selectedSet = setList[code].name // change the set that it fetching
-				}
-			}
-		}
-
-		if (isSpecial) {
-			if (name.startsWith("m")) {
-				name = name.slice(1)
-				name = name.slice(2, name.length - 2)
-				const card = await fetchMagicCard(name)
-
-				if (card == -1) {
-					embedList.push(
-						new EmbedBuilder()
-							.setColor(Colors.Red)
-							.setTitle(`Card "${name}" not found`)
-							.setDescription(`Magic card ${name} not found\n`)
-					)
-				} else {
-					attachmentList.push(card.image_uris.normal)
-				}
-				continue
-			}
-		}
-
-		// remove the [[]]
-		name = name.slice(2, name.length - 2)
-
-		// get the best match
-		const bestMatch = StringSimilarity.findBestMatch(
-			name,
-			setsCardPool[selectedSet]
-		).bestMatch
-
-		// if less than 40% match return error and continue to the next match
-		if (bestMatch.rating <= 0.4) {
-			if (name == "old_data") {
-				card = {
-					name: "Lorem",
-					description:
-						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-					sigils: ["Repulsive", "Bone King"],
-					blood_cost: -69,
-					bone_cost: -69,
-					energy_cost: -69,
-					mox_cost: ["Green", "Blue", "Orange"],
-
-					attack: 69,
-					health: 420,
-					atkspecial: "mirror",
-
-					conduit: true,
-					rare: true,
-					nosac: true,
-					nohammer: true,
-					banned: true,
-
-					evolution: "I'm",
-					sheds: "Doing",
-					left_half: "Ur",
-					right_half: "Mom :)",
-
-					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
-					set: "competitive",
-				}
-			} else {
-				embedList.push(
-					new EmbedBuilder()
-						.setColor(Colors.Red)
-						.setTitle(`Card "${name}" not found`)
-						.setDescription(
-							`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
-						)
-				)
-				continue
-			}
-		} else {
-			card = await fetchCard(bestMatch.target, selectedSet)
-		}
-
-		let temp = await genCardEmbed(card)
-
-		embedList.push(temp[0])
-		attachmentList.push(temp[1])
-	}
-
-	var replyOption = {
-		allowedMentions: {
-			repliedUser: false,
-		},
-	}
-
-	if (msg !== "") replyOption["content"] = msg
-	if (embedList.length > 0) replyOption["embeds"] = embedList
-	if (attachmentList.length > 0) replyOption["files"] = attachmentList
-
-	await message.reply(replyOption)
+	messageSearch(message)
 })
 
 client.login(token) // login the bot
