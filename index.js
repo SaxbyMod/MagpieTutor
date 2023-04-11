@@ -94,7 +94,9 @@ const setList = {
 	e: { name: "eternal", type: "107" },
 	v: { name: "vanilla", type: "107" },
 	m: { name: "magic the gathering", type: "special" },
+	o: { name: "original version", type: "special" },
 }
+
 let setsData = {}
 let setsCardPool = {}
 let setsBanPool = {}
@@ -235,35 +237,22 @@ function coloredString(str, raw) {
 }
 
 async function messageSearch(message) {
-	const matches = message.content.match(/(\w|)\[{2}[^\]]+\]{2}/g)
-	if (!matches) return
-
 	let embedList = []
 	let attachmentList = []
 	let msg = ""
 
-	for (const cardName of matches) {
-		let name = cardName.toLowerCase().trim()
-		let selectedSet = "competitive"
+	for (const cardName of message.content.matchAll(
+		/(\w{0,2})\[{2}([^\]]+)\]{2}/g
+	)) {
+		let selectedSet = setList[cardName[1][0]]
+			? setList[cardName[1][0]]
+			: setList.c
+		let name = cardName[2]
 		let card
+		let noAlter = false
 
-		let isSpecial = false
-		// check which ruleset it should be fetching from
-		for (const code of Object.keys(setList)) {
-			if (name.startsWith(code)) {
-				if (setList[code].type == "special") {
-					isSpecial = true
-				} else {
-					name = name.slice(1) // remove the set code if one is found
-					selectedSet = setList[code].name // change the set that it fetching
-				}
-			}
-		}
-
-		if (isSpecial) {
-			if (name.startsWith("m")) {
-				name = name.slice(1)
-				name = name.slice(2, name.length - 2)
+		if (selectedSet.type == "special") {
+			if (selectedSet.name == "magic the gathering") {
 				const card = await fetchMagicCard(name)
 
 				if (card == -1) {
@@ -277,16 +266,18 @@ async function messageSearch(message) {
 					attachmentList.push(card.image_uris.normal)
 				}
 				continue
+			} else if (selectedSet.name == "original version") {
+				noAlter = true
+				selectedSet = setList[cardName[1][1]]
+					? setList[cardName[1][1]]
+					: setList.c
 			}
 		}
-
-		// remove the [[]]
-		name = name.slice(2, name.length - 2)
 
 		// get the best match
 		const bestMatch = StringSimilarity.findBestMatch(
 			name,
-			setsCardPool[selectedSet]
+			setsCardPool[selectedSet.name]
 		).bestMatch
 
 		// if less than 40% match return error and continue to the next match
@@ -326,13 +317,15 @@ async function messageSearch(message) {
 						.setColor(Colors.Red)
 						.setTitle(`Card "${name}" not found`)
 						.setDescription(
-							`No card found in selected set (${setsData[selectedSet].ruleset}) that have more than 40% similarity with the search term(${name})`
+							`No card found in selected set (${
+								setsData[selectedSet.name].ruleset
+							}) that have more than 40% similarity with the search term(${name})`
 						)
 				)
 				continue
 			}
 		} else {
-			card = await fetchCard(bestMatch.target, selectedSet)
+			card = await fetchCard(bestMatch.target, selectedSet.name, noAlter)
 		}
 
 		let temp = await genCardEmbed(card)
@@ -351,12 +344,14 @@ async function messageSearch(message) {
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
 
-	await message.reply(replyOption)
+	if (replyOption["content"] || replyOption["embeds"] || replyOption["files"])
+		await message.reply(replyOption)
 }
 
 // fetch the card and its url
-async function fetchCard(name, setName) {
+async function fetchCard(name, setName, noAlter = false) {
 	let card
+
 	let set = setsData[setName]
 
 	card = JSON.parse(
@@ -372,6 +367,12 @@ async function fetchCard(name, setName) {
 		" ",
 		"%20"
 	)}.png`
+
+	let original = JSON.parse(JSON.stringify(card))
+
+	if (noAlter) {
+		return card
+	}
 
 	// change existing card info and custom url
 	if (card.name == "Fox") {
@@ -395,6 +396,16 @@ async function fetchCard(name, setName) {
 		card.description = `Not make by ener ${getEmoji("trolled")}`
 	} else if (card.name == "The Moon") {
 		card.sigils = ["Omni Strike"]
+	} else if (card.name == "Adder") {
+		card.sigils = Array(6).fill("Handy")
+	} else if (card.name == "Squirrel Ball") {
+		card.description =
+			"Remember that face when you arrive in hell - Squidman005#8375 the Squirrel Ball Man"
+	}
+
+	if (JSON.stringify(original) != JSON.stringify(card)) {
+		card.footnote =
+			'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]'
 	}
 
 	return card
@@ -443,7 +454,9 @@ async function genCardEmbed(card, showSet) {
 	let embed = new EmbedBuilder()
 		.setColor(card.rare ? Colors.Green : Colors.Greyple)
 		.setTitle(
-			`${card.name}  ${card.conduit ? getEmoji("conductive") : ""}${
+			`${card.name} ${
+				card.set ? `(${setsData[card.set].ruleset})` : ""
+			} ${card.conduit ? getEmoji("conductive") : ""}${
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
@@ -521,6 +534,10 @@ async function genCardEmbed(card, showSet) {
 			name: "== EXTRA INFO ==",
 			value: extraInfo,
 		})
+	}
+
+	if (card.footnote) {
+		embed.setFooter({ text: card.footnote })
 	}
 	return [embed, attachment ? attachment : 1] // if there an attachment (portrait/image) return it if not give exit code 1
 }
@@ -1302,7 +1319,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				options.getString("message")
 			)
 		)
-		await interaction.reply("Retried")
+		await interaction.reply({ content: "Retried", ephemeral: true })
 	} else if (commandName === "test") {
 		await interaction.reply("Nothing suspicion here")
 	}
