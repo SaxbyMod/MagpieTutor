@@ -133,7 +133,8 @@ const commands = [
 						.addChoices(
 							{ name: "Competitive", value: "competitive" },
 							{ name: "Eternal", value: "eternal" },
-							{ name: "Vanilla", value: "vanilla" }
+							{ name: "Vanilla", value: "vanilla" },
+							{ name: "Augmented", value: "augmented" }
 						)
 						.setRequired(true)
 				)
@@ -154,8 +155,6 @@ const commands = [
 					option
 						.setName("size")
 						.setDescription("The size of the piece")
-						.setMinValue(1)
-						.setMaxValue(28)
 				)
 		)
 		.addSubcommand((sub) =>
@@ -171,7 +170,8 @@ const commands = [
 						.addChoices(
 							{ name: "Competitive", value: "competitive" },
 							{ name: "Eternal", value: "eternal" },
-							{ name: "Vanilla", value: "vanilla" }
+							{ name: "Vanilla", value: "vanilla" },
+							{ name: "Augmented", value: "augmented" }
 						)
 						.setRequired(true)
 				)

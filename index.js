@@ -26,6 +26,7 @@ const http = require("http")
 
 const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
+
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -95,6 +96,11 @@ const setList = {
 	v: { name: "vanilla", type: "107" },
 	m: { name: "magic the gathering", type: "special" },
 	o: { name: "original version", type: "special" },
+	a: {
+		name: "augmented",
+		type: "other",
+		file: "./augmented/augmented.json",
+	},
 }
 
 let setsData = {}
@@ -131,6 +137,8 @@ const specialMagick = [
 				.then((json) => {
 					setsData[set.name] = json
 				})
+		} else if (set.type == "other") {
+			setsData[set.name] = require(set.file)
 		}
 		console.log(`Set ${set.name} loaded!`)
 	}
@@ -241,9 +249,9 @@ async function messageSearch(message) {
 	let attachmentList = []
 	let msg = ""
 
-	for (const cardName of message.content.matchAll(
-		/(\w{0,2})\[{2}([^\]]+)\]{2}/g
-	)) {
+	for (const cardName of message.content
+		.toLowerCase()
+		.matchAll(/(\w{0,2})\[{2}([^\]]+)\]{2}/g)) {
 		let selectedSet = setList[cardName[1][0]]
 			? setList[cardName[1][0]]
 			: setList.c
@@ -331,7 +339,7 @@ async function messageSearch(message) {
 		let temp = await genCardEmbed(card)
 
 		embedList.push(temp[0])
-		attachmentList.push(temp[1])
+		if (temp[1] != 1) attachmentList.push(temp[1])
 	}
 
 	var replyOption = {
@@ -363,10 +371,23 @@ async function fetchCard(name, setName, noAlter = false) {
 	if (!card) return card
 
 	card.set = setName
-	card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-		" ",
-		"%20"
-	)}.png`
+	if (card.noArt) {
+		card.url = undefined
+	} else if (card.pixport_url) {
+		card.url = card.pixport_url
+	} else {
+		if (card.set == setList.c.name) {
+			card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+				" ",
+				"%20"
+			)}.png`
+		} else if (card.set == setList.a.name) {
+			card.url = `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
+				" ",
+				"%20"
+			)}.png`
+		}
+	}
 
 	let original = JSON.parse(JSON.stringify(card))
 
@@ -401,8 +422,11 @@ async function fetchCard(name, setName, noAlter = false) {
 	} else if (card.name == "Squirrel Ball") {
 		card.description =
 			"Remember that face when you arrive in hell - Squidman005#8375 the Squirrel Ball Man"
+	} else if (card.name == "Ouroboros") {
+		card.description = "Ouroboros is the source of all evil - 107"
+	} else if (card.name == "Master Orlu") {
+		card.description = undefined
 	}
-
 	if (JSON.stringify(original) != JSON.stringify(card)) {
 		card.footnote =
 			'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]'
@@ -420,27 +444,49 @@ async function fetchMagicCard(name) {
 }
 
 async function genCardEmbed(card, showSet) {
-	// if the card doesn't exist or missing exit and return error
+	// if the card doesn't exist or missing, exi
 
 	let attachment
-	if (card.url) {
-		// get the card pfp
-		var cardPortrait = await Canvas.loadImage(card.url)
+	try {
+		if (card.url) {
+			// get the card pfp
+			let cardPortrait = await Canvas.loadImage(card.url)
 
-		// scale the pfp
-		const portrait = Canvas.createCanvas(
-			cardPortrait.width * 10,
-			cardPortrait.height * 10
-		)
-		const context = portrait.getContext("2d")
-		context.imageSmoothingEnabled = false
-		context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
+			// scale the pfp
+			const portrait = Canvas.createCanvas(
+				cardPortrait.width * 10,
+				cardPortrait.height * 10
+			)
+			const context = portrait.getContext("2d")
+			context.imageSmoothingEnabled = false
+			if (card.set == setList.a.name) {
+				context.drawImage(
+					await Canvas.loadImage(
+						`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
+							["Common", "Side Deck"].includes(card.tier)
+								? "common"
+								: "rare"
+						}_${card.temple.toLowerCase()}.png`
+					),
+					0,
+					0,
+					portrait.width,
+					portrait.height
+				)
+			}
+			context.drawImage(
+				cardPortrait,
+				0,
+				0,
+				portrait.width,
+				portrait.height
+			)
 
-		attachment = new AttachmentBuilder(await portrait.encode("png"), {
-			name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
-		})
-	}
-
+			attachment = new AttachmentBuilder(await portrait.encode("png"), {
+				name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
+			})
+		}
+	} catch {}
 	// generate sigil description
 	let sigilDescription = ""
 	if (card.sigils) {
@@ -451,6 +497,7 @@ async function genCardEmbed(card, showSet) {
 		})
 	}
 
+	// create template
 	let embed = new EmbedBuilder()
 		.setColor(card.rare ? Colors.Green : Colors.Greyple)
 		.setTitle(
@@ -476,6 +523,18 @@ async function genCardEmbed(card, showSet) {
 
 	// bool stuff
 	if (card.description) generalInfo += `*${card.description}*\n`
+
+	// augmented shit
+	if (card.tier) generalInfo += `**Tier**: ${card.tier}\n`
+	if (card.temple) generalInfo += `**Temple**: ${card.temple}\n`
+	if (card.tribes) generalInfo += `**Tribes**: ${card.tribes}\n`
+
+	if (card.cost) generalInfo += `**Cost**: ${card.cost}\n`
+	if (card.trait)
+		generalInfo += `**Trait**: ${card.trait} (${
+			setsData[card.set].sigils[card.trait]
+		})\n`
+	if (card.token) generalInfo += `**Token**: ${card.token}\n`
 
 	// cost stuff
 	if (card.blood_cost)
@@ -504,7 +563,8 @@ async function genCardEmbed(card, showSet) {
 		!card.blood_cost &&
 		!card.bone_cost &&
 		!card.energy_cost &&
-		!card.mox_cost
+		!card.mox_cost &&
+		!card.cost
 	)
 		generalInfo += "\n**Free**"
 
@@ -1115,14 +1175,29 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	} else if (commandName === "guess-the-card") {
 		const card = randomChoice(setsData[options.getString("set")].cards)
 		// get the card picture
-		let cardPortrait = await Canvas.loadImage(
-			`https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-				" ",
-				"%20"
-			)}.png`
+		const cardPortrait = await Canvas.loadImage(
+			options.getString("set") == "augmented"
+				? `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
+						" ",
+						"%20"
+				  )}.png`
+				: `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+						" ",
+						"%20"
+				  )}.png`
 		)
+		if (options.getString("set") == "augmented") {
+			var bg = await Canvas.loadImage(
+				`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
+					["Common", "Side Deck"].includes(card.tier)
+						? "common"
+						: "rare"
+				}_${card.temple.toLowerCase()}.png`
+			)
+		}
 		let portrait
 		let full
+
 		if (options.getSubcommand() === "normal") {
 			const size = options.getInteger("difficulty")
 				? options.getInteger("difficulty")
@@ -1144,7 +1219,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let context = portrait.getContext("2d")
 
 			context.imageSmoothingEnabled = false
-
+			if (bg)
+				context.drawImage(
+					bg,
+					startCropPos[0],
+					startCropPos[1],
+					size,
+					size,
+					0,
+					0,
+					portrait.width,
+					portrait.height
+				)
 			context.drawImage(
 				cardPortrait,
 				// source region
@@ -1175,16 +1261,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			context.imageSmoothingEnabled = false
 
 			// draw the portrait
-			context.drawImage(
-				cardPortrait,
-				0,
-				0,
-				cardPortrait.width * scale,
-				cardPortrait.height * scale
-			)
+			if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
+			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 
 			// set the color and size of the box
-			context.strokeStyle = "#03a9f4"
+			context.strokeStyle = "#f00524"
 			context.lineWidth = scale / 10
 
 			// draw the box
@@ -1248,6 +1329,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			// for all the piece
 			for (let x = 0; x < col; x++) {
 				for (let y = 0; y < row; y++) {
+					if (bg) {
+						context.drawImage(
+							bg,
+							pieceWidth * lst[i][1],
+							pieceHeight * lst[i][0],
+							pieceWidth,
+							pieceHeight,
+							pieceWidth * scale * x,
+							pieceHeight * scale * y,
+							pieceWidth * scale,
+							pieceHeight * scale
+						)
+					}
 					context.drawImage(
 						cardPortrait,
 						pieceWidth * lst[i][1],
@@ -1259,6 +1353,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						pieceWidth * scale,
 						pieceHeight * scale
 					)
+
 					i++
 				}
 			}
@@ -1271,6 +1366,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			context = full.getContext("2d")
 
 			context.imageSmoothingEnabled = false
+			if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
 			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 		}
 
