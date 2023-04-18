@@ -410,7 +410,7 @@ async function fetchCard(name, setName, noAlter = false) {
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
 
 		card.name = "GAY DRAGON (Ruby Dragon)"
-		card.description = "Modified portrait by Ener"
+		card.description = "Modified portrait by ener"
 	} else if (card.name == "Horse Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
