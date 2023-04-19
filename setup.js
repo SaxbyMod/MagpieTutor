@@ -26,7 +26,8 @@ const commands = [
 						value: "competitive",
 					},
 					{ name: "Eternal", value: "eternal" },
-					{ name: "Vanilla", value: "vanilla" }
+					{ name: "Vanilla", value: "vanilla" },
+					{ name: "Augmented", value: "augmented" }
 				)
 				.setRequired(true)
 		)

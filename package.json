@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -x \"node index.js || copy /b index.js +,,\"",
+    "start": "nodemon -x \"node index.js || copy /b index.js +,,\" --ignore test.js",
     "setup": "npm i && node ./setup.js"
   },
   "keywords": [],
@@ -12,8 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.34",
-    "discord.js": "^14.7.1",
+    "discord.js": "^14.9.0",
     "scryfall": "^0.9.7",
+    "string-format": "^2.0.0",
     "string-similarity": "^4.0.4"
   }
 }

@@ -26,6 +26,8 @@ const http = require("http")
 
 const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
+const format = require("string-format")
+format.extend(String.prototype, {})
 
 //set up the bot client
 const client = new Client({
@@ -100,6 +102,22 @@ const setList = {
 		name: "augmented",
 		type: "other",
 		file: "./augmented/augmented.json",
+	},
+}
+const setFormatList = {
+	imf: {
+		generalInfo: [
+			"*{description}*\n",
+			`\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
+			"\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+			"\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+			"\n**Mox Cost**: {mox_cost}",
+		],
+		extraInfo: [
+			"**Change into**: {evolution}\n",
+			"**Shed**: {shed}\n",
+			"**This card split into**: {left_half} (Left), {right_half} (Right)\n",
+		],
 	},
 }
 
@@ -356,6 +374,46 @@ async function messageSearch(message) {
 		await message.reply(replyOption)
 }
 
+function genDescription(textFormat, card) {
+	let out = {}
+	let general = ""
+	let extra = ""
+	let sigilDes = ""
+
+	for (const item of textFormat.generalInfo) {
+		const temp = card[item.match(/{(\w+)}/g)[0].slice(1, -1)]
+		if (!temp) continue
+		if (temp.constructor === Array) {
+			general += item.format({
+				mox_cost: temp.map((a) => `:${a}:`.toLowerCase()).join(""),
+			})
+			continue
+		}
+		general += item.format(card)
+	}
+	general += `\n**Stat**: ${
+		card.atkspecial ? `${getEmoji(card.atkspecial)}` : card.attack
+	} / ${card.health} ${
+		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
+	}`
+
+	for (const item of textFormat.extraInfo) {
+		if (!card[item.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
+		extra += item.format(card)
+	}
+
+	if (card.sigils) {
+		card.sigils.forEach((sigil) => {
+			sigilDes += `**${sigil}**: ${setsData[card.set].sigils[sigil]}\n`
+		})
+	}
+
+	out["generalInfo"] = general
+	out["extraInfo"] = extra
+	out["sigilDescription"] = sigilDes
+	return out
+}
+
 // fetch the card and its url
 async function fetchCard(name, setName, noAlter = false) {
 	let card
@@ -435,6 +493,7 @@ async function fetchCard(name, setName, noAlter = false) {
 	return card
 }
 
+// fetch the mtg card and its url
 async function fetchMagicCard(name) {
 	let out = await scryfall.getCardByName(name).catch(async (err) => {
 		return -1
@@ -443,10 +502,12 @@ async function fetchMagicCard(name) {
 	return out
 }
 
+// generate embed
 async function genCardEmbed(card, showSet) {
 	// if the card doesn't exist or missing, exi
 
 	let attachment
+	// try getting the portrait if it doesn't exist render no portrait
 	try {
 		if (card.url) {
 			// get the card pfp
@@ -487,15 +548,6 @@ async function genCardEmbed(card, showSet) {
 			})
 		}
 	} catch {}
-	// generate sigil description
-	let sigilDescription = ""
-	if (card.sigils) {
-		card.sigils.forEach((sigil) => {
-			sigilDescription += `**${sigil}**:\n ${
-				setsData[card.set].sigils[sigil]
-			}\n`
-		})
-	}
 
 	// create template
 	let embed = new EmbedBuilder()
@@ -517,82 +569,36 @@ async function genCardEmbed(card, showSet) {
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
 		)
 
-	// generate the description
-	let generalInfo = ""
-	let extraInfo = ""
-
-	// bool stuff
-	if (card.description) generalInfo += `*${card.description}*\n`
-
-	// augmented shit
-	if (card.tier) generalInfo += `**Tier**: ${card.tier}\n`
-	if (card.temple) generalInfo += `**Temple**: ${card.temple}\n`
-	if (card.tribes) generalInfo += `**Tribes**: ${card.tribes}\n`
-
-	if (card.cost) generalInfo += `**Cost**: ${card.cost}\n`
-	if (card.trait)
-		generalInfo += `**Trait**: ${card.trait} (${
-			setsData[card.set].sigils[card.trait]
-		})\n`
-	if (card.token) generalInfo += `**Token**: ${card.token}\n`
-
-	// cost stuff
-	if (card.blood_cost)
-		generalInfo += `\n**Blood Cost**: ${getEmoji("blood")}${getEmoji(
-			"x_"
-		)}${numToEmoji(card.blood_cost)}`
-
-	if (card.bone_cost)
-		generalInfo += `\n**Bone Cost**: ${getEmoji("bonebone")}${getEmoji(
-			"x_"
-		)}${numToEmoji(card.bone_cost)}`
-
-	if (card.energy_cost)
-		generalInfo += `\n**Energy Cost**: ${getEmoji("energy")}${getEmoji(
-			"x_"
-		)}${numToEmoji(card.energy_cost)}`
-
-	if (card.mox_cost)
-		generalInfo += `\n**Mox Cost**: ${
-			card.mox_cost.includes("Green") ? getEmoji("green") : ""
-		}${card.mox_cost.includes("Orange") ? getEmoji("orange") : ""}${
-			card.mox_cost.includes("Blue") ? getEmoji("blue") : ""
-		}`
-
-	if (
-		!card.blood_cost &&
-		!card.bone_cost &&
-		!card.energy_cost &&
-		!card.mox_cost &&
-		!card.cost
+	const info = genDescription(
+		setFormatList[card.set == setList.a.name ? "augmented" : "imf"],
+		card
 	)
-		generalInfo += "\n**Free**"
-
-	generalInfo += `\n**Stat**: ${
-		card.atkspecial ? `${getEmoji(card.atkspecial)}` : card.attack
-	} / ${card.health} ${
-		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
-	}`
-
-	embed.setDescription(generalInfo)
-
-	// other
-	if (card.evolution) extraInfo += `**Change into**: ${card.evolution}\n`
-	if (card.sheds) extraInfo += `**Shed**: ${card.sheds}\n`
-	if (card.left_half)
-		extraInfo += `**This card split into**: ${card.left_half} (Left), ${card.right_half} (Right)\n`
-
+	for (const emoji of info.generalInfo.matchAll(/:([\w\d]+):/g)) {
+		if (!isNaN(parseInt(emoji[1]))) {
+			info.generalInfo = info.generalInfo.replaceAll(
+				emoji[0],
+				numToEmoji(emoji[1])
+			)
+			continue
+		}
+		info.generalInfo = info.generalInfo.replaceAll(
+			emoji[0],
+			getEmoji(emoji[1])
+		)
+	}
+	console.log(info.generalInfo)
+	embed.setDescription(info.generalInfo)
 	if (card.sigils)
 		embed.addFields({
 			name: "== SIGIL ==",
-			value: sigilDescription,
+			value: info.sigilDescription,
 			inline: true,
 		})
 
-	if (extraInfo != "") {
+	if (info.extraInfo != "") {
 		embed.addFields({
 			name: "== EXTRA INFO ==",
-			value: extraInfo,
+			value: info.extraInfo,
 		})
 	}
 
