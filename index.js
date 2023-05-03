@@ -27,6 +27,8 @@ const http = require("http")
 const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
 const format = require("string-format")
+
+const augmented = require("./augmented/process")
 format.extend(String.prototype, {})
 
 //set up the bot client
@@ -104,6 +106,7 @@ const setList = {
 		file: "./augmented/augmented.json",
 	},
 }
+
 const setFormatList = {
 	imf: {
 		generalInfo: [
@@ -118,6 +121,20 @@ const setFormatList = {
 			"**Shed**: {shed}\n",
 			"**This card split into**: {left_half} (Left), {right_half} (Right)\n",
 		],
+	},
+	augmented: {
+		generalInfo: [
+			"*{description}*\n",
+			"**Temple**: {temple}\n",
+			"**Tier**: {tier}\n",
+			"**Tribes**: {tribes}\n",
+			"\n**Blood Cost**: :{blood}::x_::blood:",
+			"\n**Bone Cost**: :{bone}::x_::bones:",
+			"\n**Energy Cost**: :{energy}::x_::energy:",
+			"\n**Mox Cost**: {mox}",
+			"\n**Shattered Mox Cost**: {shattered}",
+		],
+		extraInfo: ["**Token**: {token}"],
 	},
 }
 
@@ -337,6 +354,28 @@ async function messageSearch(message) {
 					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
 					set: "competitive",
 				}
+			} else if (name == "deep_data") {
+				card = {
+					name: "Lorem",
+					description:
+						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+					sigils: ["Repulsive", "Bone King"],
+					blood: -69,
+					bone: -69,
+					energy: -69,
+					mox: ["emerald", "sapphire", "ruby"],
+					shattered: [
+						"shattered_emerald",
+						"shattered_sapphire",
+						"shattered_ruby",
+					],
+
+					attack: 69,
+					health: 420,
+
+					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
+					set: "augmented",
+				}
 			} else {
 				embedList.push(
 					new EmbedBuilder()
@@ -384,15 +423,17 @@ function genDescription(textFormat, card) {
 		const temp = card[item.match(/{(\w+)}/g)[0].slice(1, -1)]
 		if (!temp) continue
 		if (temp.constructor === Array) {
-			general += item.format({
-				mox_cost: temp.map((a) => `:${a}:`.toLowerCase()).join(""),
-			})
+			let temp1 = {}
+			temp1[item.match(/{(\w+)}/g)[0].slice(1, -1)] = temp
+				.map((a) => `:${a}:`.toLowerCase())
+				.join("")
+			general += item.format(temp1)
 			continue
 		}
 		general += item.format(card)
 	}
-	general += `\n**Stat**: ${
-		card.atkspecial ? `${getEmoji(card.atkspecial)}` : card.attack
+	general += `\n\n**Stat**: ${
+		card.atkspecial ? `:${card.atkspecial}:` : card.attack
 	} / ${card.health} ${
 		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
 	}`
@@ -472,7 +513,7 @@ async function fetchCard(name, setName, noAlter = false) {
 	} else if (card.name == "Horse Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
-		card.description = `Not make by ener ${getEmoji("trolled")}`
+		card.description = `Not make by ener :trolled:`
 	} else if (card.name == "The Moon") {
 		card.sigils = ["Omni Strike"]
 	} else if (card.name == "Adder") {
@@ -524,7 +565,9 @@ async function genCardEmbed(card, showSet) {
 				context.drawImage(
 					await Canvas.loadImage(
 						`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
-							["Common", "Side Deck"].includes(card.tier)
+							["Common", "Uncommon", "Side Deck"].includes(
+								card.tier
+							)
 								? "common"
 								: "rare"
 						}_${card.temple.toLowerCase()}.png`
@@ -573,20 +616,27 @@ async function genCardEmbed(card, showSet) {
 		setFormatList[card.set == setList.a.name ? "augmented" : "imf"],
 		card
 	)
-	for (const emoji of info.generalInfo.matchAll(/:([\w\d]+):/g)) {
-		if (!isNaN(parseInt(emoji[1]))) {
+
+	let alreadyChange = []
+	for (const emoji of info.generalInfo.matchAll(/:([^\sx:]+):/g)) {
+		if (alreadyChange.includes(emoji[0])) break
+		try {
+			if (!isNaN(parseInt(emoji[1]))) {
+				info.generalInfo = info.generalInfo.replaceAll(
+					emoji[0],
+					await numToEmoji(emoji[1])
+				)
+				continue
+			}
 			info.generalInfo = info.generalInfo.replaceAll(
 				emoji[0],
-				numToEmoji(emoji[1])
+				await getEmoji(emoji[1])
 			)
-			continue
-		}
-		info.generalInfo = info.generalInfo.replaceAll(
-			emoji[0],
-			getEmoji(emoji[1])
-		)
+		} catch {}
+		alreadyChange.push(emoji[0])
 	}
-	console.log(info.generalInfo)
+
+	info.generalInfo = info.generalInfo.replaceAll(":x_:", getEmoji("x_"))
 	embed.setDescription(info.generalInfo)
 	if (card.sigils)
 		embed.addFields({
@@ -652,7 +702,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	} else if (commandName === "restart") {
 		if (
 			interaction.member.roles.cache.some(
-				(role) => role.id == 994578531671609426
+				(role) =>
+					role.id == "994578531671609426" ||
+					role.id == "1028537837169156156"
 			)
 		) {
 			await interaction.reply("Restarting...")
