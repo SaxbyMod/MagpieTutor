@@ -1,30 +1,3 @@
-- [MagpieTutor](#magpietutor)
-  - [How to host the bot yourself](#how-to-host-the-bot-yourself)
-  - [Commands](#commands)
-    - [Draft Command](#draft-command)
-      - [Argument](#argument)
-      - [Note](#note)
-    - [Set Code Command](#set-code-command)
-    - [Deck Sim Command](#deck-sim-command)
-      - [Argument](#argument-1)
-      - [Note](#note-1)
-    - [Tunnel Status Command](#tunnel-status-command)
-      - [Note](#note-2)
-    - [Color Text Command](#color-text-command)
-      - [Color Tag](#color-tag)
-      - [Note](#note-3)
-    - [Guess the Card Command](#guess-the-card-command)
-      - [Normal](#normal)
-        - [Argument](#argument-2)
-        - [Note](#note-4)
-      - [Scramble](#scramble)
-        - [Argument](#argument-3)
-        - [Note](#note-5)
-    - [Retry Command](#retry-command)
-      - [Argument](#argument-4)
-  - [Bot Require Permission](#bot-require-permission)
-  - [Todo List](#todo-list)
-
 # MagpieTutor
 Scryfall bot but for Inscryption. Currently the bot can look up card in the following format/set:
 - IMF Competitive
@@ -33,6 +6,24 @@ Scryfall bot but for Inscryption. Currently the bot can look up card in the foll
 - Augmented
 
 IF you have any request for new set send me a message on discord. `Stoat#3922`
+
+## Table of Content
+- [MagpieTutor](#magpietutor)
+  - [Table of Content](#table-of-content)
+  - [How to host the bot yourself](#how-to-host-the-bot-yourself)
+  - [Commands](#commands)
+    - [Draft Command](#draft-command)
+      - [Argument](#argument)
+    - [Set Code Command](#set-code-command)
+    - [Deck Sim Command](#deck-sim-command)
+    - [Tunnel Status Command](#tunnel-status-command)
+    - [Color Text Command](#color-text-command)
+    - [Guess the Card Command](#guess-the-card-command)
+      - [Normal](#normal)
+      - [Scramble](#scramble)
+    - [Retry Command](#retry-command)
+  - [Bot Require Permission](#bot-require-permission)
+  - [Todo List](#todo-list)
 
 ## How to host the bot yourself
 If you know how to set up a discord bot with discord.js already, then download all the package with `npm setup`, then created a `config.json` with these information: 
@@ -82,7 +73,8 @@ Draft a deck from opening Pack
     - `undead`: Remove all cards that cost blood from the draft pool
     - `tech`: Remove all cards that cost blood from the draft pool
     - `magick`: Remove all cards that cost blood from the draft pool. This will also remove all the cards that support magick
-  
+
+<!-- omit from toc -->
 #### Note
 - You cannot undo selection. 
 - Once you have 4 of the same common and try to take a fifth you will receive a Wild instead 
@@ -101,23 +93,27 @@ Current set code:
 ### Deck Sim Command
 Simulate deck draw for whatever reason
 
+<!-- omit from toc -->
 #### Argument
 - `deck-file`: The deck file you want to simulate
 - `deck-list`: The deck list you want to simulate. Card separate by commas (",")
 - `detail`: Show more detail about the deck like card draw percentage, which card are left, etc
 
+<!-- omit from toc -->
 #### Note
 - Select `End` if you stop using it
 
 ### Tunnel Status Command
 Current Status of tunnel
 
+<!-- omit from toc -->
 #### Note
 The tunnel is check by sending a request to the [website](http://localtunnel.me). It may not be accurate because my laptop may not reach the website [check it yourself just to be sure](https://isitdownorjust.me/localtunnel-me/).
 
 ### Color Text Command
 Generate a color text thing for discord
 
+<!-- omit from toc -->
 #### Color Tag
 - \$$g: Make the text after this tag gray
 - \$$r: Make the text after this tag red
@@ -141,7 +137,8 @@ Generate a color text thing for discord
 - \$$u: Underline the text after this tag
 
 - \$$0: Reset everything
-
+- 
+<!-- omit from toc -->
 #### Note
 If you want to see what the color look like or how this command work in the background check out this [guide](https://gist.github.com/kkrypt0nn/a02506f3712ff2d1c8ca7c9e0aed7c06)
 
@@ -150,6 +147,7 @@ If you want to see what the color look like or how this command work in the back
 #### Normal
 Send part of a card and you can guess it
 
+<!-- omit from toc -->
 ##### Argument
 - `set`: The set where magpie pull the card from
 - `difficulty`: Optional if you already choose `size`. The size of each difficulty is as follow:
@@ -159,12 +157,14 @@ Send part of a card and you can guess it
   - `VERY FUCKING HARD`: 5x5
 - `size`: Optional if you already choose `difficulty`. The size of the crop region.
 
+<!-- omit from toc -->
 ##### Note
 If both `difficulty` and `size` are selected `difficulty` will overwrite the `size`.
 
 #### Scramble
 Send the card scramble
 
+<!-- omit from toc -->
 ##### Argument
 - `set`: The set where magpie pull the card from
 - `difficulty`: Optional if you already choose `size`. The size of each difficulty is as follow:
@@ -175,6 +175,7 @@ Send the card scramble
   - `IMPOSSIBLE`: 1148 pieces (scamble every pixle)
 - `size`: Optional if you already choose `difficulty`. The cols and rows you want. Cols go first then rows follow with a comma in between
 
+<!-- omit from toc -->
 ##### Note
 If both `difficulty` and `size` are selected `difficulty` will overwrite the `size`.
 
@@ -183,6 +184,7 @@ Example on size: `6,5` will have 6 cols and 3 rows
 ### Retry Command
 Magpie will look at a message again in case you edit or mess up.
 
+<!-- omit from toc -->
 #### Argument
 - `id`: Id of the message can access by using Developer mode and click `Copy ID` on message.
 
