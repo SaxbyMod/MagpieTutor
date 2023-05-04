@@ -1,5 +1,38 @@
+- [MagpieTutor](#magpietutor)
+  - [How to host the bot yourself](#how-to-host-the-bot-yourself)
+  - [Commands](#commands)
+    - [Draft Command](#draft-command)
+      - [Argument](#argument)
+      - [Note](#note)
+    - [Set Code Command](#set-code-command)
+    - [Deck Sim Command](#deck-sim-command)
+      - [Argument](#argument-1)
+      - [Note](#note-1)
+    - [Tunnel Status Command](#tunnel-status-command)
+      - [Note](#note-2)
+    - [Color Text Command](#color-text-command)
+      - [Color Tag](#color-tag)
+      - [Note](#note-3)
+    - [Guess the Card Command](#guess-the-card-command)
+      - [Normal](#normal)
+        - [Argument](#argument-2)
+        - [Note](#note-4)
+      - [Scramble](#scramble)
+        - [Argument](#argument-3)
+        - [Note](#note-5)
+    - [Retry Command](#retry-command)
+      - [Argument](#argument-4)
+  - [Bot Require Permission](#bot-require-permission)
+  - [Todo List](#todo-list)
+
 # MagpieTutor
-Scryfall bot but for IMF
+Scryfall bot but for Inscryption. Currently the bot can look up card in the following format/set:
+- IMF Competitive
+- IMF Eternal
+- IMF Vanilla
+- Augmented
+
+IF you have any request for new set send me a message on discord. `Stoat#3922`
 
 ## How to host the bot yourself
 If you know how to set up a discord bot with discord.js already, then download all the package with `npm setup`, then created a `config.json` with these information: 
@@ -18,7 +51,7 @@ If you don't know how to setup a discord bot follow these step:
 4. Click on the `Bot` menu and choose `Add Bot`, you can change the name of the bot if you want here.
 5. Click the `Copy` button below `Token`.
 6. Click on the `OAuth2` menu and choose `URL Generator` choose `bot` and `application.commands` option.
-7. In the `Bot Permission` section and choose `Administrator`. Now you can click `Copy` at the very bottom to get the bot.invite link. **You have to invite the bot to a server for future step**.
+7. In the `Bot Permission` section and choose `Administrator`(If you want a more specific list of permission go to). Now you can click `Copy` at the very bottom to get the bot.invite link. **You must invite the bot to a server for future steps**.
 8. Now download this repository, unzip the folder if it a zip file.
 9. Make a `config.json` file, in there type the following: 
 ```json
@@ -31,7 +64,7 @@ If you don't know how to setup a discord bot follow these step:
 11. Go into your discord client `Setting` > `Advance` and turn on `Developer Mode`
 12. You can now copy the bot client ID by right clicking and select `Copy ID`. You can replace the text `Your Client ID here` in `config.json` with this ID. Save the file if you haven't already. 
 13. Right click and choose `Open in Terminal` option or go to the path text box and type in `cmd`.
-14. Run the command `npm setup` to install all the necessary packet for the bot and install the commands.
+14. Run the command `npm setup` to install all the necessary package for the bot and setup the slash commands.
 15. Finally run `npm start` to host the bot.
 
 If you have any problem ask me on Discord my DM should be open. `Stoat#3922`
@@ -152,3 +185,19 @@ Magpie will look at a message again in case you edit or mess up.
 
 #### Argument
 - `id`: Id of the message can access by using Developer mode and click `Copy ID` on message.
+
+## Bot Require Permission
+- Read Messages/View Channels: The Bot needs to see messages to do look up
+- Send Messages: The Bot needs to send message to reply
+- Embed Links: The Bot needs embed for card display and other function
+- Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](#guess-the-card-command)
+- Read Messages History: The Bot needs to see old messages for [/retry](#retry-command) to work
+- Use External Emojis: The Bot needs to use external emoji for cost and number emoji
+- Add Reaction: The Bot needs to add reaction for [/guess-the-card](#guess-the-card-command)
+
+## Todo List
+- ~~Support for Augmented Look up~~
+- Support for Augmented Draft
+- ~~Support for Augmented Guess the Card~~
+- New Guess the Card submit using model instead of messages (Less bug?)
+- Fix Augmented no art bug
