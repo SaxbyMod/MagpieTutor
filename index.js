@@ -28,7 +28,7 @@ const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
 const format = require("string-format")
 
-const augmented = require("./augmented/process")
+const augmented = require("./extra/augmentedProcess")
 format.extend(String.prototype, {})
 
 //set up the bot client
@@ -102,8 +102,7 @@ const setList = {
 	o: { name: "original version", type: "special" },
 	a: {
 		name: "augmented",
-		type: "other",
-		file: "./augmented/augmented.json",
+		type: "specialLoad",
 	},
 }
 
@@ -174,6 +173,10 @@ const specialMagick = [
 				})
 		} else if (set.type == "other") {
 			setsData[set.name] = require(set.file)
+		} else if (set.type == "specialLoad") {
+			if (set.name == "augmented") {
+				setsData[set.name] = await augmented.fetchAug()
+			}
 		}
 		console.log(`Set ${set.name} loaded!`)
 	}

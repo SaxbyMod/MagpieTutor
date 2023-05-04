@@ -16,7 +16,8 @@ var imfJson = {
 	cards: [],
 	sigils: {},
 }
-;(async () => {
+
+async function fetchAug() {
 	let cardsRaw
 	let sigilRaw
 	await fetch(
@@ -92,14 +93,9 @@ var imfJson = {
 			].replaceAll("\n", "")
 	}
 
-	var fs = require("fs")
-	fs.writeFile(
-		"./augmented/augmented.json",
-		JSON.stringify(imfJson),
-		function (err) {
-			if (err) {
-				console.log(err)
-			}
-		}
-	)
-})()
+	return imfJson
+}
+
+module.exports = {
+	fetchAug,
+}

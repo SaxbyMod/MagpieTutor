@@ -1,5 +1,5 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js")
-const { clientId, token } = require("./config.json")
+const { clientId, token } = require("../config.json")
 
 const commands = [
 	new SlashCommandBuilder()
