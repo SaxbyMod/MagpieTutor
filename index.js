@@ -95,11 +95,21 @@ const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 
 //define the ruleset shit
 const setList = {
-	c: { name: "competitive", type: "107" },
-	e: { name: "eternal", type: "107" },
-	v: { name: "vanilla", type: "107" },
-	m: { name: "magic the gathering", type: "special" },
-	o: { name: "original version", type: "special" },
+	c: {
+		name: "competitive",
+		type: "107",
+		pool: { ban: "banned", rare: "rare" },
+	},
+	e: { name: "eternal", type: "107", pool: { ban: "banned", rare: "rare" } },
+	v: { name: "vanilla", type: "107", pool: { ban: "banned", rare: "rare" } },
+	m: {
+		name: "magic the gathering",
+		type: "special",
+	},
+	o: {
+		name: "original version",
+		type: "special",
+	},
 	a: {
 		name: "augmented",
 		type: "specialLoad",
@@ -138,14 +148,14 @@ const setFormatList = {
 }
 
 let setsData = {}
-let setsCardPool = {}
-let setsBanPool = {}
-let setsRarePool = {}
+// let setsCardPool = {}
+// let setsBanPool = {}
+// let setsRarePool = {}
 
-let setsBeastPool = {}
-let setsUndeadPool = {}
-let setsTechPool = {}
-let setsMagickPool = {}
+// let setsBeastPool = {}
+// let setsUndeadPool = {}
+// let setsTechPool = {}
+// let setsMagickPool = {}
 
 const specialMagick = [
 	"Mox Module",
@@ -162,62 +172,73 @@ const specialMagick = [
 //downloading all the set and fetch important shit
 ;(async () => {
 	//fetch all the set json
-	for (const set of Object.values(setList)) {
-		if (set.type === "107") {
+	for (const setKey of Object.keys(setList)) {
+		const setValue = setList[setKey]
+		if (setValue.type === "107") {
 			await fetch(
-				`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
+				`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${setValue.name}.json`
 			)
 				.then((res) => res.json())
 				.then((json) => {
-					setsData[set.name] = json
+					const cardsTemp = JSON.parse(JSON.stringify(json.cards))
+					json.cards = {}
+					for (const card of cardsTemp) {
+						json.cards[card.name] = card
+					}
+					setsData[setKey] = json
 				})
-		} else if (set.type == "other") {
-			setsData[set.name] = require(set.file)
-		} else if (set.type == "specialLoad") {
-			if (set.name == "augmented") {
-				setsData[set.name] = await augmented.fetchAug()
+		} else if (setValue.type == "other") {
+			setsData[setKey] = require(setValue.file)
+		} else if (setValue.type == "specialLoad") {
+			if (setValue.name == "augmented") {
+				setsData[setKey] = await augmented.fetchAug()
 			}
 		}
-		console.log(`Set ${set.name} loaded!`)
+		console.log(`Set ${setValue.name} loaded!`)
 	}
 
 	// loading all the card pool
-	for (const set of Object.keys(setsData)) {
-		setsCardPool[set] = []
-		setsBanPool[set] = []
-		setsRarePool[set] = []
-		setsBeastPool[set] = []
-		setsUndeadPool[set] = []
-		setsTechPool[set] = []
-		setsMagickPool[set] = []
+	for (const setKey of Object.keys(setsData)) {
+		// setsCardPool[set] = []
+		// setsBanPool[set] = []
+		// setsRarePool[set] = []
+		// setsBeastPool[set] = []
+		// setsUndeadPool[set] = []
+		// setsTechPool[set] = []
+		// setsMagickPool[set] = []
+		// for (const card of setsData[set].cards) {
+		// 	const name = card.name.toLowerCase()
+		// 	setsCardPool[set].push(name)
+		// 	if (card.banned) {
+		// 		setsBanPool[set].push(name)
+		// 	}
+		// 	if (card.rare) {
+		// 		setsRarePool[set].push(name)
+		// 	}
+		// 	if (specialMagick.includes(card.name)) {
+		// 		setsMagickPool[set].push(name)
+		// 	} else {
+		// 		if (card.blood_cost) {
+		// 			setsBeastPool[set].push(name)
+		// 		}
+		// 		if (card.bone_cost) {
+		// 			setsUndeadPool[set].push(name)
+		// 		}
+		// 		if (card.energy_cost) {
+		// 			setsTechPool[set].push(name)
+		// 		}
+		// 		if (card.mox_cost) {
+		// 			setsMagickPool[set].push(name)
+		// 		}
+		// 	}
+		// }
+		for (const card of Object.values(setsData[setKey].cards)) {
+			for (const pool of Object.keys(setList[setKey].pool)) {
+				if (!pool) continue
 
-		for (const card of setsData[set].cards) {
-			const name = card.name.toLowerCase()
-
-			setsCardPool[set].push(name)
-
-			if (card.banned) {
-				setsBanPool[set].push(name)
-			}
-
-			if (card.rare) {
-				setsRarePool[set].push(name)
-			}
-
-			if (specialMagick.includes(card.name)) {
-				setsMagickPool[set].push(name)
-			} else {
-				if (card.blood_cost) {
-					setsBeastPool[set].push(name)
-				}
-				if (card.bone_cost) {
-					setsUndeadPool[set].push(name)
-				}
-				if (card.energy_cost) {
-					setsTechPool[set].push(name)
-				}
-				if (card.mox_cost) {
-					setsMagickPool[set].push(name)
+				if (card[setList[setKey].pool[pool]]) {
+					if (!setsData[setKey][pool]) setsData[setKey][pool] = []
+					setsData[setKey][pool].push(card.name)
 				}
 			}
 		}
