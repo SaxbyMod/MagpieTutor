@@ -68,8 +68,8 @@ async function fetchAug() {
 		}
 
 		// parsing health and power
-		cardFormated["health"] = parseInt(card["Health"])
-		cardFormated["attack"] = parseInt(card["Power"])
+		cardFormated["health"] = card["Health"]
+		cardFormated["attack"] = card["Power"]
 		cardFormated["sigils"] = card["Sigils"].split(", ")
 
 		if (card["Token"]) cardFormated["token"] = card["Token"]
