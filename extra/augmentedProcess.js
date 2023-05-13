@@ -53,7 +53,7 @@ async function fetchAug() {
 			if (cost.includes("shattered")) {
 				cardFormated["shattered"] = []
 				for (let i = 0; i < temp[0]; i++) {
-					cardFormated["shattered"].push(temp[2])
+					cardFormated["shattered"].push(`shattered_${temp[2]}`)
 				}
 			} else if (
 				["sapphire", "ruby", "emerald"].some((i) => cost.includes(i))
@@ -70,7 +70,9 @@ async function fetchAug() {
 		// parsing health and power
 		cardFormated["health"] = card["Health"]
 		cardFormated["attack"] = card["Power"]
-		cardFormated["sigils"] = card["Sigils"].split(", ")
+		cardFormated["sigils"] = card["Sigils"]
+			? card["Sigils"].split(", ")
+			: []
 
 		if (card["Token"]) cardFormated["token"] = card["Token"]
 		if (card["Traits"])
@@ -85,7 +87,7 @@ async function fetchAug() {
 			"footnote"
 		] = `This card was made by ${card["Credit"]}.\nLast Edited: ${card["edited"]}`
 
-		if (card["sigils"]) delete card["sigils"]
+		if (!card["sigils"]) delete card["sigils"]
 		imfJson.cards[cardFormated.name] = cardFormated
 	}
 
