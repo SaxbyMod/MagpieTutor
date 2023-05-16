@@ -13,7 +13,7 @@ var imfJson = {
 	opt_actives: false,
 	portrait: "portraits/Stoat",
 	description: "Augmented Ruleset in IMF, parse by Magpie ",
-	cards: {},
+	cards: [],
 	sigils: {},
 }
 
@@ -87,8 +87,11 @@ async function fetchAug() {
 			"footnote"
 		] = `This card was made by ${card["Credit"]}.\nLast Edited: ${card["edited"]}`
 
-		if (!card["sigils"]) delete card["sigils"]
-		imfJson.cards[cardFormated.name] = cardFormated
+		if (!cardFormated["Sigils"] || cardFormated["Sigils"].length <= 0) {
+			delete cardFormated["sigils"]
+		}
+
+		imfJson.cards.push(cardFormated)
 	}
 
 	for (sigil of sigilRaw) {

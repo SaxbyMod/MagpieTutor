@@ -1250,7 +1250,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		if (options.getString("set") == "augmented") {
 			var bg = await Canvas.loadImage(
 				`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
-					["Common", "Side Deck"].includes(card.tier)
+					["Common", "Uncommon", "Side Deck"].includes(card.tier)
 						? "common"
 						: "rare"
 				}_${card.temple.toLowerCase()}.png`
