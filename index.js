@@ -93,6 +93,12 @@ const countDeckDup = (deck) => {
 const listDiff = (list1, list2) => list1.filter((x) => !list2.includes(x))
 const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 
+const isPerm = (interaction) =>
+	interaction.member.roles.cache.some(
+		(role) =>
+			role.id == "994578531671609426" || role.id == "1028537837169156156"
+	) || interaction.user.id == "601821309881810973"
+
 //define the ruleset shit
 const setList = {
 	c: { name: "competitive", type: "107" },
@@ -674,13 +680,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	const { commandName, options } = interaction
 	if (commandName === "echo") {
 		//if (interaction.user.id != 601821309881810973) return
-		if (
-			!interaction.member.roles.cache.some(
-				(role) =>
-					role.id == "994578531671609426" ||
-					role.id == "1028537837169156156"
-			)
-		) {
+		if (!isPerm(interaction)) {
 			interaction.reply({ content: "NO fuck you", ephemeral: true })
 			return
 		}
@@ -712,6 +712,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 		await interaction.reply(`Possible set code for searching:\n${temp}`)
 	} else if (commandName === "ping") {
+		if (interaction.user.id == "668722928581345290") {
+			await interaction.reply({
+				content: "Friendly, please stope",
+				ephemeral: true,
+			})
+			return
+		}
 		await interaction.reply(
 			randInt(1, 4) == 4
 				? randomChoice([
@@ -732,13 +739,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				: "Pong!"
 		)
 	} else if (commandName === "restart") {
-		if (
-			interaction.member.roles.cache.some(
-				(role) =>
-					role.id == "994578531671609426" ||
-					role.id == "1028537837169156156"
-			)
-		) {
+		if (isPerm(interaction)) {
 			await interaction.reply(
 				randomChoice([
 					"Restarting...",
@@ -1513,15 +1514,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		)
 		await interaction.reply({ content: "Retried", ephemeral: true })
 	} else if (commandName === "test") {
-		await interaction.reply({
-			embeds: [
-				new EmbedBuilder()
-					.setTitle("Testing")
-					.setDescription(
-						"[uwu](https://www.youtube.com/watch?v=5wAo54DHDY0&t=1182s)"
-					),
-			],
-		})
+		console.log(isPerm(interaction))
 	}
 })
 
