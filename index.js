@@ -529,6 +529,7 @@ async function fetchCard(name, setName, noAlter = false) {
 	} else if (card.name == "Master Orlu") {
 		card.description = undefined
 	}
+
 	if (JSON.stringify(original) != JSON.stringify(card)) {
 		card.footnote =
 			'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]'
@@ -539,7 +540,7 @@ async function fetchCard(name, setName, noAlter = false) {
 
 // fetch the mtg card and its url
 async function fetchMagicCard(name) {
-	let out = await scryfall.getCardByName(name).catch(async (err) => {
+	out = await scryfall.getCardByName(name, true).catch(async (err) => {
 		return -1
 	})
 
@@ -673,6 +674,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	const { commandName, options } = interaction
 	if (commandName === "echo") {
 		//if (interaction.user.id != 601821309881810973) return
+		if (
+			!interaction.member.roles.cache.some(
+				(role) =>
+					role.id == "994578531671609426" ||
+					role.id == "1028537837169156156"
+			)
+		) {
+			interaction.reply({ content: "NO fuck you", ephemeral: true })
+			return
+		}
 		const message = options.getString("text")
 		console.log(`${interaction.user.username} say ${message}`)
 		const channel =
@@ -701,7 +712,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 		await interaction.reply(`Possible set code for searching:\n${temp}`)
 	} else if (commandName === "ping") {
-		await interaction.reply("Pong!")
+		await interaction.reply(
+			randInt(1, 4) == 4
+				? randomChoice([
+						"Mike, If you are reading this, you've been in a coma for 5 years, we're trying a new technique, please, wake up.",
+						"Something Something",
+						"Soon",
+						"We been trying to reach you about your car extended warrenty",
+						"babe wake up the bot is online",
+						"I'm doing your mom at this very instance",
+						"What did I miss",
+						"New update in sometime",
+						"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+						"https://www.youtube.com/watch?v=b7vWLz9iGsk",
+						"I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
+						"Stoat is not dense >:(",
+						"Friendly are you ok?",
+				  ])
+				: "Pong!"
+		)
 	} else if (commandName === "restart") {
 		if (
 			interaction.member.roles.cache.some(
@@ -710,7 +739,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					role.id == "1028537837169156156"
 			)
 		) {
-			await interaction.reply("Restarting...")
+			await interaction.reply(
+				randomChoice([
+					"Restarting...",
+					"AAAAAAAAAAAAAAAAAAAAAAAA",
+					"No father don't kill me",
+				])
+			)
 			throw new Error("death")
 		} else await interaction.reply("no")
 	} else if (commandName === "draft") {
@@ -1478,7 +1513,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		)
 		await interaction.reply({ content: "Retried", ephemeral: true })
 	} else if (commandName === "test") {
-		await interaction.reply("Nothing suspicion here")
+		await interaction.reply({
+			embeds: [
+				new EmbedBuilder()
+					.setTitle("Testing")
+					.setDescription(
+						"[uwu](https://www.youtube.com/watch?v=5wAo54DHDY0&t=1182s)"
+					),
+			],
+		})
 	}
 })
 

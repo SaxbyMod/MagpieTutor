@@ -86,8 +86,8 @@ async function fetchAug() {
 		cardFormated[
 			"footnote"
 		] = `This card was made by ${card["Credit"]}.\nLast Edited: ${card["edited"]}`
-
-		if (!cardFormated["Sigils"] || cardFormated["Sigils"].length <= 0) {
+		// console.log(cardFormated["sigils"], !cardFormated["sigils"])
+		if (!cardFormated["sigils"] || cardFormated["sigils"].length <= 0) {
 			delete cardFormated["sigils"]
 		}
 
@@ -95,10 +95,8 @@ async function fetchAug() {
 	}
 
 	for (sigil of sigilRaw) {
-		if (sigil["Text--------------------------|-------------"])
-			imfJson.sigils[sigil["Name"]] = sigil[
-				"Text--------------------------|-------------"
-			].replaceAll("\n", "")
+		if (sigil["Text"])
+			imfJson.sigils[sigil["Name"]] = sigil["Text"].replaceAll("\n", "")
 	}
 
 	return imfJson
