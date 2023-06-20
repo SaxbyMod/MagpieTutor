@@ -107,7 +107,7 @@ const getMessage = async (channel, id) => {
 
 //define the ruleset shit
 const setList = {
-	c: { name: "competitive", type: "107" },
+	comp: { name: "competitive", type: "107" },
 	e: { name: "eternal", type: "107" },
 	v: { name: "vanilla", type: "107" },
 	m: { name: "magic the gathering", type: "special" },
@@ -334,7 +334,7 @@ function coloredString(str, raw) {
 	return raw ? str : `\`\`\`ansi\n${str}\`\`\``
 }
 
-async function messageSearch(message) {
+async function messageSearch(message, returnValue = false) {
 	let embedList = []
 	let attachmentList = []
 	let msg = ""
@@ -344,7 +344,7 @@ async function messageSearch(message) {
 		.matchAll(/(\w{0,2})\[{2}([^\]]+)\]{2}/g)) {
 		let selectedSet = setList[cardName[1][0]]
 			? setList[cardName[1][0]]
-			: setList.c
+			: setList.comp
 		let name = cardName[2]
 		let card
 		let noAlter = false
@@ -368,7 +368,7 @@ async function messageSearch(message) {
 				noAlter = true
 				selectedSet = setList[cardName[1][1]]
 					? setList[cardName[1][1]]
-					: setList.c
+					: setList.comp
 			}
 		}
 
@@ -458,55 +458,32 @@ async function messageSearch(message) {
 		allowedMentions: {
 			repliedUser: false,
 		},
+		components: [
+			new ActionRowBuilder().addComponents(
+				new ButtonBuilder()
+					.setLabel("Retry")
+					.setCustomId("retry")
+					.setStyle(ButtonStyle.Primary)
+			),
+		],
 	}
 
 	if (msg !== "") replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
 
-	if (replyOption["content"] || replyOption["embeds"] || replyOption["files"])
+	if (
+		replyOption["content"] ||
+		replyOption["embeds"] ||
+		replyOption["files"]
+	) {
+		if (returnValue) return replyOption
 		await message.reply(replyOption)
+	}
 }
 
 function genDescription(textFormat, card) {
 	let out = {}
-	// let general = ""
-	// let extra = ""
-	// let sigilDes = ""
-
-	// for (const item of textFormat.generalInfo) {
-	// 	const temp = card[item.match(/{(\w+)}/g)[0].slice(1, -1)]
-	// 	if (!temp) continue
-	// 	if (temp.type === Array) {
-	// 		let temp1 = {}
-	// 		temp1[item.match(/{(\w+)}/g)[0].slice(1, -1)] = temp
-	// 			.map((a) => `:${a}:`.toLowerCase())
-	// 			.join("")
-	// 		general += item.format(temp1)
-	// 		continue
-	// 	}
-	// 	general += item.format(card)
-	// }
-	// general += `\n\n**Stat**: ${
-	// 	card.atkspecial ? `:${card.atkspecial}:` : card.attack
-	// } / ${card.health} ${
-	// 	card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
-	// }`
-
-	// for (const item of textFormat.extraInfo) {
-	// 	if (!card[item.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
-	// 	extra += item.format(card)
-	// }
-
-	// if (card.sigils) {
-	// 	card.sigils.forEach((sigil) => {
-	// 		sigilDes += `**${sigil}**: ${setsData[card.set].sigils[sigil]}\n`
-	// 	})
-	// }
-
-	// out["generalInfo"] = general
-	// out["extraInfo"] = extra
-	// out["sigilDescription"] = sigilDes
 
 	for (const field of Object.values(textFormat)) {
 		completeInfo = ""
@@ -574,7 +551,7 @@ async function fetchCard(name, setName, noAlter = false) {
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
 	} else {
-		if (card.set == setList.c.name) {
+		if (card.set == setList.comp.name) {
 			card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
 				" ",
 				"%20"
@@ -739,7 +716,7 @@ async function genCardEmbed(card, showSet) {
 		}
 	}
 
-	// info.general = info.generalInfo.replaceAll(":x_:", getEmoji("x_"))
+	info.general = info.general.replaceAll(":x_:", getEmoji("x_"))
 
 	// embed.setDescription(info.generalInfo)
 	// if (card.sigils)
@@ -781,753 +758,791 @@ client.once(Events.ClientReady, () => {
 
 // on commands call
 client.on(Events.InteractionCreate, async (interaction) => {
-	if (!interaction.isChatInputCommand()) return // returning everything but commands interaction
+	if (interaction.isChatInputCommand()) {
+		const { commandName, options } = interaction
+		if (commandName === "echo") {
+			//if (interaction.user.id != 601821309881810973) return
+			if (!isPerm(interaction)) {
+				interaction.reply({ content: "NO fuck you", ephemeral: true })
+				return
+			}
+			const message = options.getString("text")
+			console.log(`${interaction.user.username} say ${message}`)
+			const channel =
+				(await options.getChannel("channel")) != undefined
+					? options.getChannel("channel")
+					: interaction.channel
 
-	const { commandName, options } = interaction
-	if (commandName === "echo") {
-		//if (interaction.user.id != 601821309881810973) return
-		if (!isPerm(interaction)) {
-			interaction.reply({ content: "NO fuck you", ephemeral: true })
-			return
-		}
-		const message = options.getString("text")
-		console.log(`${interaction.user.username} say ${message}`)
-		const channel =
-			(await options.getChannel("channel")) != undefined
-				? options.getChannel("channel")
-				: interaction.channel
-
-		if (options.getString("message")) {
-			;(
-				await getMessage(
-					interaction.channel,
-					options.getString("message")
-				)
-			).reply(message)
-		} else {
-			channel.send(message)
-		}
-
-		await interaction.reply({
-			content: "Sent",
-			ephemeral: true,
-		})
-	} else if (commandName === "set-code") {
-		var temp = ""
-		Object.keys(setList).forEach((key) => {
-			temp += `${key}: ${setList[key].name}\n`
-		})
-		await interaction.reply(`Possible set code for searching:\n${temp}`)
-	} else if (commandName === "ping") {
-		await interaction.reply(
-			randInt(1, 4) == 4
-				? randomChoice([
-						"Mike, If you are reading this, you've been in a coma for 5 years, we're trying a new technique, please, wake up.",
-						"Something Something",
-						"Soon",
-						"We been trying to reach you about your car extended warrenty",
-						"babe wake up the bot is online",
-						"I'm doing your mom at this very instance",
-						"What did I miss",
-						"New update in sometime",
-						"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-						"https://www.youtube.com/watch?v=b7vWLz9iGsk",
-						"I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
-						"Stoat is not dense >:(",
-				  ])
-				: "Pong!"
-		)
-	} else if (commandName === "restart") {
-		if (isPerm(interaction)) {
-			await interaction.reply(
-				randomChoice([
-					"Restarting...",
-					"AAAAAAAAAAAAAAAAAAAAAAAA",
-					"No father don't kill me",
-				])
-			)
-			throw new Error("death")
-		} else await interaction.reply("no")
-	} else if (commandName === "draft") {
-		// grab the important shit
-		const set = options.getString("set") // get the set
-		const deckSize = options.getInteger("size") // size of deck
-			? options.getInteger("size")
-			: 20
-		const pool = listDiff(
-			setsCardPool[set],
-			[]
-				.concat(options.getBoolean("beast") ? setsBeastPool[set] : [])
-				.concat(options.getBoolean("undead") ? setsUndeadPool[set] : [])
-				.concat(options.getBoolean("tech") ? setsTechPool[set] : [])
-				.concat(options.getBoolean("magick") ? setsMagickPool[set] : [])
-		) // load the pool by adding in the selected type pool
-
-		const message = await interaction.reply({
-			content: "Loading...",
-			fetchReply: true,
-		})
-
-		var deck = { cards: [], side_deck: "10 Squirrel" }
-		var wildCount = 0
-		let flag = false
-
-		// repeat for deck size
-		for (let cycle = 0; cycle < deckSize; cycle++) {
-			// take 4 random common
-			let temp = randomChoices(
-				listDiff(listDiff(pool, setsRarePool[set]), setsBanPool[set]),
-				4
-			)
-
-			// 1 one random rare
-			temp.push(
-				randomChoice(
-					listDiff(
-						listDiff(
-							listInter(pool, setsRarePool[set]),
-							deck.cards
-								.map((c) =>
-									c.startsWith("*")
-										? c.replaceAll("*", "")
-										: c
-								)
-								.map((n) => n.toLowerCase())
-						),
-						setsBanPool[set]
+			if (options.getString("message")) {
+				;(
+					await getMessage(
+						interaction.channel,
+						options.getString("message")
 					)
+				).reply(message)
+			} else {
+				channel.send(message)
+			}
+
+			await interaction.reply({
+				content: "Sent",
+				ephemeral: true,
+			})
+		} else if (commandName === "set-code") {
+			var temp = ""
+			Object.keys(setList).forEach((key) => {
+				temp += `${key}: ${setList[key].name}\n`
+			})
+			await interaction.reply(`Possible set code for searching:\n${temp}`)
+		} else if (commandName === "ping") {
+			await interaction.reply(
+				randInt(1, 4) == 4
+					? randomChoice([
+							"Mike, If you are reading this, you've been in a coma for 5 years, we're trying a new technique, please, wake up.",
+							"Something Something",
+							"Soon",
+							"We been trying to reach you about your car extended warrenty",
+							"babe wake up the bot is online",
+							"I'm doing your mom at this very instance",
+							"What did I miss",
+							"New update in sometime",
+							"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+							"https://www.youtube.com/watch?v=b7vWLz9iGsk",
+							"I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
+							"Stoat is not dense >:(",
+					  ])
+					: "Pong!"
+			)
+		} else if (commandName === "restart") {
+			if (isPerm(interaction)) {
+				await interaction.reply(
+					randomChoice([
+						"Restarting...",
+						"AAAAAAAAAAAAAAAAAAAAAAAA",
+						"No father don't kill me",
+					])
 				)
-			)
+				throw new Error("death")
+			} else await interaction.reply("no")
+		} else if (commandName === "draft") {
+			// grab the important shit
+			const set = options.getString("set") // get the set
+			const deckSize = options.getInteger("size") // size of deck
+				? options.getInteger("size")
+				: 20
+			const pool = listDiff(
+				setsCardPool[set],
+				[]
+					.concat(
+						options.getBoolean("beast") ? setsBeastPool[set] : []
+					)
+					.concat(
+						options.getBoolean("undead") ? setsUndeadPool[set] : []
+					)
+					.concat(options.getBoolean("tech") ? setsTechPool[set] : [])
+					.concat(
+						options.getBoolean("magick") ? setsMagickPool[set] : []
+					)
+			) // load the pool by adding in the selected type pool
 
-			// generating stuff
+			const message = await interaction.reply({
+				content: "Loading...",
+				fetchReply: true,
+			})
 
-			//set up a pack
-			let pack = setsData[set].cards.filter((c) =>
-				temp.includes(c.name.toLowerCase())
-			)
-			// sort the pack by rare first then alphabetical
-			pack.sort((a, b) =>
-				a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
-			)
+			var deck = { cards: [], side_deck: "10 Squirrel" }
+			var wildCount = 0
+			let flag = false
 
-			//adding in wild if duplicate is found
-			if (pack.length < 5) {
-				// for every duplicate add in a different one
-				for (let card = 0; card < 5 - pack.length; card++) {
-					// get a new card by subtracting the already found pool and the full pool
-					const newCard = randomChoice(
+			// repeat for deck size
+			for (let cycle = 0; cycle < deckSize; cycle++) {
+				// take 4 random common
+				let temp = randomChoices(
+					listDiff(
+						listDiff(pool, setsRarePool[set]),
+						setsBanPool[set]
+					),
+					4
+				)
+
+				// 1 one random rare
+				temp.push(
+					randomChoice(
 						listDiff(
 							listDiff(
-								listDiff(pool, setsRarePool[set]),
-								setsBanPool[set]
+								listInter(pool, setsRarePool[set]),
+								deck.cards
+									.map((c) =>
+										c.startsWith("*")
+											? c.replaceAll("*", "")
+											: c
+									)
+									.map((n) => n.toLowerCase())
 							),
-							temp
+							setsBanPool[set]
 						)
 					)
+				)
 
-					// add it in
-					pack.push(
-						setsData[set].cards.find(
-							(c) => c.name.toLowerCase() === newCard
+				// generating stuff
+
+				//set up a pack
+				let pack = setsData[set].cards.filter((c) =>
+					temp.includes(c.name.toLowerCase())
+				)
+				// sort the pack by rare first then alphabetical
+				pack.sort((a, b) =>
+					a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
+				)
+
+				//adding in wild if duplicate is found
+				if (pack.length < 5) {
+					// for every duplicate add in a different one
+					for (let card = 0; card < 5 - pack.length; card++) {
+						// get a new card by subtracting the already found pool and the full pool
+						const newCard = randomChoice(
+							listDiff(
+								listDiff(
+									listDiff(pool, setsRarePool[set]),
+									setsBanPool[set]
+								),
+								temp
+							)
 						)
+
+						// add it in
+						pack.push(
+							setsData[set].cards.find(
+								(c) => c.name.toLowerCase() === newCard
+							)
+						)
+					}
+				}
+
+				// generating embed and button
+				const embed = new EmbedBuilder()
+					.setColor(Colors.Blue)
+					.setTitle(
+						`Pack Left: ${deckSize - cycle}\nCard in deck: ${
+							deck.cards.length
+						}`
 					)
-				}
-			}
+				const selectionList = new StringSelectMenuBuilder()
+					.setCustomId("select")
+					.setPlaceholder("Select a card!")
 
-			// generating embed and button
-			const embed = new EmbedBuilder()
-				.setColor(Colors.Blue)
-				.setTitle(
-					`Pack Left: ${deckSize - cycle}\nCard in deck: ${
-						deck.cards.length
-					}`
-				)
-			const selectionList = new StringSelectMenuBuilder()
-				.setCustomId("select")
-				.setPlaceholder("Select a card!")
+				var description = ""
 
-			var description = ""
+				for (let c in pack) {
+					const card = pack[c]
 
-			for (let c in pack) {
-				const card = pack[c]
+					// generating the card description
+					description += `**${
+						card.rare ? `${card.name} [RARE]` : card.name
+					} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
+						card.bone_cost ? `${card.bone_cost} Bone ` : ""
+					}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
+						card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
+					}${
+						!card.blood_cost &&
+						!card.bone_cost &&
+						!card.energy_cost &&
+						!card.mox_cost
+							? "Free"
+							: ""
+					})**\nAttack: ${
+						card.atkspecial
+							? getEmoji(card.atkspecial)
+							: card.attack
+					}\nHealth: ${card.health}\n${
+						card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
+					}\n\n`
 
-				// generating the card description
-				description += `**${
-					card.rare ? `${card.name} [RARE]` : card.name
-				} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
-					card.bone_cost ? `${card.bone_cost} Bone ` : ""
-				}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
-					card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
-				}${
-					!card.blood_cost &&
-					!card.bone_cost &&
-					!card.energy_cost &&
-					!card.mox_cost
-						? "Free"
-						: ""
-				})**\nAttack: ${
-					card.atkspecial ? getEmoji(card.atkspecial) : card.attack
-				}\nHealth: ${card.health}\n${
-					card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
-				}\n\n`
-
-				// add the selection
-				selectionList.addOptions({
-					label: card.name,
-					value: `${card.rare ? "*" : ""}${card.name}${c}`,
-				})
-			}
-
-			// load the deck list
-			let deckStr = ""
-			temp = countDeckDup(
-				deck.cards.sort((a, b) =>
-					a.startsWith("*")
-						? -1
-						: b.startsWith("*")
-						? 1
-						: a.localeCompare(b)
-				)
-			)
-
-			// print it out
-			for (const card of Object.keys(temp)) {
-				deckStr += `${temp[card]}x | ${card}\n`
-			}
-
-			// add it into embed
-			embed.addFields(
-				{
-					name: "=============== PACK ===============",
-					value: description,
-					inline: true,
-				},
-				{
-					name: `======= DECK =======`,
-					value: deck.cards.length < 1 ? "Blank" : deckStr,
-					inline: true,
-				}
-			)
-
-			// send embed and selection
-			await interaction.editReply({
-				content: "",
-				components: [
-					new ActionRowBuilder().addComponents(selectionList),
-				],
-				embeds: [embed],
-			})
-
-			const filter = (i) => i.user.id === interaction.user.id
-
-			let error = ""
-			await message
-				.awaitMessageComponent({
-					componentType: ComponentType.StringSelect,
-					time: 180000,
-					filter,
-				})
-				.then(async (i) => {
-					const cardName = i.values[0].slice(0, -1)
-					let temp = cardName.startsWith("*")
-						? `**${cardName.slice(1)}**`
-						: cardName
-
-					if (
-						deck.cards.filter(
-							(c) => c.toLowerCase() === temp.toLowerCase()
-						).length >= 4
-					) {
-						deck.cards.push("** *WILD CARD* **")
-						wildCount++
-					} else deck.cards.push(temp)
-
-					await i.update({
-						embeds: [embed],
+					// add the selection
+					selectionList.addOptions({
+						label: card.name,
+						value: `${card.rare ? "*" : ""}${card.name}${c}`,
 					})
-				})
-				.catch((err) => {
-					flag = true
-					error = err
-				})
-
-			deck.cards = deck.cards
-				.map((c) => {
-					let out
-					out = c.replaceAll("*", "").trim()
-					if (out === "WILD CARD") {
-						out = ""
-					}
-					return out
-				})
-				.filter((c) => c != "")
-
-			if (flag) {
-				await interaction.editReply({
-					content: `Error: ${coloredString(
-						`$$r${error}`
-					)}\nCurrent deck: ${deck.cards.join(
-						", "
-					)}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
-					embeds: [],
-					components: [],
-				})
-				break
-			}
-		}
-
-		if (flag) return
-
-		await interaction.editReply({
-			content: `${
-				wildCount > 0
-					? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
-					: ""
-			}Completed Deck: ${deck.cards.join(
-				", "
-			)}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
-			embeds: [],
-			components: [],
-		})
-	} else if (commandName === "deck-sim") {
-		let fullDeck = []
-		let fullSide = []
-		if (options.getAttachment("deck-file")) {
-			const deckFile = JSON.parse(
-				await (
-					await fetch(options.getAttachment("deck-file").url)
-				).text()
-			)
-			fullDeck = deckFile.cards
-			if (deckFile.side_deck_cards) {
-				fullSide = deckFile.side_deck_cards
-			} else if (deckFile.side_deck_cat) {
-				fullSide = Array(
-					setsData.competitive.side_decks[deckFile.side_deck].cards[
-						deckFile.side_deck_cat
-					].count
-				).fill(
-					setsData.competitive.side_decks[deckFile.side_deck].cards[
-						deckFile.side_deck_cat
-					].card
-				)
-			} else {
-				fullSide = Array(
-					setsData.competitive.side_decks[deckFile.side_deck].count
-				).fill(setsData.competitive.side_decks[deckFile.side_deck].card)
-			}
-		} else if (options.getString("deck-list")) {
-			let temp = options.getString("deck-list").split(";")
-			temp = temp.map((i) => i.split(","))
-			console.log(temp)
-			fullDeck = temp[0]
-			fullSide = temp[1] ? temp[1] : []
-		} else {
-			await interaction.reply("Deck missing")
-			return
-		}
-
-		let currDeck = JSON.parse(JSON.stringify(fullDeck))
-		let currSide = JSON.parse(JSON.stringify(fullSide))
-
-		const message = await interaction.reply({
-			content: "Doing stuff please wait",
-			fetchReply: true,
-		})
-		let stillRunning = true
-		const detailMode = options.getBoolean("detail")
-
-		let hand = drawList(currDeck, 3)
-
-		while (stillRunning) {
-			let tempstr = ""
-			let currDup = countDeckDup(hand)
-			Object.keys(currDup).forEach((c) => {
-				tempstr += `${currDup[c]}x ${c}\n`
-			})
-
-			let embed = new EmbedBuilder()
-				.setColor(Colors.Orange)
-				.setTitle("Thingy")
-				.setDescription(
-					`Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`
-				)
-				.addFields({
-					name: "====== HAND ======",
-					value: tempstr,
-					inline: true,
-				})
-
-			if (detailMode) {
-				tempstr = ""
-				let currDup = countDeckDup(currDeck)
-				let fullDup = countDeckDup(fullDeck)
-				Object.keys(currDup).forEach((c) => {
-					const percentage = (currDup[c] / currDeck.length) * 100
-					tempstr += `${currDup[c]}/${fullDup[c]}) ${c} (${Math.round(
-						percentage
-					)}%)\n`
-				})
-				if (tempstr === "") {
-					tempstr += "No Card Left"
 				}
-				embed.addFields({
-					name: "====== DRAW PERCENTAGE ======",
-					value: tempstr,
-					inline: true,
+
+				// load the deck list
+				let deckStr = ""
+				temp = countDeckDup(
+					deck.cards.sort((a, b) =>
+						a.startsWith("*")
+							? -1
+							: b.startsWith("*")
+							? 1
+							: a.localeCompare(b)
+					)
+				)
+
+				// print it out
+				for (const card of Object.keys(temp)) {
+					deckStr += `${temp[card]}x | ${card}\n`
+				}
+
+				// add it into embed
+				embed.addFields(
+					{
+						name: "=============== PACK ===============",
+						value: description,
+						inline: true,
+					},
+					{
+						name: `======= DECK =======`,
+						value: deck.cards.length < 1 ? "Blank" : deckStr,
+						inline: true,
+					}
+				)
+
+				// send embed and selection
+				await interaction.editReply({
+					content: "",
+					components: [
+						new ActionRowBuilder().addComponents(selectionList),
+					],
+					embeds: [embed],
 				})
+
+				const filter = (i) => i.user.id === interaction.user.id
+
+				let error = ""
+				await message
+					.awaitMessageComponent({
+						componentType: ComponentType.StringSelect,
+						time: 180000,
+						filter,
+					})
+					.then(async (i) => {
+						const cardName = i.values[0].slice(0, -1)
+						let temp = cardName.startsWith("*")
+							? `**${cardName.slice(1)}**`
+							: cardName
+
+						if (
+							deck.cards.filter(
+								(c) => c.toLowerCase() === temp.toLowerCase()
+							).length >= 4
+						) {
+							deck.cards.push("** *WILD CARD* **")
+							wildCount++
+						} else deck.cards.push(temp)
+
+						await i.update({
+							embeds: [embed],
+						})
+					})
+					.catch((err) => {
+						flag = true
+						error = err
+					})
+
+				deck.cards = deck.cards
+					.map((c) => {
+						let out
+						out = c.replaceAll("*", "").trim()
+						if (out === "WILD CARD") {
+							out = ""
+						}
+						return out
+					})
+					.filter((c) => c != "")
+
+				if (flag) {
+					await interaction.editReply({
+						content: `Error: ${coloredString(
+							`$$r${error}`
+						)}\nCurrent deck: ${deck.cards.join(
+							", "
+						)}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
+						embeds: [],
+						components: [],
+					})
+					break
+				}
 			}
 
-			let selectionList = new StringSelectMenuBuilder()
-				.setPlaceholder("Select a card to play/remove/discard")
-				.setCustomId("play")
+			if (flag) return
 
-			for (c of new Set(hand)) {
-				selectionList.addOptions({
-					label: c,
-					value: c,
+			await interaction.editReply({
+				content: `${
+					wildCount > 0
+						? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
+						: ""
+				}Completed Deck: ${deck.cards.join(
+					", "
+				)}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
+				embeds: [],
+				components: [],
+			})
+		} else if (commandName === "deck-sim") {
+			let fullDeck = []
+			let fullSide = []
+			if (options.getAttachment("deck-file")) {
+				const deckFile = JSON.parse(
+					await (
+						await fetch(options.getAttachment("deck-file").url)
+					).text()
+				)
+				fullDeck = deckFile.cards
+				if (deckFile.side_deck_cards) {
+					fullSide = deckFile.side_deck_cards
+				} else if (deckFile.side_deck_cat) {
+					fullSide = Array(
+						setsData.competitive.side_decks[deckFile.side_deck]
+							.cards[deckFile.side_deck_cat].count
+					).fill(
+						setsData.competitive.side_decks[deckFile.side_deck]
+							.cards[deckFile.side_deck_cat].card
+					)
+				} else {
+					fullSide = Array(
+						setsData.competitive.side_decks[deckFile.side_deck]
+							.count
+					).fill(
+						setsData.competitive.side_decks[deckFile.side_deck].card
+					)
+				}
+			} else if (options.getString("deck-list")) {
+				let temp = options.getString("deck-list").split(";")
+				temp = temp.map((i) => i.split(","))
+				console.log(temp)
+				fullDeck = temp[0]
+				fullSide = temp[1] ? temp[1] : []
+			} else {
+				await interaction.reply("Deck missing")
+				return
+			}
+
+			let currDeck = JSON.parse(JSON.stringify(fullDeck))
+			let currSide = JSON.parse(JSON.stringify(fullSide))
+
+			const message = await interaction.reply({
+				content: "Doing stuff please wait",
+				fetchReply: true,
+			})
+			let stillRunning = true
+			const detailMode = options.getBoolean("detail")
+
+			let hand = drawList(currDeck, 3)
+
+			while (stillRunning) {
+				let tempstr = ""
+				let currDup = countDeckDup(hand)
+				Object.keys(currDup).forEach((c) => {
+					tempstr += `${currDup[c]}x ${c}\n`
 				})
+
+				let embed = new EmbedBuilder()
+					.setColor(Colors.Orange)
+					.setTitle("Thingy")
+					.setDescription(
+						`Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`
+					)
+					.addFields({
+						name: "====== HAND ======",
+						value: tempstr,
+						inline: true,
+					})
+
+				if (detailMode) {
+					tempstr = ""
+					let currDup = countDeckDup(currDeck)
+					let fullDup = countDeckDup(fullDeck)
+					Object.keys(currDup).forEach((c) => {
+						const percentage = (currDup[c] / currDeck.length) * 100
+						tempstr += `${currDup[c]}/${
+							fullDup[c]
+						}) ${c} (${Math.round(percentage)}%)\n`
+					})
+					if (tempstr === "") {
+						tempstr += "No Card Left"
+					}
+					embed.addFields({
+						name: "====== DRAW PERCENTAGE ======",
+						value: tempstr,
+						inline: true,
+					})
+				}
+
+				let selectionList = new StringSelectMenuBuilder()
+					.setPlaceholder("Select a card to play/remove/discard")
+					.setCustomId("play")
+
+				for (c of new Set(hand)) {
+					selectionList.addOptions({
+						label: c,
+						value: c,
+					})
+				}
+
+				await interaction.editReply({
+					embeds: [embed],
+					components: [
+						new ActionRowBuilder().addComponents(selectionList),
+						new ActionRowBuilder().addComponents(
+							new ButtonBuilder()
+								.setLabel("Draw Main")
+								.setStyle(ButtonStyle.Success)
+								.setCustomId("main"),
+							new ButtonBuilder()
+								.setLabel("Draw Side")
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("side"),
+							new ButtonBuilder()
+								.setLabel("Create Card")
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("create"),
+							new ButtonBuilder()
+								.setLabel("Fetch Card")
+								.setStyle(ButtonStyle.Secondary)
+								.setCustomId("fetch"),
+							new ButtonBuilder()
+								.setLabel("End")
+								.setStyle(ButtonStyle.Danger)
+								.setCustomId("end")
+						),
+					],
+				})
+
+				const filter = (i) => i.user.id === interaction.user.id
+
+				await message
+					.awaitMessageComponent({
+						time: 180000,
+						filter,
+					})
+					.then(async (inter) => {
+						if (inter.customId === "main") {
+							currDup = drawList(currDeck, 1)[0]
+							if (currDup) {
+								hand.push(currDup)
+								await inter.update(`You've drawn ${currDup}`)
+							} else {
+								await inter.update(`Main is Empty`)
+							}
+						} else if (inter.customId === "side") {
+							currDup = drawList(currSide, 1)[0]
+							if (currDup) {
+								hand.push(currDup)
+								await inter.update(`You've drawn ${currDup}`)
+							} else {
+								await inter.update(`Side is Empty`)
+							}
+						} else if (inter.customId === "play") {
+							hand.splice(hand.indexOf(inter.values[0]), 1)
+							await inter.update(`Played ${inter.values[0]}`)
+						} else if (inter.customId === "create") {
+							// Create the modal
+							const modal = new ModalBuilder()
+								.setCustomId("create")
+								.setTitle("Create Card")
+
+							// Add components to modal
+							modal.addComponents(
+								new ActionRowBuilder().addComponents(
+									new TextInputBuilder()
+										.setLabel(
+											"What card do you want to create"
+										)
+										.setPlaceholder("Enter Card Name!")
+										.setStyle(TextInputStyle.Short)
+										.setCustomId("card")
+								)
+							)
+
+							// Show the modal to the user
+							await inter.showModal(modal)
+
+							await inter
+								.awaitModalSubmit({ time: 10000, filter })
+								.then(async (i) => {
+									hand.push(
+										i.fields.getTextInputValue("card")
+									)
+									await i.update(
+										`Created ${i.fields.getTextInputValue(
+											"card"
+										)}`
+									)
+								})
+								.catch((e) => inter.update())
+						} else if (inter.customId === "fetch") {
+							// Create the modal
+							const modal = new ModalBuilder()
+								.setCustomId("fetch")
+								.setTitle("Fetch Card")
+
+							// Add components to modal
+							modal.addComponents(
+								new ActionRowBuilder().addComponents(
+									new TextInputBuilder()
+										.setLabel(
+											"Card in deck (not to be edit)"
+										)
+										.setValue(
+											[...new Set(currDeck)].join("\n")
+										)
+										.setStyle(TextInputStyle.Paragraph)
+										.setCustomId("eeeee")
+										.setRequired(false)
+								),
+								new ActionRowBuilder().addComponents(
+									new TextInputBuilder()
+										.setLabel(
+											"What card do you want to fetch"
+										)
+										.setPlaceholder("Enter Card Name!")
+										.setStyle(TextInputStyle.Short)
+										.setCustomId("card")
+										.setRequired(true)
+								)
+							)
+
+							// Show the modal to the user
+							await inter.showModal(modal)
+
+							await inter
+								.awaitModalSubmit({ time: 10000, filter })
+								.then(async (i) => {
+									if (currDeck.length > 1) {
+										const bestMatch =
+											StringSimilarity.findBestMatch(
+												i.fields
+													.getTextInputValue("card")
+													.toLowerCase(),
+												currDeck
+											)
+										hand.push(
+											currDeck[bestMatch.bestMatchIndex]
+										)
+										currDeck.splice(
+											bestMatch.bestMatchIndex,
+											1
+										)
+
+										await i.update(
+											`Fetched ${bestMatch.bestMatch.target}`
+										)
+									} else {
+										await i.update("")
+									}
+								})
+						} else if (inter.customId === "end") {
+							stillRunning = false
+							await inter.update("")
+						}
+					})
+					.catch((err) => {
+						console.log(err)
+						stillRunning = false
+					})
 			}
 
 			await interaction.editReply({
-				embeds: [embed],
-				components: [
-					new ActionRowBuilder().addComponents(selectionList),
-					new ActionRowBuilder().addComponents(
-						new ButtonBuilder()
-							.setLabel("Draw Main")
-							.setStyle(ButtonStyle.Success)
-							.setCustomId("main"),
-						new ButtonBuilder()
-							.setLabel("Draw Side")
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("side"),
-						new ButtonBuilder()
-							.setLabel("Create Card")
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("create"),
-						new ButtonBuilder()
-							.setLabel("Fetch Card")
-							.setStyle(ButtonStyle.Secondary)
-							.setCustomId("fetch"),
-						new ButtonBuilder()
-							.setLabel("End")
-							.setStyle(ButtonStyle.Danger)
-							.setCustomId("end")
-					),
+				embeds: [
+					new EmbedBuilder()
+						.setColor(Colors.Red)
+						.setTitle("Deck Simulation Ended")
+						.setDescription("The simulation Ended"),
 				],
+				components: [],
 			})
-
-			const filter = (i) => i.user.id === interaction.user.id
-
-			await message
-				.awaitMessageComponent({
-					time: 180000,
-					filter,
+		} else if (commandName === "tunnel-status") {
+			await http
+				.get("http://localtunnel.me", async (res) => {
+					await interaction.reply("Tunnel is up and running")
 				})
-				.then(async (inter) => {
-					if (inter.customId === "main") {
-						currDup = drawList(currDeck, 1)[0]
-						if (currDup) {
-							hand.push(currDup)
-							await inter.update(`You've drawn ${currDup}`)
-						} else {
-							await inter.update(`Main is Empty`)
-						}
-					} else if (inter.customId === "side") {
-						currDup = drawList(currSide, 1)[0]
-						if (currDup) {
-							hand.push(currDup)
-							await inter.update(`You've drawn ${currDup}`)
-						} else {
-							await inter.update(`Side is Empty`)
-						}
-					} else if (inter.customId === "play") {
-						hand.splice(hand.indexOf(inter.values[0]), 1)
-						await inter.update(`Played ${inter.values[0]}`)
-					} else if (inter.customId === "create") {
-						// Create the modal
-						const modal = new ModalBuilder()
-							.setCustomId("create")
-							.setTitle("Create Card")
-
-						// Add components to modal
-						modal.addComponents(
-							new ActionRowBuilder().addComponents(
-								new TextInputBuilder()
-									.setLabel("What card do you want to create")
-									.setPlaceholder("Enter Card Name!")
-									.setStyle(TextInputStyle.Short)
-									.setCustomId("card")
-							)
-						)
-
-						// Show the modal to the user
-						await inter.showModal(modal)
-
-						await inter
-							.awaitModalSubmit({ time: 10000, filter })
-							.then(async (i) => {
-								hand.push(i.fields.getTextInputValue("card"))
-								await i.update(
-									`Created ${i.fields.getTextInputValue(
-										"card"
-									)}`
-								)
-							})
-							.catch((e) => inter.update())
-					} else if (inter.customId === "fetch") {
-						// Create the modal
-						const modal = new ModalBuilder()
-							.setCustomId("fetch")
-							.setTitle("Fetch Card")
-
-						// Add components to modal
-						modal.addComponents(
-							new ActionRowBuilder().addComponents(
-								new TextInputBuilder()
-									.setLabel("Card in deck (not to be edit)")
-									.setValue([...new Set(currDeck)].join("\n"))
-									.setStyle(TextInputStyle.Paragraph)
-									.setCustomId("eeeee")
-									.setRequired(false)
-							),
-							new ActionRowBuilder().addComponents(
-								new TextInputBuilder()
-									.setLabel("What card do you want to fetch")
-									.setPlaceholder("Enter Card Name!")
-									.setStyle(TextInputStyle.Short)
-									.setCustomId("card")
-									.setRequired(true)
-							)
-						)
-
-						// Show the modal to the user
-						await inter.showModal(modal)
-
-						await inter
-							.awaitModalSubmit({ time: 10000, filter })
-							.then(async (i) => {
-								if (currDeck.length > 1) {
-									const bestMatch =
-										StringSimilarity.findBestMatch(
-											i.fields
-												.getTextInputValue("card")
-												.toLowerCase(),
-											currDeck
-										)
-									hand.push(
-										currDeck[bestMatch.bestMatchIndex]
-									)
-									currDeck.splice(bestMatch.bestMatchIndex, 1)
-
-									await i.update(
-										`Fetched ${bestMatch.bestMatch.target}`
-									)
-								} else {
-									await i.update("")
-								}
-							})
-					} else if (inter.customId === "end") {
-						stillRunning = false
-						await inter.update("")
-					}
+				.on("error", async (e) => {
+					await interaction.reply(
+						"Stoat's laptop say tunnel is down, but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
+					)
 				})
-				.catch((err) => {
-					console.log(err)
-					stillRunning = false
-				})
-		}
-
-		await interaction.editReply({
-			embeds: [
-				new EmbedBuilder()
-					.setColor(Colors.Red)
-					.setTitle("Deck Simulation Ended")
-					.setDescription("The simulation Ended"),
-			],
-			components: [],
-		})
-	} else if (commandName === "tunnel-status") {
-		await http
-			.get("http://localtunnel.me", async (res) => {
-				await interaction.reply("Tunnel is up and running")
+		} else if (commandName === "color-text") {
+			await interaction.reply({
+				content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
+					options.getString("string"),
+					true
+				)}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
+					options.getString("string")
+				)}`,
+				ephemeral: true,
 			})
-			.on("error", async (e) => {
-				await interaction.reply(
-					"Stoat's laptop say tunnel is down, but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
-				)
-			})
-	} else if (commandName === "color-text") {
-		await interaction.reply({
-			content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
-				options.getString("string"),
-				true
-			)}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
-				options.getString("string")
-			)}`,
-			ephemeral: true,
-		})
-	} else if (commandName === "guess-the-card") {
-		const card = randomChoice(setsData[options.getString("set")].cards)
-		// get the card picture
-		const cardPortrait = await Canvas.loadImage(
-			options.getString("set") == "augmented"
-				? `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
-						" ",
-						"%20"
-				  )}.png`
-				: `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-						" ",
-						"%20"
-				  )}.png`
-		)
-		if (options.getString("set") == "augmented") {
-			var bg = await Canvas.loadImage(
-				`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
-					["Common", "Uncommon", "Side Deck"].includes(card.tier)
-						? "common"
-						: "rare"
-				}_${card.temple.toLowerCase()}.png`
+		} else if (commandName === "guess-the-card") {
+			const card = randomChoice(setsData[options.getString("set")].cards)
+			// get the card picture
+			const cardPortrait = await Canvas.loadImage(
+				options.getString("set") == "augmented"
+					? `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
+							" ",
+							"%20"
+					  )}.png`
+					: `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+							" ",
+							"%20"
+					  )}.png`
 			)
-		}
-		let portrait
-		let full
+			if (options.getString("set") == "augmented") {
+				var bg = await Canvas.loadImage(
+					`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
+						["Common", "Uncommon", "Side Deck"].includes(card.tier)
+							? "common"
+							: "rare"
+					}_${card.temple.toLowerCase()}.png`
+				)
+			}
+			let portrait
+			let full
 
-		if (options.getSubcommand() === "normal") {
-			const size = options.getInteger("difficulty")
-				? options.getInteger("difficulty")
-				: options.getInteger("size")
-				? options.getInteger("size")
-				: 15
+			if (options.getSubcommand() === "normal") {
+				const size = options.getInteger("difficulty")
+					? options.getInteger("difficulty")
+					: options.getInteger("size")
+					? options.getInteger("size")
+					: 15
 
-			const scale = 50
+				const scale = 50
 
-			// get the first crop point
-			const startCropPos = [
-				randInt(0, cardPortrait.width - size),
-				randInt(0, cardPortrait.height - size),
-			]
+				// get the first crop point
+				const startCropPos = [
+					randInt(0, cardPortrait.width - size),
+					randInt(0, cardPortrait.height - size),
+				]
 
-			// make the canvas
-			portrait = Canvas.createCanvas(size * scale, size * scale)
+				// make the canvas
+				portrait = Canvas.createCanvas(size * scale, size * scale)
 
-			let context = portrait.getContext("2d")
+				let context = portrait.getContext("2d")
 
-			context.imageSmoothingEnabled = false
-			if (bg)
+				context.imageSmoothingEnabled = false
+				if (bg)
+					context.drawImage(
+						bg,
+						startCropPos[0],
+						startCropPos[1],
+						size,
+						size,
+						0,
+						0,
+						portrait.width,
+						portrait.height
+					)
 				context.drawImage(
-					bg,
+					cardPortrait,
+					// source region
 					startCropPos[0],
 					startCropPos[1],
+
+					// size of the crop region
 					size,
 					size,
+
+					// position to place the region to
 					0,
 					0,
+
+					// size of the final
 					portrait.width,
 					portrait.height
 				)
-			context.drawImage(
-				cardPortrait,
-				// source region
-				startCropPos[0],
-				startCropPos[1],
 
-				// size of the crop region
-				size,
-				size,
+				// create full version canvas
+				full = Canvas.createCanvas(
+					cardPortrait.width * scale,
+					cardPortrait.height * scale
+				)
 
-				// position to place the region to
-				0,
-				0,
+				context = full.getContext("2d")
 
-				// size of the final
-				portrait.width,
-				portrait.height
-			)
+				context.imageSmoothingEnabled = false
 
-			// create full version canvas
-			full = Canvas.createCanvas(
-				cardPortrait.width * scale,
-				cardPortrait.height * scale
-			)
+				// draw the portrait
+				if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
+				context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 
-			context = full.getContext("2d")
+				// set the color and size of the box
+				context.strokeStyle = "#f00524"
+				context.lineWidth = scale / 10
 
-			context.imageSmoothingEnabled = false
+				// draw the box
+				context.strokeRect(
+					startCropPos[0] * scale,
+					startCropPos[1] * scale,
+					size * scale,
+					size * scale
+				)
+			} else if (options.getSubcommand() === "scramble") {
+				const scale = 50
+				// grab the column
+				const col = parseInt(
+					(options.getString("difficulty")
+						? options.getString("difficulty")
+						: options.getString("size")
+						? options.getString("size")
+						: "5,3"
+					).split(",")[0]
+				)
 
-			// draw the portrait
-			if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
-			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
+				//grab the row
+				const row = parseInt(
+					(options.getString("difficulty")
+						? options.getString("difficulty")
+						: options.getString("size")
+						? options.getString("size")
+						: "5,3"
+					).split(",")[1]
+				)
 
-			// set the color and size of the box
-			context.strokeStyle = "#f00524"
-			context.lineWidth = scale / 10
+				// get each piece height and width
+				const pieceWidth = cardPortrait.width / col
+				const pieceHeight = cardPortrait.height / row
 
-			// draw the box
-			context.strokeRect(
-				startCropPos[0] * scale,
-				startCropPos[1] * scale,
-				size * scale,
-				size * scale
-			)
-		} else if (options.getSubcommand() === "scramble") {
-			const scale = 50
-			// grab the column
-			const col = parseInt(
-				(options.getString("difficulty")
-					? options.getString("difficulty")
-					: options.getString("size")
-					? options.getString("size")
-					: "5,3"
-				).split(",")[0]
-			)
+				// make the canvas
+				portrait = Canvas.createCanvas(
+					cardPortrait.width * scale,
+					cardPortrait.height * scale
+				)
 
-			//grab the row
-			const row = parseInt(
-				(options.getString("difficulty")
-					? options.getString("difficulty")
-					: options.getString("size")
-					? options.getString("size")
-					: "5,3"
-				).split(",")[1]
-			)
+				let context = portrait.getContext("2d")
 
-			// get each piece height and width
-			const pieceWidth = cardPortrait.width / col
-			const pieceHeight = cardPortrait.height / row
+				context.imageSmoothingEnabled = false
 
-			// make the canvas
-			portrait = Canvas.createCanvas(
-				cardPortrait.width * scale,
-				cardPortrait.height * scale
-			)
+				let i = 0
+				// make an array with all the position to grab piece from
 
-			let context = portrait.getContext("2d")
+				// list comprehension and shuffle it
+				// [[i, j] for i in range(row) for j in range(col)]
+				let lst = shuffleList(
+					(() => {
+						let out = []
+						;[...Array(row).keys()].forEach((i) =>
+							[...Array(col).keys()].forEach((j) =>
+								out.push([i, j])
+							)
+						)
+						return out
+					})()
+				)
 
-			context.imageSmoothingEnabled = false
-
-			let i = 0
-			// make an array with all the position to grab piece from
-
-			// list comprehension and shuffle it
-			// [[i, j] for i in range(row) for j in range(col)]
-			let lst = shuffleList(
-				(() => {
-					let out = []
-					;[...Array(row).keys()].forEach((i) =>
-						[...Array(col).keys()].forEach((j) => out.push([i, j]))
-					)
-					return out
-				})()
-			)
-
-			// for all the piece
-			for (let x = 0; x < col; x++) {
-				for (let y = 0; y < row; y++) {
-					if (bg) {
+				// for all the piece
+				for (let x = 0; x < col; x++) {
+					for (let y = 0; y < row; y++) {
+						if (bg) {
+							context.drawImage(
+								bg,
+								pieceWidth * lst[i][1],
+								pieceHeight * lst[i][0],
+								pieceWidth,
+								pieceHeight,
+								pieceWidth * scale * x,
+								pieceHeight * scale * y,
+								pieceWidth * scale,
+								pieceHeight * scale
+							)
+						}
 						context.drawImage(
-							bg,
+							cardPortrait,
 							pieceWidth * lst[i][1],
 							pieceHeight * lst[i][0],
 							pieceWidth,
@@ -1537,88 +1552,108 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							pieceWidth * scale,
 							pieceHeight * scale
 						)
-					}
-					context.drawImage(
-						cardPortrait,
-						pieceWidth * lst[i][1],
-						pieceHeight * lst[i][0],
-						pieceWidth,
-						pieceHeight,
-						pieceWidth * scale * x,
-						pieceHeight * scale * y,
-						pieceWidth * scale,
-						pieceHeight * scale
-					)
 
-					i++
+						i++
+					}
 				}
+
+				full = Canvas.createCanvas(
+					cardPortrait.width * scale,
+					cardPortrait.height * scale
+				)
+
+				context = full.getContext("2d")
+
+				context.imageSmoothingEnabled = false
+				if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
+				context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 			}
 
-			full = Canvas.createCanvas(
-				cardPortrait.width * scale,
-				cardPortrait.height * scale
-			)
-
-			context = full.getContext("2d")
-
-			context.imageSmoothingEnabled = false
-			if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
-			context.drawImage(cardPortrait, 0, 0, full.width, full.height)
-		}
-
-		await interaction.reply({
-			content:
-				"What card is this? Send a message in this channel to guess",
-			files: [new AttachmentBuilder(await portrait.encode("png"))],
-		})
-
-		const filter = (i) => i.author.id === interaction.user.id
-		await interaction.channel
-			.awaitMessages({ max: 1, time: 180000, filter })
-			.then(async (collected) => {
-				const i = collected.first()
-				if (
-					StringSimilarity.compareTwoStrings(
-						card.name.toLowerCase(),
-						i.content.toLowerCase()
-					) >= 0.4
-				) {
-					await i.react(getEmoji("thumbup"))
-					await i.reply({
-						files: [
-							new AttachmentBuilder(await full.encode("png")),
-						],
-					})
-				} else {
-					await i.react(getEmoji("thumbdown"))
-					await i.reply({
-						content: `The card is ${card.name}`,
-						files: [
-							new AttachmentBuilder(await full.encode("png")),
-						],
-					})
-				}
+			await interaction.reply({
+				content:
+					"What card is this? Send a message in this channel to guess",
+				files: [new AttachmentBuilder(await portrait.encode("png"))],
 			})
-			.catch(
-				async (e) =>
-					await interaction.editReply(
-						`Error: ${coloredString(`$$r${e}`)}`
-					)
+
+			const filter = (i) => i.author.id === interaction.user.id
+			await interaction.channel
+				.awaitMessages({ max: 1, time: 180000, filter })
+				.then(async (collected) => {
+					const i = collected.first()
+					if (
+						StringSimilarity.compareTwoStrings(
+							card.name.toLowerCase(),
+							i.content.toLowerCase()
+						) >= 0.4
+					) {
+						await i.react(getEmoji("thumbup"))
+						await i.reply({
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
+					} else {
+						await i.react(getEmoji("thumbdown"))
+						await i.reply({
+							content: `The card is ${card.name}`,
+							files: [
+								new AttachmentBuilder(await full.encode("png")),
+							],
+						})
+					}
+				})
+				.catch(
+					async (e) =>
+						await interaction.editReply(
+							`Error: ${coloredString(`$$r${e}`)}`
+						)
+				)
+		} else if (commandName === "retry") {
+			await messageSearch(
+				await interaction.channel.messages.fetch(
+					options.getString("message")
+				)
 			)
-	} else if (commandName === "retry") {
-		await messageSearch(
-			await interaction.channel.messages.fetch(
-				options.getString("message")
+			await interaction.reply({ content: "Retried", ephemeral: true })
+		} else if (commandName === "react") {
+			;(
+				await getMessage(
+					interaction.channel,
+					options.getString("message")
+				)
+			).react(options.getString("emoji"))
+			await interaction.reply({ content: "Reacted", ephemeral: true })
+		} else if (commandName === "test") {
+			const message = await interaction.reply({
+				content: "hello",
+				fetchReply: true,
+			})
+			await message.reply({
+				content: "test",
+				components: [
+					new ActionRowBuilder().addComponents(
+						new ButtonBuilder()
+							.setLabel("Test")
+							.setCustomId("test")
+							.setStyle(ButtonStyle.Primary)
+					),
+				],
+			})
+		}
+	}
+	if (interaction.isButton()) {
+		if (interaction.component.customId == "retry") {
+			console.log("here")
+			await interaction.update(
+				await messageSearch(
+					await getMessage(
+						interaction.channel,
+						interaction.message.reference.messageId
+					),
+					true
+				)
 			)
-		)
-		await interaction.reply({ content: "Retried", ephemeral: true })
-	} else if (commandName === "react") {
-		;(
-			await getMessage(interaction.channel, options.getString("message"))
-		).react(options.getString("emoji"))
-		await interaction.reply({ content: "Reacted", ephemeral: true })
-	} else if (commandName === "test") {
-		console.log(isPerm(interaction))
+		}
 	}
 })
 
