@@ -5,7 +5,7 @@ Scryfall bot but for Inscryption. Currently the bot can look up card in the foll
 - IMF Vanilla
 - Augmented
 
-IF you have any request for new set send me a message on discord. `Stoat#3922`
+IF you have any request for new set send me a message on discord. `mouthless_stoat`
 
 ## Table of Content
 - [MagpieTutor](#magpietutor)
