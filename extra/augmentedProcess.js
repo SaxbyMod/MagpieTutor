@@ -76,9 +76,9 @@ async function fetchAug() {
 
 		if (card["Token"]) cardFormated["token"] = card["Token"]
 		if (card["Traits"])
-			cardFormated["sigils"] = cardFormated["sigils"].concat(
-				card["Traits"].split(", ")
-			)
+			cardFormated["traits"] = card["Traits"]
+				? card["Traits"].split(", ")
+				: []
 		if (card["Tribes"]) cardFormated["tribes"] = card["Tribes"]
 
 		cardFormated["description"] = card["Flavor Text"]

@@ -96,8 +96,14 @@ const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 const isPerm = (interaction) =>
 	interaction.member.roles.cache.some(
 		(role) =>
-			role.id == "994578531671609426" || role.id == "1028537837169156156"
+			role.id == "994578531671609426" ||
+			role.id == "1028537837169156156" ||
+			role.id == "1111314861226459180"
 	) || interaction.user.id == "601821309881810973"
+
+const getMessage = async (channel, id) => {
+	return await channel.messages.fetch(id)
+}
 
 //define the ruleset shit
 const setList = {
@@ -114,32 +120,72 @@ const setList = {
 
 const setFormatList = {
 	imf: {
-		generalInfo: [
-			"*{description}*\n",
-			`\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
-			"\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
-			"\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
-			"\n**Mox Cost**: {mox_cost}",
-		],
-		extraInfo: [
-			"**Change into**: {evolution}\n",
-			"**Shed**: {shed}\n",
-			"**This card split into**: {left_half} (Left), {right_half} (Right)\n",
-		],
+		general: {
+			type: "general",
+			info: [
+				{ text: "*{description}*\n", type: "sub" },
+				{
+					text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
+					type: "sub",
+				},
+				{
+					text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+					type: "sub",
+				},
+				{
+					text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+					type: "sub",
+				},
+				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+			],
+		},
+		sigil: {
+			type: "keyword",
+			name: "== SIGILS ==",
+			var: "sigils",
+		},
+		extra: {
+			type: "extra",
+			name: "== EXTRA INFO ==",
+			info: [
+				{ text: "**Change into**: {evolution}\n", type: "sub" },
+				{ text: "**Shed**: {shed}\n", type: "sub" },
+				{
+					text: "**This card split into**: {left_half} (Left), {right_half} (Right)\n",
+					type: "sub",
+				},
+			],
+		},
 	},
 	augmented: {
-		generalInfo: [
-			"*{description}*\n",
-			"**Temple**: {temple}\n",
-			"**Tier**: {tier}\n",
-			"**Tribes**: {tribes}\n",
-			"\n**Blood Cost**: :{blood}::x_::blood:",
-			"\n**Bone Cost**: :{bone}::x_::bones:",
-			"\n**Energy Cost**: :{energy}::x_::energy:",
-			"\n**Mox Cost**: {mox}",
-			"\n**Shattered Mox Cost**: {shattered}",
-		],
-		extraInfo: ["**Token**: {token}"],
+		general: {
+			type: "general",
+			info: [
+				{ text: "*{description}*\n", type: "sub" },
+				{ text: "**Temple**: {temple}\n", type: "sub" },
+				{ text: "**Tier**: {tier}\n", type: "sub" },
+				{ text: "**Tribes**: {tribes}\n", type: "sub" },
+				{ text: "\n**Blood Cost**: :{blood}::x_::blood:", type: "sub" },
+				{ text: "\n**Bone Cost**: :{bone}::x_::bones:", type: "sub" },
+				{
+					text: "\n**Energy Cost**: :{energy}::x_::energy:",
+					type: "sub",
+				},
+				{ text: "\n**Mox Cost**: {mox}", type: "mox" },
+				{ text: "\n**Shattered Mox Cost**: {shattered}", type: "mox" },
+			],
+		},
+		sigil: {
+			type: "keyword",
+			name: "== SIGILS ==",
+			var: "sigils",
+		},
+		trait: { type: "keyword", name: "== TRAITS ==", var: "traits" },
+		extra: {
+			type: "extra",
+			name: "== EXTRA INFO ==",
+			info: [{ text: "**Token**: {token}", type: "sub" }],
+		},
 	},
 }
 
@@ -424,43 +470,87 @@ async function messageSearch(message) {
 
 function genDescription(textFormat, card) {
 	let out = {}
-	let general = ""
-	let extra = ""
-	let sigilDes = ""
+	// let general = ""
+	// let extra = ""
+	// let sigilDes = ""
 
-	for (const item of textFormat.generalInfo) {
-		const temp = card[item.match(/{(\w+)}/g)[0].slice(1, -1)]
-		if (!temp) continue
-		if (temp.constructor === Array) {
-			let temp1 = {}
-			temp1[item.match(/{(\w+)}/g)[0].slice(1, -1)] = temp
-				.map((a) => `:${a}:`.toLowerCase())
-				.join("")
-			general += item.format(temp1)
-			continue
+	// for (const item of textFormat.generalInfo) {
+	// 	const temp = card[item.match(/{(\w+)}/g)[0].slice(1, -1)]
+	// 	if (!temp) continue
+	// 	if (temp.type === Array) {
+	// 		let temp1 = {}
+	// 		temp1[item.match(/{(\w+)}/g)[0].slice(1, -1)] = temp
+	// 			.map((a) => `:${a}:`.toLowerCase())
+	// 			.join("")
+	// 		general += item.format(temp1)
+	// 		continue
+	// 	}
+	// 	general += item.format(card)
+	// }
+	// general += `\n\n**Stat**: ${
+	// 	card.atkspecial ? `:${card.atkspecial}:` : card.attack
+	// } / ${card.health} ${
+	// 	card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
+	// }`
+
+	// for (const item of textFormat.extraInfo) {
+	// 	if (!card[item.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
+	// 	extra += item.format(card)
+	// }
+
+	// if (card.sigils) {
+	// 	card.sigils.forEach((sigil) => {
+	// 		sigilDes += `**${sigil}**: ${setsData[card.set].sigils[sigil]}\n`
+	// 	})
+	// }
+
+	// out["generalInfo"] = general
+	// out["extraInfo"] = extra
+	// out["sigilDescription"] = sigilDes
+
+	for (const field of Object.values(textFormat)) {
+		completeInfo = ""
+
+		if (field.type == "keyword") {
+			card[field.var].forEach((keyword) => {
+				completeInfo += `**${keyword}**: ${
+					setsData[card.set].sigils[keyword]
+				}\n`
+			})
+		} else {
+			for (const info of Object.values(field.info)) {
+				let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
+				if (!temp) continue
+				if (info.type == "mox") {
+					// idk what this do anymore i was very high
+					temp = {} // make a dict to put them in so .format can use it as key
+					console.log(info.text.match(/{(\w+)}/g)[0].slice(1, -1))
+					temp[
+						info.text.match(/{(\w+)}/g)[0].slice(1, -1)
+					] /* field name = var name */ = card[
+						info.text.match(/{(\w+)}/g)[0].slice(1, -1)
+					]
+						.map((a) => `:${a}:`.toLowerCase())
+						.join("") // put the mox in : to make it emoji
+					completeInfo += info.text.format(temp)
+				} else {
+					completeInfo += info.text.format(card)
+				}
+			}
 		}
-		general += item.format(card)
+		if (field.type == "general") {
+			completeInfo += `\n\n**Stat**: ${
+				card.atkspecial ? `:${card.atkspecial}:` : card.attack
+			} / ${card.health} ${
+				card.atkspecial
+					? `(${specialAttackDescription[card.atkspecial]})`
+					: ""
+			}`
+			out["general"] = completeInfo
+		} else {
+			out[field.name] = completeInfo
+		}
 	}
-	general += `\n\n**Stat**: ${
-		card.atkspecial ? `:${card.atkspecial}:` : card.attack
-	} / ${card.health} ${
-		card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
-	}`
-
-	for (const item of textFormat.extraInfo) {
-		if (!card[item.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
-		extra += item.format(card)
-	}
-
-	if (card.sigils) {
-		card.sigils.forEach((sigil) => {
-			sigilDes += `**${sigil}**: ${setsData[card.set].sigils[sigil]}\n`
-		})
-	}
-
-	out["generalInfo"] = general
-	out["extraInfo"] = extra
-	out["sigilDescription"] = sigilDes
 	return out
 }
 
@@ -627,39 +717,55 @@ async function genCardEmbed(card, showSet) {
 		card
 	)
 
+	// replace emoji shorthand to actual emoji identifier
 	let alreadyChange = []
-	for (const emoji of info.generalInfo.matchAll(/:([^\sx:]+):/g)) {
-		if (alreadyChange.includes(emoji[0])) break
-		try {
-			if (!isNaN(parseInt(emoji[1]))) {
-				info.generalInfo = info.generalInfo.replaceAll(
+	for (let field of Object.keys(info)) {
+		for (const emoji of info[field].matchAll(/:([^\sx:]+):/g)) {
+			if (alreadyChange.includes(emoji[0])) break
+			try {
+				if (!isNaN(parseInt(emoji[1]))) {
+					info[field] = info[field].replaceAll(
+						emoji[0],
+						await numToEmoji(emoji[1])
+					)
+					continue
+				}
+				info[field] = info[field].replaceAll(
 					emoji[0],
-					await numToEmoji(emoji[1])
+					await getEmoji(emoji[1])
 				)
-				continue
-			}
-			info.generalInfo = info.generalInfo.replaceAll(
-				emoji[0],
-				await getEmoji(emoji[1])
-			)
-		} catch {}
-		alreadyChange.push(emoji[0])
+			} catch {}
+			alreadyChange.push(emoji[0])
+		}
 	}
 
-	info.generalInfo = info.generalInfo.replaceAll(":x_:", getEmoji("x_"))
-	embed.setDescription(info.generalInfo)
-	if (card.sigils)
-		embed.addFields({
-			name: "== SIGIL ==",
-			value: info.sigilDescription,
-			inline: true,
-		})
+	// info.general = info.generalInfo.replaceAll(":x_:", getEmoji("x_"))
 
-	if (info.extraInfo != "") {
-		embed.addFields({
-			name: "== EXTRA INFO ==",
-			value: info.extraInfo,
-		})
+	// embed.setDescription(info.generalInfo)
+	// if (card.sigils)
+	// 	embed.addFields({
+	// 		name: "== SIGIL ==",
+	// 		value: info.sigilDescription,
+	// 		inline: true,
+	// 	})
+
+	// if (info.extraInfo != "") {
+	// 	embed.addFields({
+	// 		name: "== EXTRA INFO ==",
+	// 		value: info.extraInfo,
+	// 	})
+	// }
+
+	for (const fieldName of Object.keys(info)) {
+		if (fieldName == "general") {
+			embed.setDescription(info[fieldName])
+		} else {
+			if (info[fieldName])
+				embed.addFields({
+					name: fieldName,
+					value: info[fieldName],
+				})
+		}
 	}
 
 	if (card.footnote) {
@@ -692,11 +798,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				: interaction.channel
 
 		if (options.getString("message")) {
-			var temp = await channel.messages.fetch(
-				options.getString("message")
-			)
-
-			temp.reply(message)
+			;(
+				await getMessage(
+					interaction.channel,
+					options.getString("message")
+				)
+			).reply(message)
 		} else {
 			channel.send(message)
 		}
@@ -712,13 +819,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		})
 		await interaction.reply(`Possible set code for searching:\n${temp}`)
 	} else if (commandName === "ping") {
-		if (interaction.user.id == "668722928581345290") {
-			await interaction.reply({
-				content: "Friendly, please stope",
-				ephemeral: true,
-			})
-			return
-		}
 		await interaction.reply(
 			randInt(1, 4) == 4
 				? randomChoice([
@@ -734,7 +834,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						"https://www.youtube.com/watch?v=b7vWLz9iGsk",
 						"I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
 						"Stoat is not dense >:(",
-						"Friendly are you ok?",
 				  ])
 				: "Pong!"
 		)
@@ -1513,6 +1612,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)
 		)
 		await interaction.reply({ content: "Retried", ephemeral: true })
+	} else if (commandName === "react") {
+		;(
+			await getMessage(interaction.channel, options.getString("message"))
+		).react(options.getString("emoji"))
+		await interaction.reply({ content: "Reacted", ephemeral: true })
 	} else if (commandName === "test") {
 		console.log(isPerm(interaction))
 	}

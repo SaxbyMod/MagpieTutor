@@ -206,6 +206,18 @@ const commands = [
 				.setRequired(true)
 		),
 	new SlashCommandBuilder()
+		.setName("react")
+		.setDescription("React to texts")
+		.addStringOption((option) =>
+			option
+				.setName("message")
+				.setDescription("message")
+				.setRequired(true)
+		)
+		.addStringOption((option) =>
+			option.setName("emoji").setDescription("emoji").setRequired(true)
+		),
+	new SlashCommandBuilder()
 		.setName("test")
 		.setDescription("Testing commands"),
 ].map((command) => command.toJSON())
