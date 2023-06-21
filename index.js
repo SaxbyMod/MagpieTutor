@@ -137,7 +137,7 @@ const setFormatList = {
 			name: "== EXTRA INFO ==",
 			info: [
 				{ text: "**Change into**: {evolution}\n", type: "sub" },
-				{ text: "**Shed**: {shed}\n", type: "sub" },
+				{ text: "**Shed**: {sheds}\n", type: "sub" },
 				{
 					text: "**This card split into**: {left_half} (Left), {right_half} (Right)\n",
 					type: "sub",
@@ -164,7 +164,7 @@ const setFormatList = {
 				{ text: "{mox_cost}", type: "mox" },
 				{ text: "\n\n**Sigils**: {sigils}\n", type: "list" },
 				{ text: "**Change into**: {evolution}\n", type: "sub" },
-				{ text: "**Shed**: {shed}\n", type: "sub" },
+				{ text: "**Shed**: {sheds}\n", type: "sub" },
 				{
 					text: "**This card split into**: {left_half} (Left), {right_half} (Right)",
 					type: "sub",
@@ -417,7 +417,7 @@ async function messageSearch(message, returnValue = false) {
 	let attachmentList = []
 	let msg = ""
 
-	for (const cardName of message.content
+	outer: for (const cardName of message.content
 		.toLowerCase()
 		.matchAll(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
 		let selectedSet = setList[cardName[1][0]]
@@ -445,8 +445,8 @@ async function messageSearch(message, returnValue = false) {
 					} else {
 						attachmentList.push(card.image_uris.normal)
 					}
-					continue
 				}
+				continue outer
 			} else if (selectedSet.type == "modifier") {
 				if (selectedSet.name == "original version") {
 					noAlter = true
@@ -788,7 +788,6 @@ async function genCardEmbed(card, compactDisplay = false) {
 	let alreadyChange = []
 	for (let field of Object.keys(info)) {
 		for (const emoji of info[field].matchAll(/:([^\sx:]+):/g)) {
-			console.log(emoji)
 			if (alreadyChange.includes(emoji[0])) continue
 			try {
 				if (!isNaN(parseInt(emoji[1]))) {

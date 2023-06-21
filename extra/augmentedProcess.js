@@ -56,7 +56,7 @@ async function fetchAug() {
 					cardFormated["shattered"].push(`shattered_${temp[2]}`)
 				}
 			} else if (
-				["sapphire", "ruby", "emerald"].some((i) => cost.includes(i))
+				["sapphire", "ruby", "emerald", "prism"].some((i) => cost.includes(i))
 			) {
 				if (!cardFormated["mox"]) cardFormated["mox"] = []
 				for (let i = 0; i < temp[0]; i++) {
