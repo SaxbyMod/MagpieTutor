@@ -489,11 +489,13 @@ function genDescription(textFormat, card) {
 		completeInfo = ""
 
 		if (field.type == "keyword") {
-			card[field.var].forEach((keyword) => {
-				completeInfo += `**${keyword}**: ${
-					setsData[card.set].sigils[keyword]
-				}\n`
-			})
+			if (card[field.var]) {
+				card[field.var].forEach((keyword) => {
+					completeInfo += `**${keyword}**: ${
+						setsData[card.set].sigils[keyword]
+					}\n`
+				})
+			}
 		} else {
 			for (const info of Object.values(field.info)) {
 				let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
@@ -501,7 +503,6 @@ function genDescription(textFormat, card) {
 				if (info.type == "mox") {
 					// idk what this do anymore i was very high
 					temp = {} // make a dict to put them in so .format can use it as key
-					console.log(info.text.match(/{(\w+)}/g)[0].slice(1, -1))
 					temp[
 						info.text.match(/{(\w+)}/g)[0].slice(1, -1)
 					] /* field name = var name */ = card[
@@ -698,7 +699,8 @@ async function genCardEmbed(card, showSet) {
 	let alreadyChange = []
 	for (let field of Object.keys(info)) {
 		for (const emoji of info[field].matchAll(/:([^\sx:]+):/g)) {
-			if (alreadyChange.includes(emoji[0])) break
+			console.log(emoji)
+			if (alreadyChange.includes(emoji[0])) continue
 			try {
 				if (!isNaN(parseInt(emoji[1]))) {
 					info[field] = info[field].replaceAll(
@@ -717,21 +719,6 @@ async function genCardEmbed(card, showSet) {
 	}
 
 	info.general = info.general.replaceAll(":x_:", getEmoji("x_"))
-
-	// embed.setDescription(info.generalInfo)
-	// if (card.sigils)
-	// 	embed.addFields({
-	// 		name: "== SIGIL ==",
-	// 		value: info.sigilDescription,
-	// 		inline: true,
-	// 	})
-
-	// if (info.extraInfo != "") {
-	// 	embed.addFields({
-	// 		name: "== EXTRA INFO ==",
-	// 		value: info.extraInfo,
-	// 	})
-	// }
 
 	for (const fieldName of Object.keys(info)) {
 		if (fieldName == "general") {
@@ -1107,7 +1094,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			} else if (options.getString("deck-list")) {
 				let temp = options.getString("deck-list").split(";")
 				temp = temp.map((i) => i.split(","))
-				console.log(temp)
 				fullDeck = temp[0]
 				fullSide = temp[1] ? temp[1] : []
 			} else {
@@ -1643,7 +1629,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	}
 	if (interaction.isButton()) {
 		if (interaction.component.customId == "retry") {
-			console.log("here")
 			await interaction.update(
 				await messageSearch(
 					await getMessage(
