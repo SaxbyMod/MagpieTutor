@@ -106,18 +106,6 @@ const getMessage = async (channel, id) => {
 }
 
 //define the ruleset shit
-const setList = {
-	comp: { name: "competitive", type: "107" },
-	e: { name: "eternal", type: "107" },
-	v: { name: "vanilla", type: "107" },
-	m: { name: "magic the gathering", type: "special" },
-	o: { name: "original version", type: "special" },
-	a: {
-		name: "augmented",
-		type: "specialLoad",
-	},
-}
-
 const setFormatList = {
 	imf: {
 		general: {
@@ -157,6 +145,33 @@ const setFormatList = {
 			],
 		},
 	},
+	imfCompact: {
+		general: {
+			type: "general",
+			info: [
+				{
+					text: `:{blood_cost}::imfBlood: `,
+					type: "sub",
+				},
+				{
+					text: ":{bone_cost}::imfBone: ",
+					type: "sub",
+				},
+				{
+					text: ":{energy_cost}::imfEnergy: ",
+					type: "sub",
+				},
+				{ text: "{mox_cost}", type: "mox" },
+				{ text: "\n\n**Sigils**: {sigils}\n", type: "list" },
+				{ text: "**Change into**: {evolution}\n", type: "sub" },
+				{ text: "**Shed**: {shed}\n", type: "sub" },
+				{
+					text: "**This card split into**: {left_half} (Left), {right_half} (Right)",
+					type: "sub",
+				},
+			],
+		},
+	},
 	augmented: {
 		general: {
 			type: "general",
@@ -186,6 +201,69 @@ const setFormatList = {
 			name: "== EXTRA INFO ==",
 			info: [{ text: "**Token**: {token}", type: "sub" }],
 		},
+	},
+	augmentedCompact: {
+		general: {
+			type: "general",
+			info: [
+				{ text: "{tribes} {tier}\n", type: "sub" },
+
+				{ text: ":{blood}::blood: ", type: "sub" },
+				{ text: ":{bone}::bones:", type: "sub" },
+				{
+					text: ":{energy}::energy: ",
+					type: "sub",
+				},
+				{ text: "{mox} ", type: "mox" },
+				{ text: "{shattered}", type: "mox" },
+				{ text: "\n**Sigils**: {sigils}", type: "list" },
+				{ text: "\n**Traits**: {traits}", type: "list" },
+				{ text: "\n**Token**: {token}", type: "sub" },
+			],
+		},
+	},
+}
+
+const setList = {
+	//imf set
+	comp: {
+		name: "competitive",
+		type: "107",
+		format: setFormatList.imf,
+		compactFormat: setFormatList.imfCompact,
+	},
+	e: {
+		name: "eternal",
+		type: "107",
+		format: setFormatList.imf,
+		compactFormat: setFormatList.imfCompact,
+	},
+	v: {
+		name: "vanilla",
+		type: "107",
+		format: setFormatList.imf,
+		compactFormat: setFormatList.imfCompact,
+	},
+
+	//other set
+	a: {
+		name: "augmented",
+		type: "specialLoad",
+		format: setFormatList.augmented,
+		compactFormat: setFormatList.augmentedCompact,
+	},
+
+	// special set
+	m: { name: "magic the gathering", type: "special" },
+
+	// modifier
+	o: {
+		name: "original version",
+		type: "modifier",
+	},
+	c: {
+		name: "compact",
+		type: "modifier",
 	},
 }
 
@@ -341,35 +419,46 @@ async function messageSearch(message, returnValue = false) {
 
 	for (const cardName of message.content
 		.toLowerCase()
-		.matchAll(/(\w{0,2})\[{2}([^\]]+)\]{2}/g)) {
+		.matchAll(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
 		let selectedSet = setList[cardName[1][0]]
 			? setList[cardName[1][0]]
 			: setList.comp
 		let name = cardName[2]
 		let card
 		let noAlter = false
+		let compactDisplay = false
 
-		if (selectedSet.type == "special") {
-			if (selectedSet.name == "magic the gathering") {
-				const card = await fetchMagicCard(name)
+		redo: while (true) {
+			if (selectedSet.type == "special") {
+				if (selectedSet.name == "magic the gathering") {
+					const card = await fetchMagicCard(name)
 
-				if (card == -1) {
-					embedList.push(
-						new EmbedBuilder()
-							.setColor(Colors.Red)
-							.setTitle(`Card "${name}" not found`)
-							.setDescription(`Magic card ${name} not found\n`)
-					)
-				} else {
-					attachmentList.push(card.image_uris.normal)
+					if (card == -1) {
+						embedList.push(
+							new EmbedBuilder()
+								.setColor(Colors.Red)
+								.setTitle(`Card "${name}" not found`)
+								.setDescription(
+									`Magic card ${name} not found\n`
+								)
+						)
+					} else {
+						attachmentList.push(card.image_uris.normal)
+					}
+					continue
 				}
-				continue
-			} else if (selectedSet.name == "original version") {
-				noAlter = true
+			} else if (selectedSet.type == "modifier") {
+				if (selectedSet.name == "original version") {
+					noAlter = true
+				} else if (selectedSet.name == "compact") {
+					compactDisplay = true
+				}
 				selectedSet = setList[cardName[1][1]]
 					? setList[cardName[1][1]]
 					: setList.comp
+				continue redo
 			}
+			break
 		}
 
 		// get the best match
@@ -448,7 +537,7 @@ async function messageSearch(message, returnValue = false) {
 			card = await fetchCard(bestMatch.target, selectedSet.name, noAlter)
 		}
 
-		let temp = await genCardEmbed(card)
+		let temp = await genCardEmbed(card, compactDisplay)
 
 		embedList.push(temp[0])
 		if (temp[1] != 1) attachmentList.push(temp[1])
@@ -511,6 +600,8 @@ function genDescription(textFormat, card) {
 						.map((a) => `:${a}:`.toLowerCase())
 						.join("") // put the mox in : to make it emoji
 					completeInfo += info.text.format(temp)
+				} else if (info.type == "list") {
+					completeInfo += info.text.format(card)
 				} else {
 					completeInfo += info.text.format(card)
 				}
@@ -622,9 +713,7 @@ async function fetchMagicCard(name) {
 }
 
 // generate embed
-async function genCardEmbed(card, showSet) {
-	// if the card doesn't exist or missing, exi
-
+async function genCardEmbed(card, compactDisplay = false) {
 	let attachment
 	// try getting the portrait if it doesn't exist render no portrait
 	try {
@@ -680,9 +769,7 @@ async function genCardEmbed(card, showSet) {
 				card.rare ? getEmoji("rare") : ""
 			}${card.nosac ? getEmoji("unsacable") : ""}${
 				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}  ${
-				showSet ? `[${setsData[card.set].ruleset}]` : ""
-			}`
+			}${card.banned ? getEmoji("banned") : ""}`
 		)
 
 	if (attachment)
@@ -691,7 +778,9 @@ async function genCardEmbed(card, showSet) {
 		)
 
 	const info = genDescription(
-		setFormatList[card.set == setList.a.name ? "augmented" : "imf"],
+		Object.values(setList).find((set) => set.name == card.set)[
+			compactDisplay ? "compactFormat" : "format"
+		],
 		card
 	)
 
@@ -741,6 +830,7 @@ async function genCardEmbed(card, showSet) {
 // on ready call
 client.once(Events.ClientReady, () => {
 	console.log("Ready!")
+	client.user.setActivity("Being maintain")
 })
 
 // on commands call
