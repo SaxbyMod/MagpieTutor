@@ -830,7 +830,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 // on ready call
 client.once(Events.ClientReady, () => {
 	console.log("Ready!")
-	client.user.setActivity("Being maintain")
+	client.user.setActivity("YOUR MOM")
 })
 
 // on commands call
