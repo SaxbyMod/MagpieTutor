@@ -881,9 +881,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		} else if (commandName === "set-code") {
 			var temp = ""
 			Object.keys(setList).forEach((key) => {
-				temp += `${key}: ${setList[key].name}\n`
+				temp += `**${key}**: ${setList[key].name}${
+					setList[key].type == "modifier" ? " (Modifier)" : ""
+				}\n`
 			})
-			await interaction.reply(`Possible set code for searching:\n${temp}`)
+			await interaction.reply(
+				`Possible set code for searching:\n\n${temp}\nModifier can be add infront of set code to modify the output`
+			)
 		} else if (commandName === "ping") {
 			await interaction.reply(
 				randInt(1, 4) == 4
