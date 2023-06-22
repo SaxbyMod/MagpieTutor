@@ -125,6 +125,7 @@ const setFormatList = {
 					type: "sub",
 				},
 				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+				{ text: "\n\n{attack}", type: "stat" },
 			],
 		},
 		sigil: {
@@ -162,7 +163,8 @@ const setFormatList = {
 					type: "sub",
 				},
 				{ text: "{mox_cost}", type: "mox" },
-				{ text: "\n\n**Sigils**: {sigils}\n", type: "list" },
+				{ text: "\n{attack}", type: "stat" },
+				{ text: "\n**Sigils**: {sigils}\n", type: "list" },
 				{ text: "**Change into**: {evolution}\n", type: "sub" },
 				{ text: "**Shed**: {sheds}\n", type: "sub" },
 				{
@@ -188,6 +190,7 @@ const setFormatList = {
 				},
 				{ text: "\n**Mox Cost**: {mox}", type: "mox" },
 				{ text: "\n**Shattered Mox Cost**: {shattered}", type: "mox" },
+				{ text: "\n\n{attack}", type: "stat" },
 			],
 		},
 		sigil: {
@@ -216,6 +219,7 @@ const setFormatList = {
 				},
 				{ text: "{mox} ", type: "mox" },
 				{ text: "{shattered}", type: "mox" },
+				{ text: "\n{attack}", type: "stat" },
 				{ text: "\n**Sigils**: {sigils}", type: "list" },
 				{ text: "\n**Traits**: {traits}", type: "list" },
 				{ text: "\n**Token**: {token}", type: "sub" },
@@ -602,19 +606,29 @@ function genDescription(textFormat, card) {
 					completeInfo += info.text.format(temp)
 				} else if (info.type == "list") {
 					completeInfo += info.text.format(card)
+				} else if (info.type == "stat") {
+					completeInfo += info.text.replace(
+						"{attack}",
+						`**Stat**: ${
+							card.atkspecial
+								? `:${card.atkspecial}:`
+								: card.attack
+						} / ${card.health} ${
+							card.atkspecial
+								? `(${
+										specialAttackDescription[
+											card.atkspecial
+										]
+								  })`
+								: ""
+						}`
+					)
 				} else {
 					completeInfo += info.text.format(card)
 				}
 			}
 		}
 		if (field.type == "general") {
-			completeInfo += `\n\n**Stat**: ${
-				card.atkspecial ? `:${card.atkspecial}:` : card.attack
-			} / ${card.health} ${
-				card.atkspecial
-					? `(${specialAttackDescription[card.atkspecial]})`
-					: ""
-			}`
 			out["general"] = completeInfo
 		} else {
 			out[field.name] = completeInfo
@@ -930,7 +944,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			var wildCount = 0
 			let flag = false
 
-			// repeat for deck size
 			for (let cycle = 0; cycle < deckSize; cycle++) {
 				// take 4 random common
 				let temp = randomChoices(
@@ -1644,45 +1657,87 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 			}
 
-			await interaction.reply({
+			const message = await interaction.reply({
 				content:
-					"What card is this? Send a message in this channel to guess",
+					"What card is this? Press the `Guess` button and submit the modal to guess",
 				files: [new AttachmentBuilder(await portrait.encode("png"))],
+				components: [
+					new ActionRowBuilder().addComponents(
+						new ButtonBuilder()
+							.setCustomId("guess")
+							.setLabel("Guess")
+							.setStyle(ButtonStyle.Primary)
+					),
+				],
+				fetchReply: true,
 			})
 
-			const filter = (i) => i.author.id === interaction.user.id
-			await interaction.channel
-				.awaitMessages({ max: 1, time: 180000, filter })
-				.then(async (collected) => {
-					const i = collected.first()
-					if (
-						StringSimilarity.compareTwoStrings(
-							card.name.toLowerCase(),
-							i.content.toLowerCase()
-						) >= 0.4
-					) {
-						await i.react(getEmoji("thumbup"))
-						await i.reply({
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					} else {
-						await i.react(getEmoji("thumbdown"))
-						await i.reply({
-							content: `The card is ${card.name}`,
-							files: [
-								new AttachmentBuilder(await full.encode("png")),
-							],
-						})
-					}
-				})
-				.catch(
-					async (e) =>
-						await interaction.editReply(
-							`Error: ${coloredString(`$$r${e}`)}`
+			const filter = (i) => i.user.id === interaction.user.id
+
+			await message
+				.awaitMessageComponent({ time: 180000, filter })
+				.then(async (inter) => {
+					const modal = new ModalBuilder()
+						.setCustomId("guessModal")
+						.setTitle("Enter your guess below")
+
+					modal.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setCustomId("guess")
+								.setLabel("What is the card?")
+								.setPlaceholder("Card name here")
+								.setRequired(true)
+								.setStyle(TextInputStyle.Short)
 						)
-				)
+					)
+					await inter.showModal(modal)
+
+					await inter
+						.awaitModalSubmit({ time: 120000, filter })
+						.then(async (i) => {
+							if (
+								StringSimilarity.compareTwoStrings(
+									card.name.toLowerCase(),
+									i.fields
+										.getTextInputValue("guess")
+										.toLowerCase()
+								) >= 0.4
+							) {
+								await i.update({
+									content: `Your guess (${i.fields.getTextInputValue(
+										"guess"
+									)}) was correct`,
+									files: [
+										new AttachmentBuilder(
+											await full.encode("png")
+										),
+									],
+									components: [],
+								})
+							} else {
+								await i.update({
+									content: `Your guess (${i.fields.getTextInputValue(
+										"guess"
+									)}) was incorrect. The card was ${
+										card.name
+									}`,
+									files: [
+										new AttachmentBuilder(
+											await full.encode("png")
+										),
+									],
+									components: [],
+								})
+							}
+						})
+				})
+			// .catch(
+			// 	async (e) =>
+			// 		await interaction.editReply(
+			// 			`Error: ${coloredString(`$$r${e}`)}`
+			// 		)
+			// )
 		} else if (commandName === "retry") {
 			await messageSearch(
 				await interaction.channel.messages.fetch(
