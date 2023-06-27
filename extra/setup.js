@@ -143,19 +143,19 @@ const commands = [
 					option
 						.setName("difficulty")
 						.setDescription(
-							"The difficulty you want. Easy is 20, Normal is 15, Hard is 10 and VERY FUCKING HARD ia 5"
+							"The difficulty you want. Easy is 50%, Normal is 35%, Hard is 25% and VERY FUCKING HARD is 12%"
 						)
 						.addChoices(
-							{ name: "Easy", value: 20 },
-							{ name: "Normal", value: 15 },
-							{ name: "Hard", value: 10 },
-							{ name: "VERY FUCKING HARD", value: 5 }
+							{ name: "Easy", value: 50 },
+							{ name: "Normal", value: 35 },
+							{ name: "Hard", value: 25 },
+							{ name: "VERY FUCKING HARD", value: 12 }
 						)
 				)
 				.addIntegerOption((option) =>
 					option
 						.setName("size")
-						.setDescription("The size of the piece")
+						.setDescription("The size of the piece in percentage")
 				)
 		)
 		.addSubcommand((sub) =>

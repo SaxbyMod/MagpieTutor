@@ -92,6 +92,7 @@ async function fetchAug() {
 		if (!cardFormated["sigils"] || cardFormated["sigils"].length <= 0) {
 			delete cardFormated["sigils"]
 		}
+		cardFormated["art"] = card["Art"]
 
 		imfJson.cards.push(cardFormated)
 	}

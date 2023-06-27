@@ -105,6 +105,7 @@ const getMessage = async (channel, id) => {
 	return await channel.messages.fetch(id)
 }
 
+const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 //define the ruleset shit
 const setFormatList = {
 	imf: {
@@ -125,7 +126,7 @@ const setFormatList = {
 					type: "sub",
 				},
 				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
-				{ text: "\n\n{attack}", type: "stat" },
+				{ text: "\n\n{health}", type: "stat" },
 			],
 		},
 		sigil: {
@@ -163,7 +164,7 @@ const setFormatList = {
 					type: "sub",
 				},
 				{ text: "{mox_cost}", type: "mox" },
-				{ text: "\n{attack}", type: "stat" },
+				{ text: "\n{health}", type: "stat" },
 				{ text: "\n**Sigils**: {sigils}\n", type: "list" },
 				{ text: "**Change into**: {evolution}\n", type: "sub" },
 				{ text: "**Shed**: {sheds}\n", type: "sub" },
@@ -190,7 +191,7 @@ const setFormatList = {
 				},
 				{ text: "\n**Mox Cost**: {mox}", type: "mox" },
 				{ text: "\n**Shattered Mox Cost**: {shattered}", type: "mox" },
-				{ text: "\n\n{attack}", type: "stat" },
+				{ text: "\n\n{health}", type: "stat" },
 			],
 		},
 		sigil: {
@@ -219,7 +220,7 @@ const setFormatList = {
 				},
 				{ text: "{mox} ", type: "mox" },
 				{ text: "{shattered}", type: "mox" },
-				{ text: "\n{attack}", type: "stat" },
+				{ text: "\n{health}", type: "stat" },
 				{ text: "\n**Sigils**: {sigils}", type: "list" },
 				{ text: "\n**Traits**: {traits}", type: "list" },
 				{ text: "\n**Token**: {token}", type: "sub" },
@@ -417,10 +418,13 @@ function coloredString(str, raw) {
 }
 
 async function messageSearch(message, returnValue = false) {
+	const start = performance.now()
 	let embedList = []
 	let attachmentList = []
 	let msg = ""
-
+	if (!message.content.toLowerCase().match(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
+		return
+	}
 	outer: for (const cardName of message.content
 		.toLowerCase()
 		.matchAll(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
@@ -564,7 +568,8 @@ async function messageSearch(message, returnValue = false) {
 	if (msg !== "") replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
-
+	const end = performance.now()
+	console.log(`Search comnplete in ${end - start}ms`)
 	if (
 		replyOption["content"] ||
 		replyOption["embeds"] ||
@@ -608,7 +613,7 @@ function genDescription(textFormat, card) {
 					completeInfo += info.text.format(card)
 				} else if (info.type == "stat") {
 					completeInfo += info.text.replace(
-						"{attack}",
+						"{health}",
 						`**Stat**: ${
 							card.atkspecial
 								? `:${card.atkspecial}:`
@@ -1462,7 +1467,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				ephemeral: true,
 			})
 		} else if (commandName === "guess-the-card") {
-			const card = randomChoice(setsData[options.getString("set")].cards)
+			// TODO filter the list instead of this abomnination
+			const card = (() => {
+				while (true) {
+					let c = randomChoice(
+						setsData[options.getString("set")].cards
+					)
+					if (
+						options.getString("set") == "augmented" &&
+						c.art != "Done"
+					) {
+						continue
+					}
+					return c
+				}
+			})()
+
 			// get the card picture
 			const cardPortrait = await Canvas.loadImage(
 				options.getString("set") == "augmented"
@@ -1475,6 +1495,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							"%20"
 					  )}.png`
 			)
+
 			if (options.getString("set") == "augmented") {
 				var bg = await Canvas.loadImage(
 					`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
@@ -1484,26 +1505,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					}_${card.temple.toLowerCase()}.png`
 				)
 			}
+
 			let portrait
 			let full
 
 			if (options.getSubcommand() === "normal") {
-				const size = options.getInteger("difficulty")
+				const percentage = options.getInteger("difficulty")
 					? options.getInteger("difficulty")
 					: options.getInteger("size")
 					? options.getInteger("size")
-					: 15
+					: 35
+
+				const width = clamp(
+					Math.floor((cardPortrait.width * percentage) / 100),
+					1,
+					cardPortrait.width
+				)
+				const height = clamp(width, 1, cardPortrait.height)
 
 				const scale = 50
 
 				// get the first crop point
 				const startCropPos = [
-					randInt(0, cardPortrait.width - size),
-					randInt(0, cardPortrait.height - size),
+					randInt(0, cardPortrait.width - width),
+					randInt(0, cardPortrait.height - height),
 				]
 
 				// make the canvas
-				portrait = Canvas.createCanvas(size * scale, size * scale)
+				portrait = Canvas.createCanvas(width * scale, height * scale)
 
 				let context = portrait.getContext("2d")
 
@@ -1513,8 +1542,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						bg,
 						startCropPos[0],
 						startCropPos[1],
-						size,
-						size,
+						width,
+						height,
 						0,
 						0,
 						portrait.width,
@@ -1527,8 +1556,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					startCropPos[1],
 
 					// size of the crop region
-					size,
-					size,
+					width,
+					height,
 
 					// position to place the region to
 					0,
@@ -1555,14 +1584,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 				// set the color and size of the box
 				context.strokeStyle = "#f00524"
-				context.lineWidth = scale / 10
+				context.lineWidth = full.width * (0.5 / 100)
 
 				// draw the box
 				context.strokeRect(
 					startCropPos[0] * scale,
 					startCropPos[1] * scale,
-					size * scale,
-					size * scale
+					width * scale,
+					height * scale
 				)
 			} else if (options.getSubcommand() === "scramble") {
 				const scale = 50
@@ -1736,12 +1765,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							}
 						})
 				})
-			// .catch(
-			// 	async (e) =>
-			// 		await interaction.editReply(
-			// 			`Error: ${coloredString(`$$r${e}`)}`
-			// 		)
-			// )
+				.catch(
+					async (e) =>
+						await interaction.editReply(
+							`Error: ${coloredString(`$$r${e}`)}`
+						)
+				)
 		} else if (commandName === "retry") {
 			await messageSearch(
 				await interaction.channel.messages.fetch(
