@@ -56,7 +56,9 @@ async function fetchAug() {
 					cardFormated["shattered"].push(`shattered_${temp[2]}`)
 				}
 			} else if (
-				["sapphire", "ruby", "emerald", "prism"].some((i) => cost.includes(i))
+				["sapphire", "ruby", "emerald", "prism"].some((i) =>
+					cost.includes(i)
+				)
 			) {
 				if (!cardFormated["mox"]) cardFormated["mox"] = []
 				for (let i = 0; i < temp[0]; i++) {
@@ -99,6 +101,13 @@ async function fetchAug() {
 			imfJson.sigils[sigil["Name"]] = sigil["Text"].replaceAll("\n", "")
 	}
 
+	imfJson.cards.push({
+		name: "Maid Goat",
+		attack: 1,
+		health: 3,
+		blood: 2,
+		sigils: ["Worthy Sacrifice", "Morsel"],
+	})
 	return imfJson
 }
 
