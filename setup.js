@@ -1,5 +1,5 @@
 const { REST, Routes, SlashCommandBuilder } = require("discord.js")
-const { clientId, token } = require("../config.json")
+const { clientId, token } = require("./config.json")
 
 const commands = [
 	new SlashCommandBuilder()
@@ -143,19 +143,19 @@ const commands = [
 					option
 						.setName("difficulty")
 						.setDescription(
-							"The difficulty you want. Easy is 50%, Normal is 35%, Hard is 25% and VERY FUCKING HARD is 12%"
+							"The difficulty you want. Easy is 20, Normal is 15, Hard is 10 and VERY FUCKING HARD ia 5"
 						)
 						.addChoices(
-							{ name: "Easy", value: 50 },
-							{ name: "Normal", value: 35 },
-							{ name: "Hard", value: 25 },
-							{ name: "VERY FUCKING HARD", value: 12 }
+							{ name: "Easy", value: 20 },
+							{ name: "Normal", value: 15 },
+							{ name: "Hard", value: 10 },
+							{ name: "VERY FUCKING HARD", value: 5 }
 						)
 				)
 				.addIntegerOption((option) =>
 					option
 						.setName("size")
-						.setDescription("The size of the piece in percentage")
+						.setDescription("The size of the piece")
 				)
 		)
 		.addSubcommand((sub) =>
@@ -204,18 +204,6 @@ const commands = [
 				.setName("message")
 				.setDescription("The message id to retry")
 				.setRequired(true)
-		),
-	new SlashCommandBuilder()
-		.setName("react")
-		.setDescription("React to texts")
-		.addStringOption((option) =>
-			option
-				.setName("message")
-				.setDescription("message")
-				.setRequired(true)
-		)
-		.addStringOption((option) =>
-			option.setName("emoji").setDescription("emoji").setRequired(true)
 		),
 	new SlashCommandBuilder()
 		.setName("test")
