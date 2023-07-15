@@ -30,6 +30,7 @@ const format = require("string-format")
 
 format.extend(String.prototype, {})
 
+const searchRegex = /(\w*)\[{2}([^\]]+)\]{2}/g
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -487,12 +488,12 @@ async function messageSearch(message, returnValue = false) {
 	let embedList = []
 	let attachmentList = []
 	let msg = ""
-	if (!message.content.toLowerCase().match(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
+	if (!message.content.toLowerCase().match(searchRegex)) {
 		return
 	}
 	outer: for (let cardName of message.content
 		.toLowerCase()
-		.matchAll(/(\w*)\[{2}([^\]]+)\]{2}/g)) {
+		.matchAll(searchRegex)) {
 		let selectedSet = setList[cardName[1][0]]
 			? setList[cardName[1][0]]
 			: setList.comp
