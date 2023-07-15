@@ -28,7 +28,6 @@ const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
 const format = require("string-format")
 
-const augmented = require("./extra/augmentedProcess")
 format.extend(String.prototype, {})
 
 //set up the bot client
@@ -227,6 +226,41 @@ const setFormatList = {
 			],
 		},
 	},
+	redux: {
+		general: {
+			type: "general",
+			info: [
+				{ text: "*{description}*\n", type: "sub" },
+				{
+					text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
+					type: "sub",
+				},
+				{
+					text: `\n**Sap Cost**: :{sap_cost}::x_::sap:`,
+					type: "sub",
+				},
+				{
+					text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+					type: "sub",
+				},
+				{
+					text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+					type: "sub",
+				},
+				{
+					text: "\n**Cell Cost**: :{cell_cost}::x_::cell:",
+					type: "sub",
+				},
+				{
+					text: "\n**Heat Cost**: :{heat_cost}::x_::heat:",
+					type: "sub",
+				},
+				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+				{ text: "\n\n{health}", type: "stat" },
+			],
+		},
+		sigil: { type: "special_keyword", name: "== SIGILS ==", var: "sigils" },
+	},
 }
 
 const setList = {
@@ -256,6 +290,14 @@ const setList = {
 		type: "specialLoad",
 		format: setFormatList.augmented,
 		compactFormat: setFormatList.augmentedCompact,
+		file: "./extra/augmentedProcess.js",
+	},
+	r: {
+		name: "redux",
+		type: "specialLoad",
+		format: setFormatList.redux,
+		compactFormat: setFormatList.redux,
+		file: "./extra/reduxProcess.js",
 	},
 
 	// special set
@@ -309,9 +351,7 @@ const specialMagick = [
 		} else if (set.type == "other") {
 			setsData[set.name] = require(set.file)
 		} else if (set.type == "specialLoad") {
-			if (set.name == "augmented") {
-				setsData[set.name] = await augmented.fetchAug()
-			}
+			setsData[set.name] = await require(set.file).load()
 		}
 		console.log(`Set ${set.name} loaded!`)
 	}
@@ -594,11 +634,22 @@ function genDescription(textFormat, card) {
 					}\n`
 				})
 			}
+		} else if (field.type == "special_keyword") {
+			if (card[field.var]) {
+				card[field.var].forEach((keyword) => {
+					completeInfo += `**${keyword.name}**: ${keyword.description}`
+				})
+			}
 		} else {
 			for (const info of Object.values(field.info)) {
+				if (!info.text.match(/{(\w+)}/g)) {
+					completeInfo += info.text
+					continue
+				}
 				let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
 				if (!temp) continue
 				if (info.type == "mox") {
+					if (temp.length < 1) continue
 					// idk what this do anymore i was very high
 					temp = {} // make a dict to put them in so .format can use it as key
 					temp[
@@ -1482,7 +1533,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					return c
 				}
 			})()
-
+			console.log(card.name)
 			// get the card picture
 			const cardPortrait = await Canvas.loadImage(
 				options.getString("set") == "augmented"

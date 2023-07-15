@@ -1,5 +1,5 @@
 var imfJson = {
-	ruleset: "Inscyption Redux",
+	ruleset: "Inscryption Redux",
 	hammers_per_turn: 1,
 	ant_limit: 2,
 	deck_size_min: 1,
@@ -10,7 +10,7 @@ var imfJson = {
 	allow_snuffing_candles: true,
 	opt_actives: false,
 	portrait: "portraits/Stoat",
-	description: "Augmented Ruleset in IMF, parse by Magpie ",
+	description: "Redux Ruleset in IMF, parse by Magpie.",
 	cards: [],
 	sigils: {},
 }
@@ -42,6 +42,7 @@ async function load() {
 	}
 	return imfJson
 }
+
 module.exports = {
 	load,
 }

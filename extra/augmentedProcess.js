@@ -12,12 +12,12 @@ var imfJson = {
 	allow_snuffing_candles: true,
 	opt_actives: false,
 	portrait: "portraits/Stoat",
-	description: "Augmented Ruleset in IMF, parse by Magpie ",
+	description: "Augmented Ruleset in IMF, parse by Magpie.",
 	cards: [],
 	sigils: {},
 }
 
-async function fetchAug() {
+async function load() {
 	let cardsRaw
 	let sigilRaw
 	await fetch(
@@ -113,5 +113,5 @@ async function fetchAug() {
 }
 
 module.exports = {
-	fetchAug,
+	load,
 }
