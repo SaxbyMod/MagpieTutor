@@ -283,6 +283,13 @@ const setList = {
 		format: setFormatList.imf,
 		compactFormat: setFormatList.imfCompact,
 	},
+	g: {
+		name: "mr.egg",
+		type: "url",
+		format: setFormatList.imf,
+		compactFormat: setFormatList.imfCompact,
+		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
+	},
 
 	//other set
 	a: {
@@ -311,7 +318,7 @@ const setList = {
 	c: {
 		name: "compact",
 		type: "modifier",
-	},
+	}
 }
 
 let setsData = {}
@@ -352,8 +359,22 @@ const specialMagick = [
 			setsData[set.name] = require(set.file)
 		} else if (set.type == "specialLoad") {
 			setsData[set.name] = await require(set.file).load()
+		} else if (set.type == "url") {
+			await fetch(set.url)
+				.then((res) => res.json())
+				.then((json) => {
+					setsData[set.name] = json
+				})
 		}
-		console.log(`Set ${set.name} loaded!`)
+		console.log(
+			`Set ${set.name} loaded! with set code "${Object.keys(setList).find(
+				(key) => setList[key] === set
+			)}"${
+				setsData[set.name]
+					? ` and ${setsData[set.name].cards.length} cards`
+					: ""
+			}`
+		)
 	}
 
 	// loading all the card pool
@@ -605,11 +626,11 @@ async function messageSearch(message, returnValue = false) {
 		],
 	}
 
-	if (msg !== "") replyOption["content"] = msg
+	const end = performance.now()
+	msg += `Search for complete in ${Math.round((end - start)*10)/10}ms`
+	replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
-	const end = performance.now()
-	console.log(`Search comnplete in ${end - start}ms`)
 	if (
 		replyOption["content"] ||
 		replyOption["embeds"] ||
@@ -713,13 +734,13 @@ async function fetchCard(name, setName, noAlter = false) {
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
 	} else {
-		if (card.set == setList.comp.name) {
-			card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+		if (card.set == setList.a.name) {
+			card.url = `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
 				" ",
 				"%20"
 			)}.png`
-		} else if (card.set == setList.a.name) {
-			card.url = `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
+		} else {
+			card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
 				" ",
 				"%20"
 			)}.png`
