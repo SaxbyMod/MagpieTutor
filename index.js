@@ -318,7 +318,11 @@ const setList = {
 	c: {
 		name: "compact",
 		type: "modifier",
-	}
+	},
+	p: {
+		name: "no portrait",
+		type: "modifier",
+	},
 }
 
 let setsData = {}
@@ -486,9 +490,9 @@ async function messageSearch(message, returnValue = false) {
 	if (!message.content.toLowerCase().match(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
 		return
 	}
-	outer: for (const cardName of message.content
+	outer: for (let cardName of message.content
 		.toLowerCase()
-		.matchAll(/(\w{0,3})\[{2}([^\]]+)\]{2}/g)) {
+		.matchAll(/(\w*)\[{2}([^\]]+)\]{2}/g)) {
 		let selectedSet = setList[cardName[1][0]]
 			? setList[cardName[1][0]]
 			: setList.comp
@@ -496,7 +500,7 @@ async function messageSearch(message, returnValue = false) {
 		let card
 		let noAlter = false
 		let compactDisplay = false
-
+		let noArt = false
 		redo: while (true) {
 			if (selectedSet.type == "special") {
 				if (selectedSet.name == "magic the gathering") {
@@ -521,9 +525,12 @@ async function messageSearch(message, returnValue = false) {
 					noAlter = true
 				} else if (selectedSet.name == "compact") {
 					compactDisplay = true
+				} else if (selectedSet.name == "no portrait") {
+					noArt = true
 				}
-				selectedSet = setList[cardName[1][1]]
-					? setList[cardName[1][1]]
+				cardName[1] = cardName[1].slice(1)
+				selectedSet = setList[cardName[1][0]]
+					? setList[cardName[1][0]]
 					: setList.comp
 				continue redo
 			}
@@ -603,7 +610,12 @@ async function messageSearch(message, returnValue = false) {
 				continue
 			}
 		} else {
-			card = await fetchCard(bestMatch.target, selectedSet.name, noAlter)
+			card = await fetchCard(
+				bestMatch.target,
+				selectedSet.name,
+				noAlter,
+				noArt
+			)
 		}
 
 		let temp = await genCardEmbed(card, compactDisplay)
@@ -627,7 +639,7 @@ async function messageSearch(message, returnValue = false) {
 	}
 
 	const end = performance.now()
-	msg += `Search for complete in ${Math.round((end - start)*10)/10}ms`
+	msg += `Search for complete in ${Math.round((end - start) * 10) / 10}ms`
 	replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
@@ -715,7 +727,7 @@ function genDescription(textFormat, card) {
 }
 
 // fetch the card and its url
-async function fetchCard(name, setName, noAlter = false) {
+async function fetchCard(name, setName, noAlter = false, noArt = false) {
 	let card
 
 	let set = setsData[setName]
@@ -729,7 +741,7 @@ async function fetchCard(name, setName, noAlter = false) {
 	if (!card) return card
 
 	card.set = setName
-	if (card.noArt) {
+	if (card.noArt || noArt) {
 		card.url = undefined
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
@@ -767,14 +779,19 @@ async function fetchCard(name, setName, noAlter = false) {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
 
-		card.name = "GAY DRAGON (Ruby Dragon)"
+		card.name = "GAY DRAGON"
 		card.description = "Modified portrait by ener"
 	} else if (card.name == "Horse Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
 		card.description = `Not make by ener :trolled:`
 	} else if (card.name == "The Moon") {
-		card.sigils = ["Omni Strike"]
+		card.sigils = [
+			"Omni Strike",
+			"Tidal Lock",
+			"Made of Stone",
+			"Mighty Leap",
+		]
 	} else if (card.name == "Adder") {
 		card.sigils = Array(6).fill("Handy")
 	} else if (card.name == "Squirrel Ball") {
