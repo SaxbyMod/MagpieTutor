@@ -30,7 +30,7 @@ const format = require("string-format")
 
 format.extend(String.prototype, {})
 
-const searchRegex = /(\w*)\[{2}([^\]]+)\]{2}/g
+const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -328,6 +328,10 @@ const setList = {
 		name: "sigil",
 		type: "modifier",
 	},
+	"!": {
+		name: "no search",
+		type: "modifier",
+	},
 }
 
 let setsData = {}
@@ -536,6 +540,8 @@ async function messageSearch(message, returnValue = false) {
 					noArt = true
 				} else if (selectedSet.name == "sigil") {
 					sigilSearch = true
+				} else if (selectedSet.name == "no search") {
+					continue outer
 				}
 				cardName[1] = cardName[1].slice(1)
 				selectedSet = setList[cardName[1][0]]
@@ -677,8 +683,8 @@ async function messageSearch(message, returnValue = false) {
 	}
 
 	const end = performance.now()
-	msg += `Search for complete in ${Math.round((end - start) * 10) / 10}ms`
-	replyOption["content"] = msg
+
+	if (msg != "") replyOption["content"] = msg
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
 	if (
@@ -686,6 +692,9 @@ async function messageSearch(message, returnValue = false) {
 		replyOption["embeds"] ||
 		replyOption["files"]
 	) {
+		replyOption["content"] += `Search for complete in ${
+			Math.round((end - start) * 10) / 10
+		}ms`
 		if (returnValue) return replyOption
 		await message.reply(replyOption)
 	}
