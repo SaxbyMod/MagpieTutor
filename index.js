@@ -324,6 +324,10 @@ const setList = {
 		name: "no portrait",
 		type: "modifier",
 	},
+	s: {
+		name: "sigil",
+		type: "modifier",
+	},
 }
 
 let setsData = {}
@@ -502,6 +506,8 @@ async function messageSearch(message, returnValue = false) {
 		let noAlter = false
 		let compactDisplay = false
 		let noArt = false
+		let sigilSearch = false
+
 		redo: while (true) {
 			if (selectedSet.type == "special") {
 				if (selectedSet.name == "magic the gathering") {
@@ -528,6 +534,8 @@ async function messageSearch(message, returnValue = false) {
 					compactDisplay = true
 				} else if (selectedSet.name == "no portrait") {
 					noArt = true
+				} else if (selectedSet.name == "sigil") {
+					sigilSearch = true
 				}
 				cardName[1] = cardName[1].slice(1)
 				selectedSet = setList[cardName[1][0]]
@@ -538,88 +546,117 @@ async function messageSearch(message, returnValue = false) {
 			break
 		}
 
-		// get the best match
-		const bestMatch = StringSimilarity.findBestMatch(
-			name,
-			setsCardPool[selectedSet.name]
-		).bestMatch
+		let temp
 
-		// if less than 40% match return error and continue to the next match
-		if (bestMatch.rating <= 0.4) {
-			if (name == "old_data") {
-				card = {
-					name: "Lorem",
-					description:
-						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-					sigils: ["Repulsive", "Bone King"],
-					blood_cost: -69,
-					bone_cost: -69,
-					energy_cost: -69,
-					mox_cost: ["Green", "Blue", "Orange"],
+		if (sigilSearch) {
+			// get the best match
+			const bestMatch = StringSimilarity.findBestMatch(
+				name,
+				Object.keys(setsData[selectedSet.name].sigils)
+			).bestMatch
 
-					attack: 69,
-					health: 420,
-					atkspecial: "mirror",
-
-					conduit: true,
-					rare: true,
-					nosac: true,
-					nohammer: true,
-					banned: true,
-
-					evolution: "I'm",
-					sheds: "Doing",
-					left_half: "Ur",
-					right_half: "Mom :)",
-
-					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
-					set: "competitive",
-				}
-			} else if (name == "deep_data") {
-				card = {
-					name: "Lorem",
-					description:
-						"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-					sigils: ["Repulsive", "Bone King"],
-					blood: -69,
-					bone: -69,
-					energy: -69,
-					mox: ["emerald", "sapphire", "ruby"],
-					shattered: [
-						"shattered_emerald",
-						"shattered_sapphire",
-						"shattered_ruby",
-					],
-
-					attack: 69,
-					health: 420,
-
-					url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
-					set: "augmented",
-				}
-			} else {
+			if (bestMatch.rating <= 0.4) {
 				embedList.push(
 					new EmbedBuilder()
 						.setColor(Colors.Red)
-						.setTitle(`Card "${name}" not found`)
+						.setTitle(`Sigil "${name}" not found`)
 						.setDescription(
-							`No card found in selected set (${
+							`No Sigil found in selected set (${
 								setsData[selectedSet.name].ruleset
 							}) that have more than 40% similarity with the search term(${name})`
 						)
 				)
 				continue
 			}
-		} else {
-			card = await fetchCard(
-				bestMatch.target,
-				selectedSet.name,
-				noAlter,
-				noArt
-			)
-		}
 
-		let temp = await genCardEmbed(card, compactDisplay)
+			temp = await genSigilEmbed(
+				bestMatch.target,
+				setsData[selectedSet.name].sigils[bestMatch.target]
+			)
+		} else {
+			// get the best match
+			const bestMatch = StringSimilarity.findBestMatch(
+				name,
+				setsCardPool[selectedSet.name]
+			).bestMatch
+
+			// if less than 40% match return error and continue to the next match
+			if (bestMatch.rating <= 0.4) {
+				if (name == "old_data") {
+					card = {
+						name: "Lorem",
+						description:
+							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+						sigils: ["Repulsive", "Bone King"],
+						blood_cost: -69,
+						bone_cost: -69,
+						energy_cost: -69,
+						mox_cost: ["Green", "Blue", "Orange"],
+
+						attack: 69,
+						health: 420,
+						atkspecial: "mirror",
+
+						conduit: true,
+						rare: true,
+						nosac: true,
+						nohammer: true,
+						banned: true,
+
+						evolution: "I'm",
+						sheds: "Doing",
+						left_half: "Ur",
+						right_half: "Mom :)",
+
+						url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
+						set: "competitive",
+					}
+				} else if (name == "deep_data") {
+					card = {
+						name: "Lorem",
+						description:
+							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+						sigils: ["Repulsive", "Bone King"],
+						blood: -69,
+						bone: -69,
+						energy: -69,
+						mox: ["emerald", "sapphire", "ruby"],
+						shattered: [
+							"shattered_emerald",
+							"shattered_sapphire",
+							"shattered_ruby",
+						],
+
+						attack: 69,
+						health: 420,
+
+						url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
+						set: "augmented",
+					}
+				} else {
+					embedList.push(
+						new EmbedBuilder()
+							.setColor(Colors.Red)
+							.setTitle(`Card "${name}" not found`)
+							.setDescription(
+								`No card found in selected set (${
+									setsData[selectedSet.name].ruleset
+								}) that have more than 40% similarity with the search term(${name})`
+							)
+					)
+					continue
+				}
+			} else {
+				card = await fetchCard(
+					bestMatch.target,
+					selectedSet.name,
+					noAlter,
+					noArt
+				)
+			}
+
+			temp = await genCardEmbed(card, compactDisplay)
+		}
 
 		embedList.push(temp[0])
 		if (temp[1] != 1) attachmentList.push(temp[1])
@@ -933,6 +970,14 @@ async function genCardEmbed(card, compactDisplay = false) {
 		embed.setFooter({ text: card.footnote })
 	}
 	return [embed, attachment ? attachment : 1] // if there an attachment (portrait/image) return it if not give exit code 1
+}
+
+async function genSigilEmbed(sigilName, sigilDescription) {
+	let embed = new EmbedBuilder()
+		.setColor(Colors.Aqua)
+		.setTitle(`${sigilName}`)
+		.setDescription(sigilDescription)
+	return [embed, 1]
 }
 
 // on ready call
