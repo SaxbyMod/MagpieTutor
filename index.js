@@ -33,6 +33,8 @@ const sigilList = require("./extra/sigilList.json")
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
+const queryRegex = /(\w):(\w+|"[^"]+")/g
+
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -334,10 +336,13 @@ const setList = {
 		name: "no search",
 		type: "modifier",
 	},
+	q: {
+		name: "query",
+		type: "modifier",
+	},
 }
 
 let setsData = {}
-let setsCardPool = {}
 let setsBanPool = {}
 let setsRarePool = {}
 
@@ -383,7 +388,8 @@ const specialMagick = [
 		}
 		// TODO temporary solution pls fix later
 		if (set.type == "107" || set.type == "url")
-			setsData[set.name] = sigilList
+			setsData[set.name].sigils = sigilList
+
 		console.log(
 			`Set ${set.name} loaded! with set code "${Object.keys(setList).find(
 				(key) => setList[key] === set
@@ -397,18 +403,16 @@ const specialMagick = [
 
 	// loading all the card pool
 	for (const set of Object.keys(setsData)) {
-		setsCardPool[set] = []
 		setsBanPool[set] = []
 		setsRarePool[set] = []
 		setsBeastPool[set] = []
 		setsUndeadPool[set] = []
 		setsTechPool[set] = []
 		setsMagickPool[set] = []
-
+		let temp = {}
 		for (const card of setsData[set].cards) {
 			const name = card.name.toLowerCase()
-
-			setsCardPool[set].push(name)
+			temp[name] = card
 
 			if (card.banned) {
 				setsBanPool[set].push(name)
@@ -435,6 +439,7 @@ const specialMagick = [
 				}
 			}
 		}
+		setsData[set].cards = temp
 	}
 })()
 
@@ -504,6 +509,9 @@ async function messageSearch(message, returnValue = false) {
 	if (!message.content.toLowerCase().match(searchRegex)) {
 		return
 	}
+	console.log(
+		`Message with content: "${message.content}" detected searching time OwO `
+	)
 	outer: for (let cardName of message.content
 		.toLowerCase()
 		.matchAll(searchRegex)) {
@@ -516,7 +524,7 @@ async function messageSearch(message, returnValue = false) {
 		let compactDisplay = false
 		let noArt = false
 		let sigilSearch = false
-
+		let query = false
 		redo: while (true) {
 			if (selectedSet.type == "special") {
 				if (selectedSet.name == "magic the gathering") {
@@ -547,6 +555,8 @@ async function messageSearch(message, returnValue = false) {
 					sigilSearch = true
 				} else if (selectedSet.name == "no search") {
 					continue outer
+				} else if (selectedSet.name == "query") {
+					query = true
 				}
 				cardName[1] = cardName[1].slice(1)
 				selectedSet = setList[cardName[1][0]]
@@ -584,11 +594,13 @@ async function messageSearch(message, returnValue = false) {
 				bestMatch.target,
 				setsData[selectedSet.name].sigils[bestMatch.target]
 			)
+		} else if (query) {
+			queryCard(name, selectedSet)
 		} else {
 			// get the best match
 			const bestMatch = StringSimilarity.findBestMatch(
 				name,
-				setsCardPool[selectedSet.name]
+				Object.keys(setsData[selectedSet.name].cards)
 			).bestMatch
 
 			// if less than 40% match return error and continue to the next match
@@ -784,11 +796,8 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 
 	let set = setsData[setName]
 
-	card = JSON.parse(
-		JSON.stringify(
-			set.cards.find((c) => c.name.toLowerCase() === name.toLowerCase())
-		)
-	) // look for the card in the set
+	card = set.cards[name]
+	// look for the card in the set
 
 	if (!card) return card
 
@@ -834,8 +843,6 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.name = "GAY DRAGON"
 		card.description = "Modified portrait by ener"
 	} else if (card.name == "Horse Mage") {
-		card.url =
-			"https://cdn.discordapp.com/attachments/999643351156535296/1082830680125341706/portrait_horse_mage_gbc.png"
 		card.description = `Not make by ener :trolled:`
 	} else if (card.name == "The Moon") {
 		card.sigils = [
@@ -845,6 +852,8 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 			"Mighty Leap",
 		]
 	} else if (card.name == "Adder") {
+		card.name = "peak"
+		card.description = "peak"
 		card.sigils = Array(6).fill("Handy")
 	} else if (card.name == "Squirrel Ball") {
 		card.description =
@@ -853,6 +862,9 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.description = "Ouroboros is the source of all evil - 107"
 	} else if (card.name == "Master Orlu") {
 		card.description = undefined
+	} else if (card.name == "Blue Mage") {
+		card.url =
+			"https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
 	}
 
 	if (JSON.stringify(original) != JSON.stringify(card)) {
@@ -992,6 +1004,32 @@ async function genSigilEmbed(sigilName, sigilDescription) {
 		.setTitle(`${sigilName}`)
 		.setDescription(sigilDescription)
 	return [embed, 1]
+}
+
+// TODO	change function name lmao
+async function queryCard(string, set) {
+	let possibleMatches = setsCardPool[set.name]
+
+	for (const tag of string.matchAll(queryRegex)) {
+		const type = tag[1],
+			value = tag[2]
+		if (type == "s") {
+			possibleMatches = possibleMatches.filter((cardName) => {
+				const card = JSON.parse(
+					JSON.stringify(
+						setsData[set.name].cards.find(
+							(c) =>
+								c.name.toLowerCase() === cardName.toLowerCase()
+						)
+					)
+				)
+				return card.sigils
+					? card.sigils.map((s) => s.toLowerCase()).includes(value)
+					: false
+			})
+		}
+	}
+	console.log(possibleMatches)
 }
 
 // on ready call
@@ -1971,6 +2009,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
+
 	messageSearch(message)
 })
 
