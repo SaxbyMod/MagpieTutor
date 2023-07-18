@@ -108,6 +108,7 @@ async function load() {
 		health: 3,
 		blood: 2,
 		sigils: ["Worthy Sacrifice", "Morsel"],
+		noArt: true,
 	})
 	return imfJson
 }
