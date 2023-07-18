@@ -28,6 +28,8 @@ const { token, clientId } = require("./config.json")
 const { ButtonBuilder } = require("@discordjs/builders")
 const format = require("string-format")
 
+const sigilList = require("./extra/sigilList.json")
+
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
@@ -379,6 +381,9 @@ const specialMagick = [
 					setsData[set.name] = json
 				})
 		}
+		// TODO temporary solution pls fix later
+		if (set.type == "107" || set.type == "url")
+			setsData[set.name] = sigilList
 		console.log(
 			`Set ${set.name} loaded! with set code "${Object.keys(setList).find(
 				(key) => setList[key] === set
@@ -692,9 +697,9 @@ async function messageSearch(message, returnValue = false) {
 		replyOption["embeds"] ||
 		replyOption["files"]
 	) {
-		replyOption["content"] += `Search for complete in ${
-			Math.round((end - start) * 10) / 10
-		}ms`
+		replyOption["content"] =
+			(replyOption["content"] ? replyOption["content"] : "") +
+			`Search for complete in ${Math.round((end - start) * 10) / 10}ms`
 		if (returnValue) return replyOption
 		await message.reply(replyOption)
 	}
@@ -1035,7 +1040,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}\n`
 			})
 			await interaction.reply(
-				`Possible set code for searching:\n\n${temp}\nModifier can be add infront of set code to modify the output`
+				`Possible set code for searching:\n\n${temp}\nModifier can be add infront of set code to modify the output. Ex: \`se\` will look up a sigil in the Eternal set`
 			)
 		} else if (commandName === "ping") {
 			await interaction.reply(
