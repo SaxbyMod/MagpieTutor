@@ -33,8 +33,8 @@ const sigilList = require("./extra/sigilList.json")
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(\w):(\w+|"[^"]+")/g
-
+const queryRegex = /(\w+):(\S+|"[^"]+")/g
+const matchPercentage = 0.4
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -576,7 +576,7 @@ async function messageSearch(message, returnValue = false) {
 				Object.keys(setsData[selectedSet.name].sigils)
 			).bestMatch
 
-			if (bestMatch.rating <= 0.4) {
+			if (bestMatch.rating <= matchPercentage) {
 				embedList.push(
 					new EmbedBuilder()
 						.setColor(Colors.Red)
@@ -595,7 +595,7 @@ async function messageSearch(message, returnValue = false) {
 				setsData[selectedSet.name].sigils[bestMatch.target]
 			)
 		} else if (query) {
-			queryCard(name, selectedSet)
+			temp = queryCard(name, selectedSet)
 		} else {
 			// get the best match
 			const bestMatch = StringSimilarity.findBestMatch(
@@ -1006,30 +1006,177 @@ async function genSigilEmbed(sigilName, sigilDescription) {
 	return [embed, 1]
 }
 
-// TODO	change function name lmao
-async function queryCard(string, set) {
-	let possibleMatches = setsCardPool[set.name]
+function queryCard(string, set) {
+	let embed = new EmbedBuilder().setColor(Colors.Fuchsia)
+	let possibleMatches = setsData[set.name].cards
 
 	for (const tag of string.matchAll(queryRegex)) {
-		const type = tag[1],
-			value = tag[2]
-		if (type == "s") {
-			possibleMatches = possibleMatches.filter((cardName) => {
-				const card = JSON.parse(
-					JSON.stringify(
-						setsData[set.name].cards.find(
-							(c) =>
-								c.name.toLowerCase() === cardName.toLowerCase()
-						)
-					)
+		let type = tag[1],
+			value = tag[2].replaceAll('"', "")
+		if (type == "s" || type == "sigil") {
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) =>
+					info.sigils
+						? StringSimilarity.findBestMatch(
+								value,
+								info.sigils.map((s) => s.toLowerCase())
+						  ).bestMatch.rating >= 0.5
+						: false
 				)
-				return card.sigils
-					? card.sigils.map((s) => s.toLowerCase()).includes(value)
-					: false
-			})
+			)
+		} else if (type == "e" || type == "effect") {
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) => {
+					if (!info.sigils) return false
+					let flag = false
+					info.sigils.forEach((sigil) => {
+						if (setsData[set.name].sigils[sigil].includes(value))
+							flag = true
+					})
+					return flag
+				})
+			)
+		} else if (type == "d" || type == "description") {
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) => {
+					if (!info.description) return false
+					return info.description.includes(value)
+				})
+			)
+		} else if (type == "rc" || type == "resourcecost") {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(
+					([name, info]) =>
+						eval(`${info.blood_cost}${op}${value}`) ||
+						eval(`${info.bone_cost}${op}${value}`) ||
+						eval(`${info.energy_cost}${op}${value}`) ||
+						eval(
+							`${
+								info.mox_cost ? info.mox_cost.length : undefined
+							}${op}${value}`
+						)
+				)
+			)
+		} else if (type == "t" || type == "temple") {
+			const temple =
+				value == "b" || value == "beast"
+					? "blood_cost"
+					: value == "u" || value == "undead"
+					? "bone_cost"
+					: value == "t" || value == "technology"
+					? "energy_cost"
+					: value == "m" || value == "magick"
+					? "mox_cost"
+					: ""
+
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(
+					([name, info]) => info[temple]
+				)
+			)
+		} else if (type == "h" || type == "health") {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) =>
+					eval(`${info.health}${op}${value}`)
+				)
+			)
+		} else if (type == "p" || type == "power") {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) =>
+					eval(`${info.attack}${op}${value}`)
+				)
+			)
+		} else if (type == "is") {
+			let callback = ([name, info]) => {}
+			if (value == "vanilla") {
+				callback = ([name, info]) => !info.sigils
+			} else if (value == "hard") {
+				callback = ([name, info]) => info.health >= 5
+			} else if (value == "glass") {
+				callback = ([name, info]) => info.attack > info.health
+			} else if (value == "square") {
+				callback = ([name, info]) => info.attack == info.health
+			} else if (value == "reflected") {
+				callback = ([name, info]) => info.attack >= info.health
+			}
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(callback)
+			)
+		} else if ((type == "c") | (type == "color")) {
+			const color =
+				value == "g" ||
+				value == "green" ||
+				value == "e" ||
+				value == "emerald"
+					? "Green"
+					: value == "o" ||
+					  value == "orange" ||
+					  value == "r" ||
+					  value == "ruby"
+					? "Orange"
+					: value == "b" ||
+					  value == "blue" ||
+					  value == "s" ||
+					  value == "sapphire"
+					? "Blue"
+					: ""
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) => {
+					if (!info.mox_cost) return false
+					return info.mox_cost.includes(color)
+				})
+			)
 		}
 	}
-	console.log(possibleMatches)
+	const final = Object.keys(possibleMatches)
+	embed.setTitle(`Result: ${final.length} cards found`)
+	embed.setDescription(
+		final.length > 0
+			? final.join(", ").length > 4096
+				? "Too many result, please be more specific"
+				: final.join(", ")
+			: "No card found"
+	)
+	return [embed, 1]
 }
 
 // on ready call
@@ -1235,7 +1382,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						!card.mox_cost
 							? "Free"
 							: ""
-					})**\nAttack: ${
+					})**\nPower: ${
 						card.atkspecial
 							? getEmoji(card.atkspecial)
 							: card.attack
