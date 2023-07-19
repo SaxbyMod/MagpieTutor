@@ -1,4 +1,9 @@
 # MagpieTutor
+<a href="https://discord.com/api/oauth2/authorize?client_id=1066417513115697275&permissions=137439333440&scope=applications.commands%20bot">
+        <img src="https://img.shields.io/badge/Invite_the_Bot-blue"
+            alt="Invite the Bot">
+</a>
+
 Scryfall bot but for Inscryption. Currently the bot can look up card in the following format/set:
 - IMF Competitive
 - IMF Eternal
@@ -6,7 +11,7 @@ Scryfall bot but for Inscryption. Currently the bot can look up card in the foll
 - Augmented
 - Inscryption Redux
 
-IF you have any request for new set send me a message on discord. `mouthless_stoat`
+IF you have any request for new set send me a message on discord. `mouthless_stoat`.
 
 ## Table of Content
 - [MagpieTutor](#magpietutor)
