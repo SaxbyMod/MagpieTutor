@@ -33,7 +33,7 @@ const sigilList = require("./extra/sigilList.json")
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(\w+):(\S+|"[^"]+")/g
+const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
 //set up the bot client
 const client = new Client({
@@ -1021,7 +1021,7 @@ function queryCard(string, set) {
 		const keywordList = {
 			sigil: {
 				alias: ["s"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					filterPossibleValue(([name, info]) =>
 						info.sigils
 							? StringSimilarity.findBestMatch(
@@ -1034,7 +1034,7 @@ function queryCard(string, set) {
 			},
 			effect: {
 				alias: ["e"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.sigils) return false
 						let flag = false
@@ -1050,7 +1050,7 @@ function queryCard(string, set) {
 			},
 			description: {
 				alias: ["d"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.description) return false
 						return info.description.includes(value)
@@ -1059,7 +1059,7 @@ function queryCard(string, set) {
 			},
 			resourcecost: {
 				alias: ["rc"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
 						: value.includes("<=")
@@ -1101,7 +1101,7 @@ function queryCard(string, set) {
 			},
 			resourcetype: {
 				alias: ["rt"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const type =
 						value == "b" || value == "blood"
 							? set.name == "augmented"
@@ -1127,7 +1127,7 @@ function queryCard(string, set) {
 			},
 			color: {
 				alias: ["c"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const color =
 						value == "g" ||
 						value == "green" ||
@@ -1171,7 +1171,7 @@ function queryCard(string, set) {
 			},
 			temple: {
 				alias: ["t"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const temple =
 						value == "b" || value == "beast"
 							? "Beast"
@@ -1187,7 +1187,7 @@ function queryCard(string, set) {
 			},
 			tribe: {
 				alias: ["tb"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.tribes) return false
 						return info.tribes.includes(value)
@@ -1196,7 +1196,7 @@ function queryCard(string, set) {
 			},
 			trait: {
 				alias: ["tr"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.traits) return false
 						return info.traits.includes(value)
@@ -1205,7 +1205,7 @@ function queryCard(string, set) {
 			},
 			rarity: {
 				alias: ["r"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const rarity =
 						value == "c" || value == "Common"
 							? set.augmented
@@ -1233,7 +1233,7 @@ function queryCard(string, set) {
 			},
 			health: {
 				alias: ["h"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
 						: value.includes("<=")
@@ -1254,7 +1254,7 @@ function queryCard(string, set) {
 			},
 			power: {
 				alias: ["p"],
-				callback: (key, keyInfo, value) => {
+				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
 						: value.includes("<=")
@@ -1275,28 +1275,39 @@ function queryCard(string, set) {
 			},
 			is: {
 				alias: [],
-				callback: (key, keyInfo, value) => {
-					let callback = ([name, info]) => {}
-					if (value == "vanilla") {
-						callback = ([name, info]) => !info.sigils
-					} else if (value == "tank") {
-						callback = ([name, info]) => info.health > 5
-					} else if (value == "glass") {
-						callback = ([name, info]) => info.attack > info.health
-					} else if (value == "square") {
-						callback = ([name, info]) => info.attack == info.health
-					} else if (value == "reflected") {
-						callback = ([name, info]) => info.attack >= info.health
-					} else if (value == "traitless") {
-						callback = ([name, info]) => !info.traits
+				callback: (value) => {
+					const nicknameList = {
+						vanilla: ([name, info]) => !info.sigils,
+						tank: ([name, info]) => info.health > 5,
+						glass: ([name, info]) => info.attack > info.health,
+						square: ([name, info]) => info.attack == info.health,
+						reflected: ([name, info]) => info.attack >= info.health,
+						traitless: ([name, info]) => !info.traits,
 					}
-					filterPossibleValue(callback)
+					let callback = nicknameList[value]
+					filterPossibleValue(
+						callback ? callback : ([name, info]) => false
+					)
+				},
+			},
+			name: {
+				alias: "n",
+				callback: (value) => {
+					filterPossibleValue(([name, info]) =>
+						name.toLowerCase().includes(value)
+					)
+				},
+			},
+			regex: {
+				alias: ["rx"],
+				callback: (value) => {
+					filterPossibleValue(([name, info]) => name.match(value))
 				},
 			},
 		}
 		for (const [key, keyInfo] of Object.entries(keywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
-				keyInfo.callback(key, keyInfo, value)
+				keyInfo.callback(value)
 			}
 		}
 	}
