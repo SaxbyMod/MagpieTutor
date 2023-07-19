@@ -332,7 +332,7 @@ const setList = {
 		name: "sigil",
 		type: "modifier",
 	},
-	"!": {
+	"`": {
 		name: "no search",
 		type: "modifier",
 	},
@@ -1129,14 +1129,16 @@ function queryCard(string, set) {
 			let callback = ([name, info]) => {}
 			if (value == "vanilla") {
 				callback = ([name, info]) => !info.sigils
-			} else if (value == "hard") {
-				callback = ([name, info]) => info.health >= 5
+			} else if (value == "tank") {
+				callback = ([name, info]) => info.health > 5
 			} else if (value == "glass") {
 				callback = ([name, info]) => info.attack > info.health
 			} else if (value == "square") {
 				callback = ([name, info]) => info.attack == info.health
 			} else if (value == "reflected") {
 				callback = ([name, info]) => info.attack >= info.health
+			} else if (value == "traitless") {
+				callback = ([name, info]) => !info.traits
 			}
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(callback)
