@@ -1013,260 +1013,291 @@ function queryCard(string, set) {
 	for (const tag of string.matchAll(queryRegex)) {
 		let type = tag[1],
 			value = tag[2].replaceAll('"', "")
-		if (type == "s" || type == "sigil") {
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) =>
-					info.sigils
-						? StringSimilarity.findBestMatch(
-								value,
-								info.sigils.map((s) => s.toLowerCase())
-						  ).bestMatch.rating >= 0.5
-						: false
-				)
-			)
-		} else if (type == "e" || type == "effect") {
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (!info.sigils) return false
-					let flag = false
-					info.sigils.forEach((sigil) => {
-						if (setsData[set.name].sigils[sigil].includes(value))
-							flag = true
-					})
-					return flag
-				})
-			)
-		} else if (type == "d" || type == "description") {
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (!info.description) return false
-					return info.description.includes(value)
-				})
-			)
-		} else if (type == "rc" || type == "resourcecost") {
-			const op = value.includes(">=")
-				? ">="
-				: value.includes("<=")
-				? "<="
-				: value.includes(">")
-				? ">"
-				: value.includes("<")
-				? "<"
-				: "=="
-			value = value
-				.replaceAll("<", "")
-				.replaceAll(">", "")
-				.replaceAll("=", "")
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(
-					([name, info]) =>
-						eval(`${info.blood_cost}${op}${value}`) ||
-						eval(`${info.bone_cost}${op}${value}`) ||
-						eval(`${info.energy_cost}${op}${value}`) ||
-						eval(
-							`${
-								info.mox_cost || info.mox
-									? info[
-											set.name == "augmeted"
-												? "mox"
-												: "mox_cost"
-									  ].length
-									: undefined
-							}${op}${value}`
-						) ||
-						eval(
-							`${
-								info.shattered
-									? info.shattered.length
-									: undefined
-							}${op}${value}`
-						)
-				)
-			)
-		} else if (type == "t" || type == "temple") {
-			const temple =
-				value == "b" || value == "beast"
-					? "Beast"
-					: value == "u" || value == "undead"
-					? "Undead"
-					: value == "t" || value == "technology"
-					? "Technology"
-					: value == "m" || value == "magick"
-					? "Magick"
-					: ""
-
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(
-					([name, info]) => info.temple == temple
-				)
-			)
-		} else if (type == "h" || type == "health") {
-			const op = value.includes(">=")
-				? ">="
-				: value.includes("<=")
-				? "<="
-				: value.includes(">")
-				? ">"
-				: value.includes("<")
-				? "<"
-				: "=="
-			value = value
-				.replaceAll("<", "")
-				.replaceAll(">", "")
-				.replaceAll("=", "")
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) =>
-					eval(`${info.health}${op}${value}`)
-				)
-			)
-		} else if (type == "p" || type == "power") {
-			const op = value.includes(">=")
-				? ">="
-				: value.includes("<=")
-				? "<="
-				: value.includes(">")
-				? ">"
-				: value.includes("<")
-				? "<"
-				: "=="
-			value = value
-				.replaceAll("<", "")
-				.replaceAll(">", "")
-				.replaceAll("=", "")
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) =>
-					eval(`${info.attack}${op}${value}`)
-				)
-			)
-		} else if (type == "is") {
-			let callback = ([name, info]) => {}
-			if (value == "vanilla") {
-				callback = ([name, info]) => !info.sigils
-			} else if (value == "tank") {
-				callback = ([name, info]) => info.health > 5
-			} else if (value == "glass") {
-				callback = ([name, info]) => info.attack > info.health
-			} else if (value == "square") {
-				callback = ([name, info]) => info.attack == info.health
-			} else if (value == "reflected") {
-				callback = ([name, info]) => info.attack >= info.health
-			} else if (value == "traitless") {
-				callback = ([name, info]) => !info.traits
-			}
+		const filterPossibleValue = (callback) => {
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(callback)
 			)
-		} else if (type == "c" || type == "color") {
-			const color =
-				value == "g" ||
-				value == "green" ||
-				value == "e" ||
-				value == "emerald"
-					? set.name == "augmented"
-						? "emerald"
-						: "Green"
-					: value == "o" ||
-					  value == "orange" ||
-					  value == "r" ||
-					  value == "ruby"
-					? set.name == "augmented"
-						? "ruby"
-						: "Orange"
-					: value == "b" ||
-					  value == "blue" ||
-					  value == "s" ||
-					  value == "sapphire"
-					? set.name == "augmented"
-						? "sapphire"
-						: "Blue"
-					: value == "c" ||
-					  value == "colorless" ||
-					  value == "p" ||
-					  value == "prism"
-					? "prism"
-					: ""
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (info.name == "Umbral Servant") {
-						console.log("")
-					}
+		}
+		const keywordList = {
+			sigil: {
+				alias: ["s"],
+				callback: (key, keyInfo, value) => {
+					filterPossibleValue(([name, info]) =>
+						info.sigils
+							? StringSimilarity.findBestMatch(
+									value,
+									info.sigils.map((s) => s.toLowerCase())
+							  ).bestMatch.rating >= 0.8
+							: false
+					)
+				},
+			},
+			effect: {
+				alias: ["e"],
+				callback: (key, keyInfo, value) => {
+					filterPossibleValue(([name, info]) => {
+						if (!info.sigils) return false
+						let flag = false
+						info.sigils.forEach((sigil) => {
+							if (
+								setsData[set.name].sigils[sigil].includes(value)
+							)
+								flag = true
+						})
+						return flag
+					})
+				},
+			},
+			description: {
+				alias: ["d"],
+				callback: (key, keyInfo, value) => {
+					filterPossibleValue(([name, info]) => {
+						if (!info.description) return false
+						return info.description.includes(value)
+					})
+				},
+			},
+			resourcecost: {
+				alias: ["rc"],
+				callback: (key, keyInfo, value) => {
+					const op = value.includes(">=")
+						? ">="
+						: value.includes("<=")
+						? "<="
+						: value.includes(">")
+						? ">"
+						: value.includes("<")
+						? "<"
+						: "=="
+					value = value
+						.replaceAll("<", "")
+						.replaceAll(">", "")
+						.replaceAll("=", "")
+					filterPossibleValue(
+						([name, info]) =>
+							eval(`${info.blood_cost}${op}${value}`) ||
+							eval(`${info.bone_cost}${op}${value}`) ||
+							eval(`${info.energy_cost}${op}${value}`) ||
+							eval(
+								`${
+									info.mox_cost || info.mox
+										? info[
+												set.name == "augmeted"
+													? "mox"
+													: "mox_cost"
+										  ].length
+										: undefined
+								}${op}${value}`
+							) ||
+							eval(
+								`${
+									info.shattered
+										? info.shattered.length
+										: undefined
+								}${op}${value}`
+							)
+					)
+				},
+			},
+			resourcetype: {
+				alias: ["rt"],
+				callback: (key, keyInfo, value) => {
+					const type =
+						value == "b" || value == "blood"
+							? set.name == "augmented"
+								? "blood"
+								: "blood_cost"
+							: value == "o" || value == "bone"
+							? set.name == "augmented"
+								? "bone"
+								: "bone_cost"
+							: value == "e" || value == "energy"
+							? set.name == "augmented"
+								? "energy"
+								: "energy_cost"
+							: value == "m" || value == "mox"
+							? set.name == "augmented"
+								? "mox"
+								: "mox_cost"
+							: value == "s" || value == "shattered"
+							? "shattered"
+							: ""
+					filterPossibleValue(([name, info]) => info[type])
+				},
+			},
+			color: {
+				alias: ["c"],
+				callback: (key, keyInfo, value) => {
+					const color =
+						value == "g" ||
+						value == "green" ||
+						value == "e" ||
+						value == "emerald"
+							? set.name == "augmented"
+								? "emerald"
+								: "Green"
+							: value == "o" ||
+							  value == "orange" ||
+							  value == "r" ||
+							  value == "ruby"
+							? set.name == "augmented"
+								? "ruby"
+								: "Orange"
+							: value == "b" ||
+							  value == "blue" ||
+							  value == "s" ||
+							  value == "sapphire"
+							? set.name == "augmented"
+								? "sapphire"
+								: "Blue"
+							: value == "c" ||
+							  value == "colorless" ||
+							  value == "p" ||
+							  value == "prism"
+							? "prism"
+							: ""
 					// if mox cost exist check for color then if shattered exist also check for color
 					// or between mox and shattered
-					return info.mox || info.mox_cost
-						? info[
-								set.name == "augmented" ? "mox" : "mox_cost"
-						  ].includes(color)
-						: false || info.shattered
-						? info.shattered.includes(`shattered_${color}`)
-						: false
-				})
-			)
-		} else if (type == "tb" || type == "tribe") {
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (!info.tribes) return false
-					return info.tribes.includes(value)
-				})
-			)
-		} else if (type == "tr" || type == "trait") {
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (!info.traits) return false
-					return info.traits.includes(value)
-				})
-			)
-		} else if (type == "r" || type == "rarity") {
-			const rarity =
-				value == "c" || value == "Common"
-					? set.augmented
-						? "Common"
-						: false
-					: value == "u" || value == "uncommon"
-					? "Uncommon"
-					: value == "r" || value == "rare"
-					? set.augmented
-						? "Rare"
-						: true
-					: value == "t" || value == "talk"
-					? "Talking"
-					: value == "s" || value == "side"
-					? "Side Deck"
-					: ""
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(([name, info]) =>
-					set.name == "augmented"
-						? info.tier == rarity
-						: rarity
-						? info.rare
-						: !info.rare
-				)
-			)
-		} else if (type == "rt" || type == "resourcetype") {
-			const type =
-				value == "b" || value == "blood"
-					? set.name == "augmented"
-						? "blood"
-						: "blood_cost"
-					: value == "o" || value == "bone"
-					? set.name == "augmented"
-						? "bone"
-						: "bone_cost"
-					: value == "e" || value == "energy"
-					? set.name == "augmented"
-						? "energy"
-						: "energy_cost"
-					: value == "m" || value == "mox"
-					? set.name == "augmented"
-						? "mox"
-						: "mox_cost"
-					: value == "s" || value == "shattered"
-					? "shattered"
-					: ""
-			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(
-					([name, info]) => info[type]
-				)
-			)
+					filterPossibleValue(([name, info]) =>
+						info.mox || info.mox_cost
+							? info[
+									set.name == "augmented" ? "mox" : "mox_cost"
+							  ].includes(color)
+							: false || info.shattered
+							? info.shattered.includes(`shattered_${color}`)
+							: false
+					)
+				},
+			},
+			temple: {
+				alias: ["t"],
+				callback: (key, keyInfo, value) => {
+					const temple =
+						value == "b" || value == "beast"
+							? "Beast"
+							: value == "u" || value == "undead"
+							? "Undead"
+							: value == "t" || value == "technology"
+							? "Technology"
+							: value == "m" || value == "magick"
+							? "Magick"
+							: ""
+					filterPossibleValue(([name, info]) => info.temple == temple)
+				},
+			},
+			tribe: {
+				alias: ["tb"],
+				callback: (key, keyInfo, value) => {
+					filterPossibleValue(([name, info]) => {
+						if (!info.tribes) return false
+						return info.tribes.includes(value)
+					})
+				},
+			},
+			trait: {
+				alias: ["tr"],
+				callback: (key, keyInfo, value) => {
+					filterPossibleValue(([name, info]) => {
+						if (!info.traits) return false
+						return info.traits.includes(value)
+					})
+				},
+			},
+			rarity: {
+				alias: ["r"],
+				callback: (key, keyInfo, value) => {
+					const rarity =
+						value == "c" || value == "Common"
+							? set.augmented
+								? "Common"
+								: false
+							: value == "u" || value == "uncommon"
+							? "Uncommon"
+							: value == "r" || value == "rare"
+							? set.augmented
+								? "Rare"
+								: true
+							: value == "t" || value == "talk"
+							? "Talking"
+							: value == "s" || value == "side"
+							? "Side Deck"
+							: ""
+					filterPossibleValue(([name, info]) =>
+						set.name == "augmented"
+							? info.tier == rarity
+							: rarity
+							? info.rare
+							: !info.rare
+					)
+				},
+			},
+			health: {
+				alias: ["h"],
+				callback: (key, keyInfo, value) => {
+					const op = value.includes(">=")
+						? ">="
+						: value.includes("<=")
+						? "<="
+						: value.includes(">")
+						? ">"
+						: value.includes("<")
+						? "<"
+						: "=="
+					value = value
+						.replaceAll("<", "")
+						.replaceAll(">", "")
+						.replaceAll("=", "")
+					filterPossibleValue(([name, info]) =>
+						eval(`${info.health}${op}${value}`)
+					)
+				},
+			},
+			power: {
+				alias: ["p"],
+				callback: (key, keyInfo, value) => {
+					const op = value.includes(">=")
+						? ">="
+						: value.includes("<=")
+						? "<="
+						: value.includes(">")
+						? ">"
+						: value.includes("<")
+						? "<"
+						: "=="
+					value = value
+						.replaceAll("<", "")
+						.replaceAll(">", "")
+						.replaceAll("=", "")
+					filterPossibleValue(([name, info]) =>
+						eval(`${info.attack}${op}${value}`)
+					)
+				},
+			},
+			is: {
+				alias: [],
+				callback: (key, keyInfo, value) => {
+					let callback = ([name, info]) => {}
+					if (value == "vanilla") {
+						callback = ([name, info]) => !info.sigils
+					} else if (value == "tank") {
+						callback = ([name, info]) => info.health > 5
+					} else if (value == "glass") {
+						callback = ([name, info]) => info.attack > info.health
+					} else if (value == "square") {
+						callback = ([name, info]) => info.attack == info.health
+					} else if (value == "reflected") {
+						callback = ([name, info]) => info.attack >= info.health
+					} else if (value == "traitless") {
+						callback = ([name, info]) => !info.traits
+					}
+					filterPossibleValue(callback)
+				},
+			},
+		}
+		for (const [key, keyInfo] of Object.entries(keywordList)) {
+			if (type == key || keyInfo.alias.includes(type)) {
+				keyInfo.callback(key, keyInfo, value)
+			}
 		}
 	}
 	const final = Object.keys(possibleMatches)
@@ -1425,8 +1456,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				// generating stuff
 
 				//set up a pack
-				let pack = setsData[set].cards.filter((c) =>
-					temp.includes(c.name.toLowerCase())
+				let pack = Object.fromEntries(
+					Object.entries(setsData[set].cards).filter(([name, card]) =>
+						temp.includes(name.toLowerCase())
+					)
 				)
 				// sort the pack by rare first then alphabetical
 				pack.sort((a, b) =>
@@ -1910,9 +1943,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			// TODO filter the list instead of this abomnination
 			const card = (() => {
 				while (true) {
-					let c = randomChoice(
+					const keys = Object.keys(
 						setsData[options.getString("set")].cards
 					)
+					let c =
+						setsData[options.getString("set")].cards[
+							keys[(keys.length * Math.random()) << 0]
+						]
 					if (
 						options.getString("set") == "augmented" &&
 						c.art != "Done"
