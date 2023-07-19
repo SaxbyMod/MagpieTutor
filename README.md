@@ -4,6 +4,7 @@ Scryfall bot but for Inscryption. Currently the bot can look up card in the foll
 - IMF Eternal
 - IMF Vanilla
 - Augmented
+- Inscryption Redux
 
 IF you have any request for new set send me a message on discord. `mouthless_stoat`
 
@@ -23,6 +24,22 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
       - [Scramble](#scramble)
     - [Retry Command](#retry-command)
   - [Bot Require Permission](#bot-require-permission)
+  - [Modifier](#modifier)
+  - [Query Syntax](#query-syntax)
+  - [Detail](#detail)
+  - [Keywords](#keywords)
+    - [Sigil](#sigil)
+    - [Sigil Effect](#sigil-effect)
+    - [Description](#description)
+    - [Resource Cost](#resource-cost)
+    - [Resource Type](#resource-type)
+    - [Temple](#temple)
+    - [Tribe](#tribe)
+    - [Trait](#trait)
+    - [Rarity](#rarity)
+    - [Health](#health)
+    - [Power](#power)
+    - [Mox Color](#mox-color)
   - [Todo List](#todo-list)
 
 ## How to host the bot yourself
@@ -85,11 +102,22 @@ Draft a deck from opening Pack
 Show the set code that you can use to search
 
 Current set code:
-- c: competitive
+- comp: competitive
 - e: eternal
 - v: vanilla
+- g: mr.egg
+- a: augmented
+- r: redux
 - m: magic the gathering
+  
+- o: original version (Modifier)
+- c: compact (Modifier)
+- p: no portrait (Modifier)
+- s: sigil (Modifier)
+- `: no search (Modifier)
+- q: query (Modifier)
 
+info fore modifier can be view [here](#modifier)
 ### Deck Sim Command
 Simulate deck draw for whatever reason
 
@@ -197,9 +225,101 @@ Magpie will look at a message again in case you edit or mess up.
 - Use External Emojis: The Bot needs to use external emoji for cost and number emoji
 - Add Reaction: The Bot needs to add reaction for [/guess-the-card](#guess-the-card-command)
 
+## Modifier
+Modifier is special code you can add in front of set code to modify the output. Here are the current modifier
+
+o: Some card are modified this will change it to the un-alter version.
+c: Remove sigil description among other thing to save space.
+p: Renove the portrait attachment, will make searching way faster (90-99% latency reduction)
+s: Search for sigils instead of card
+`: Skip this search
+q: Search for cards using Scryfall like syntax. More info [here](#query-syntax)
+
+## Query Syntax
+You can search card sbased on the following:
+- [Sigil](#sigil)
+- [Sigil Effect](#sigil-effect)
+- [Description / flavor text](#description)
+- [Resource Cost](#resource-cost)
+- [Resource Type](#resource-type)
+- [Temple](#temple)
+- [Tribe](#tribe)
+- [Trait](#trait)
+- [Rarity](#rarity)
+- [Health](#health)
+- [Power](#power)
+- [Mox Color](#mox-color)
+
+## Detail
+To use the filter search put a `q` modifier in front of everything. Ex:  `q[[h:>2 p:<4]]`  
+To search for a specific information put the keyword follow by a `:` then the value you want (in quote if it have space. Ex: `s: "Touch of Death"`
+
+## Keywords
+
+### Sigil
+**keyword**: `s` or `sigil`  
+Filter to include a specific sigil.  
+Ex:  
+`q[[s:airborne]]`: Card with the Airborne  
+`q[[s:"touch of death" s:sentry]]`: Card with `Touch of Death` and `Sentry`
+
+### Sigil Effect
+**keyword**: `e` or `effect`  
+Filter to include a specific word or phase in sigil effect.  
+Ex:  
+`q[[e:"When a card bearing this sigil is played"]]`: Card with `on play` effect
+
+### Description
+**keyword**: `d` or `description`  
+Filter to include a specific word or phase in description
+
+### Resource Cost
+**keyword**: `rc` or `resourcecost`  
+Filter to include a certain converted resource cost (same as cmc). Cost is reduce to a number and this search for that (Mox is the amount of mox needed, a blue is 1, blue and green is 2, etc.). Can use `>`, `>=`, etc. to search.
+Ex:  
+`q[[rc:3]]`: Card with crc equal 3 (3 blood, 3 bone, etc.)  
+`q[[rc:>4]]`: Card with crc more than 4.
+
+### Resource Type
+**keyword**: `rt` or `resourcetype`  
+Filter to include a certain resource type.  
+Possible type: All the card cost type (`blood`, `bone`, etc. `shattered` included)
+
+### Temple
+**keyword**: `t` or `temple`  
+Filter to include a certain temple (augmented specific).  
+Possible temple: all scrybe name (`beast`, `undead`, etc.) and a short version (all the starting character. `b`, `u`, etc.)
+
+### Tribe
+**keyword**: `tb` or `tribe`  
+Filter to include a certain tribe.
+
+### Trait
+**keyword**: `tr` or `trait`  
+Filter to include a certain trait.
+
+### Rarity
+**keyword**: `r` or `rarity`  
+Filter to include a certain rarity or tier.
+
+### Health
+**keyword**: `h` or `health`  
+Filter to include a certain health. Can use `>`, `>=`, etc. to search.
+
+### Power
+**keyword**: `p` or `power`  
+Filter to include a certain power. Can use `>`, `>=`, etc. to search.
+
+### Mox Color
+**keyword**: `c` or `color`  
+Filter to include a specific mox color.  
+Possible color: all full color name (`green`, `orange`, etc.), all full gem name (`emerald`, `ruby`, etc. `prism` included) and a short version (all the starting character. `g`, `o`, `e`, `r`, etc.)
+
 ## Todo List
 - ~~Support for Augmented Look up~~
 - Support for Augmented Draft
 - ~~Support for Augmented Guess the Card~~
-- New Guess the Card submit using model instead of messages (Less bug?)
-- Fix Augmented no art bug
+- ~~New Guess the Card submit using model instead of messages (Less bug?)~~
+- ~~Fix Augmented no art bug~~
+- ~~Search with scryfall like syntax~~
+- ~~Augmented specific syntax~~
