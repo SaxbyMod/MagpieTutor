@@ -80,7 +80,7 @@ If you don't know how to setup a discord bot follow these step:
 14. Run the command `npm setup` to install all the necessary package for the bot and setup the slash commands.
 15. Finally run `npm start` to host the bot.
 
-If you have any problem ask me on Discord my DM should be open. `Stoat#3922`
+If you have any problem ask me on Discord my DM should be open. `mouthless_stoat`
 
 ## Commands
 
