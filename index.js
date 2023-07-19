@@ -1218,19 +1218,27 @@ function queryCard(string, set) {
 		} else if (type == "r" || type == "rarity") {
 			const rarity =
 				value == "c" || value == "Common"
-					? "Common"
+					? set.augmented
+						? "Common"
+						: false
 					: value == "u" || value == "uncommon"
 					? "Uncommon"
 					: value == "r" || value == "rare"
-					? "Rare"
+					? set.augmented
+						? "Rare"
+						: true
 					: value == "t" || value == "talk"
 					? "Talking"
 					: value == "s" || value == "side"
 					? "Side Deck"
 					: ""
 			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(
-					([name, info]) => info.tier == rarity
+				Object.entries(possibleMatches).filter(([name, info]) =>
+					set.name == "augmented"
+						? info.tier == rarity
+						: rarity
+						? info.rare
+						: !info.rare
 				)
 			)
 		} else if (type == "rt" || type == "resourcetype") {
@@ -1262,7 +1270,9 @@ function queryCard(string, set) {
 		}
 	}
 	const final = Object.keys(possibleMatches)
-	embed.setTitle(`Result: ${final.length} cards found`)
+	embed.setTitle(
+		`Result: ${final.length} cards found in ${setsData[set.name].ruleset}`
+	)
 	embed.setDescription(
 		final.length > 0
 			? final.join(", ").length > 4096
