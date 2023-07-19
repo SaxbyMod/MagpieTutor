@@ -1065,7 +1065,20 @@ function queryCard(string, set) {
 						eval(`${info.energy_cost}${op}${value}`) ||
 						eval(
 							`${
-								info.mox_cost ? info.mox_cost.length : undefined
+								info.mox_cost || info.mox
+									? info[
+											set.name == "augmeted"
+												? "mox"
+												: "mox_cost"
+									  ].length
+									: undefined
+							}${op}${value}`
+						) ||
+						eval(
+							`${
+								info.shattered
+									? info.shattered.length
+									: undefined
 							}${op}${value}`
 						)
 				)
@@ -1073,18 +1086,18 @@ function queryCard(string, set) {
 		} else if (type == "t" || type == "temple") {
 			const temple =
 				value == "b" || value == "beast"
-					? "blood_cost"
+					? "Beast"
 					: value == "u" || value == "undead"
-					? "bone_cost"
+					? "Undead"
 					: value == "t" || value == "technology"
-					? "energy_cost"
+					? "Technology"
 					: value == "m" || value == "magick"
-					? "mox_cost"
+					? "Magick"
 					: ""
 
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(
-					([name, info]) => info[temple]
+					([name, info]) => info.temple == temple
 				)
 			)
 		} else if (type == "h" || type == "health") {
@@ -1143,29 +1156,108 @@ function queryCard(string, set) {
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(callback)
 			)
-		} else if ((type == "c") | (type == "color")) {
+		} else if (type == "c" || type == "color") {
 			const color =
 				value == "g" ||
 				value == "green" ||
 				value == "e" ||
 				value == "emerald"
-					? "Green"
+					? set.name == "augmented"
+						? "emerald"
+						: "Green"
 					: value == "o" ||
 					  value == "orange" ||
 					  value == "r" ||
 					  value == "ruby"
-					? "Orange"
+					? set.name == "augmented"
+						? "ruby"
+						: "Orange"
 					: value == "b" ||
 					  value == "blue" ||
 					  value == "s" ||
 					  value == "sapphire"
-					? "Blue"
+					? set.name == "augmented"
+						? "sapphire"
+						: "Blue"
+					: value == "c" ||
+					  value == "colorless" ||
+					  value == "p" ||
+					  value == "prism"
+					? "prism"
 					: ""
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(([name, info]) => {
-					if (!info.mox_cost) return false
-					return info.mox_cost.includes(color)
+					if (info.name == "Umbral Servant") {
+						console.log("")
+					}
+					// if mox cost exist check for color then if shattered exist also check for color
+					// or between mox and shattered
+					return info.mox || info.mox_cost
+						? info[
+								set.name == "augmented" ? "mox" : "mox_cost"
+						  ].includes(color)
+						: false || info.shattered
+						? info.shattered.includes(`shattered_${color}`)
+						: false
 				})
+			)
+		} else if (type == "tb" || type == "tribe") {
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) => {
+					if (!info.tribes) return false
+					return info.tribes.includes(value)
+				})
+			)
+		} else if (type == "tr" || type == "trait") {
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(([name, info]) => {
+					if (!info.traits) return false
+					return info.traits.includes(value)
+				})
+			)
+		} else if (type == "r" || type == "rarity") {
+			const rarity =
+				value == "c" || value == "Common"
+					? "Common"
+					: value == "u" || value == "uncommon"
+					? "Uncommon"
+					: value == "r" || value == "rare"
+					? "Rare"
+					: value == "t" || value == "talk"
+					? "Talking"
+					: value == "s" || value == "side"
+					? "Side Deck"
+					: ""
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(
+					([name, info]) => info.tier == rarity
+				)
+			)
+		} else if (type == "rt" || type == "resourcetype") {
+			const type =
+				value == "b" || value == "blood"
+					? set.name == "augmented"
+						? "blood"
+						: "blood_cost"
+					: value == "o" || value == "bone"
+					? set.name == "augmented"
+						? "bone"
+						: "bone_cost"
+					: value == "e" || value == "energy"
+					? set.name == "augmented"
+						? "energy"
+						: "energy_cost"
+					: value == "m" || value == "mox"
+					? set.name == "augmented"
+						? "mox"
+						: "mox_cost"
+					: value == "s" || value == "shattered"
+					? "shattered"
+					: ""
+			possibleMatches = Object.fromEntries(
+				Object.entries(possibleMatches).filter(
+					([name, info]) => info[type]
+				)
 			)
 		}
 	}
@@ -1175,7 +1267,9 @@ function queryCard(string, set) {
 		final.length > 0
 			? final.join(", ").length > 4096
 				? "Too many result, please be more specific"
-				: final.join(", ")
+				: final
+						.join(", ")
+						.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())
 			: "No card found"
 	)
 	return [embed, 1]
