@@ -19,6 +19,7 @@ const {
 
 const StringSimilarity = require("string-similarity")
 const scryfall = require("scryfall")
+const chalk = require("chalk")
 
 const Canvas = require("@napi-rs/canvas")
 const fetch = require("node-fetch")
@@ -268,6 +269,18 @@ const setFormatList = {
 	},
 }
 
+const ImfPool = [
+	{ name: "ban", condition: "card.ban" },
+	{ name: "rare", condition: "card.rare" },
+	{ name: "beast", condition: "card.blood_cost" },
+	{ name: "undead", condition: "card.bone_cost" },
+	{ name: "tech", condition: "card.energy_cost" },
+	{
+		name: "magick",
+		condition: "card.mox_cost || specialMagick.includes(card.name)",
+	},
+	{ name: "common", condition: "!card.rare" },
+]
 const setList = {
 	//imf set
 	comp: {
@@ -275,18 +288,32 @@ const setList = {
 		type: "107",
 		format: setFormatList.imf,
 		compactFormat: setFormatList.imfCompact,
+		pools: [
+			{ name: "ban", condition: "card.banned" },
+			{ name: "rare", condition: "card.rare" },
+			{ name: "beast", condition: "card.blood_cost" },
+			{ name: "undead", condition: "card.bone_cost" },
+			{ name: "tech", condition: "card.energy_cost" },
+			{
+				name: "magick",
+				condition: "card.mox_cost || specialMagick.includes(card.name)",
+			},
+			{ name: "common", condition: "!card.rare" },
+		],
 	},
 	e: {
 		name: "eternal",
 		type: "107",
 		format: setFormatList.imf,
 		compactFormat: setFormatList.imfCompact,
+		pools: ImfPool,
 	},
 	v: {
 		name: "vanilla",
 		type: "107",
 		format: setFormatList.imf,
 		compactFormat: setFormatList.imfCompact,
+		pools: ImfPool,
 	},
 	g: {
 		name: "mr.egg",
@@ -294,6 +321,7 @@ const setList = {
 		format: setFormatList.imf,
 		compactFormat: setFormatList.imfCompact,
 		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
+		pools: ImfPool,
 	},
 
 	//other set
@@ -303,6 +331,7 @@ const setList = {
 		format: setFormatList.augmented,
 		compactFormat: setFormatList.augmentedCompact,
 		file: "./extra/augmentedProcess.js",
+		pools: ImfPool,
 	},
 	r: {
 		name: "redux",
@@ -310,6 +339,7 @@ const setList = {
 		format: setFormatList.redux,
 		compactFormat: setFormatList.redux,
 		file: "./extra/reduxProcess.js",
+		pools: ImfPool,
 	},
 
 	// special set
@@ -363,8 +393,12 @@ const specialMagick = [
 	"Horse Mage",
 ] // these card will be consider magick no matter what
 
+console.clear()
 //downloading all the set and fetch important shit
+console.log(chalk.magenta.underline.bold("Setup please wait"))
 ;(async () => {
+	const start = performance.now()
+	console.log(chalk.magenta.underline.bold("Loading set data..."))
 	//fetch all the set json
 	for (const set of Object.values(setList)) {
 		if (set.type === "107") {
@@ -389,58 +423,110 @@ const specialMagick = [
 		// TODO temporary solution pls fix later
 		if (set.type == "107" || set.type == "url")
 			setsData[set.name].sigils = sigilList
-
+		const cardCount = setsData[set.name]
+			? setsData[set.name].cards.length
+			: 0
 		console.log(
-			`Set ${set.name} loaded! with set code "${Object.keys(setList).find(
-				(key) => setList[key] === set
-			)}"${
-				setsData[set.name]
-					? ` and ${setsData[set.name].cards.length} cards`
-					: ""
-			}`
+			chalk.blue(
+				`Set ${chalk.green.bold(
+					set.name
+				)} loaded! with set code "${chalk.red.bold(
+					Object.keys(setList).find((key) => setList[key] === set)
+				)}"${
+					setsData[set.name]
+						? ` and ${chalk[
+								cardCount > 300
+									? "red"
+									: cardCount > 100
+									? "yellow"
+									: "green"
+						  ](cardCount)} cards`
+						: ""
+				}`
+			)
 		)
 	}
-
+	console.log(
+		chalk.red(
+			`Loading set data took: ${
+				Math.round((performance.now() - start) * 10) / 10
+			}ms`
+		)
+	)
 	// loading all the card pool
-	for (const set of Object.keys(setsData)) {
-		setsBanPool[set] = []
-		setsRarePool[set] = []
-		setsBeastPool[set] = []
-		setsUndeadPool[set] = []
-		setsTechPool[set] = []
-		setsMagickPool[set] = []
+	console.log(chalk.magenta.underline.bold("Loading card pools..."))
+	for (const setName of Object.keys(setsData)) {
+		console.log(chalk.yellow(`Loading ${setName} pools`))
+		// setsBanPool[set] = []
+		// setsRarePool[set] = []
+		// setsBeastPool[set] = []
+		// setsUndeadPool[set] = []
+		// setsTechPool[set] = []
+		// setsMagickPool[set] = []
+		setsData[setName].pools = {}
 		let temp = {}
-		for (const card of setsData[set].cards) {
+		for (const card of setsData[setName].cards) {
 			const name = card.name.toLowerCase()
 			temp[name] = card
 
-			if (card.banned) {
-				setsBanPool[set].push(name)
+			for (const poolType of Object.values(setList).find(
+				(i) => i.name == setName
+			).pools) {
+				if (!setsData[setName].pools[poolType.name])
+					setsData[setName].pools[poolType.name] = []
+				if (eval(poolType.condition))
+					setsData[setName].pools[poolType.name].push(name)
 			}
+			// if (card.banned) {
+			// 	setsBanPool[set].push(name)
+			// }
 
-			if (card.rare) {
-				setsRarePool[set].push(name)
-			}
+			// if (card.rare) {
+			// 	setsRarePool[set].push(name)
+			// }
 
-			if (specialMagick.includes(card.name)) {
-				setsMagickPool[set].push(name)
-			} else {
-				if (card.blood_cost) {
-					setsBeastPool[set].push(name)
-				}
-				if (card.bone_cost) {
-					setsUndeadPool[set].push(name)
-				}
-				if (card.energy_cost) {
-					setsTechPool[set].push(name)
-				}
-				if (card.mox_cost) {
-					setsMagickPool[set].push(name)
-				}
-			}
+			// if (specialMagick.includes(card.name)) {
+			// 	setsMagickPool[set].push(name)
+			// } else {
+			// 	if (card.blood_cost) {
+			// 		setsBeastPool[set].push(name)
+			// 	}
+			// 	if (card.bone_cost) {
+			// 		setsUndeadPool[set].push(name)
+			// 	}
+			// 	if (card.energy_cost) {
+			// 		setsTechPool[set].push(name)
+			// 	}
+			// 	if (card.mox_cost) {
+			// 		setsMagickPool[set].push(name)
+			// 	}
+			// }
 		}
-		setsData[set].cards = temp
+		setsData[setName].cards = temp
+		console.log(
+			chalk.green(
+				`Finish loading ${setName} pools. Loaded ${chalk.blue(
+					Object.keys(setsData[setName].pools).length
+				)} pools with ${Object.values(setsData[setName].pools)
+					.map((p) =>
+						p.length > 50
+							? chalk.red(p.length)
+							: p.length > 25
+							? chalk.yellow(p.length)
+							: chalk.green(p.length)
+					)
+					.join(", ")} cards`
+			)
+		)
 	}
+	console.log(
+		chalk.red(
+			`Setup took: ${Math.round((performance.now() - start) * 10) / 10}ms`
+		)
+	)
+	const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
+	console.log(chalk.cyan(`Bot is in ${servers.length} server`))
+	console.log(chalk.cyan(`Servers: ${chalk.yellow(servers.join(", "))}`))
 })()
 
 const specialAttackDescription = {
@@ -510,7 +596,11 @@ async function messageSearch(message, returnValue = false) {
 		return
 	}
 	console.log(
-		`Message with content: "${message.content}" detected searching time OwO `
+		chalk.blue(
+			`Message with content: "${chalk.green(
+				message.content
+			)}" detected searching time ${chalk.magenta("OwO")}`
+		)
 	)
 	outer: for (let cardName of message.content
 		.toLowerCase()
@@ -680,7 +770,6 @@ async function messageSearch(message, returnValue = false) {
 
 			temp = await genCardEmbed(card, compactDisplay)
 		}
-
 		embedList.push(temp[0])
 		if (temp[1] != 1) attachmentList.push(temp[1])
 	}
@@ -1329,7 +1418,9 @@ function queryCard(string, set) {
 
 // on ready call
 client.once(Events.ClientReady, () => {
-	console.log("Ready!")
+	console.log(
+		chalk.bgRed("Bot is ready but wait until set up is complete to use")
+	)
 	client.user.setActivity("YOUR MOM")
 })
 
