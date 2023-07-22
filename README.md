@@ -45,6 +45,7 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
     - [Health](#health)
     - [Power](#power)
     - [Mox Color](#mox-color)
+  - [Nicknames](#nicknames)
   - [Todo List](#todo-list)
 
 ## How to host the bot yourself
@@ -227,7 +228,7 @@ Magpie will look at a message again in case you edit or mess up.
 - Embed Links: The Bot needs embed for card display and other function
 - Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](#guess-the-card-command)
 - Read Messages History: The Bot needs to see old messages for [/retry](#retry-command) to work
-- Use External Emojis: The Bot needs to use external emoji for cost and number emoji
+- Use External Emoj The Bot needs to use external emoji for cost and number emoji
 - Add Reaction: The Bot needs to add reaction for [/guess-the-card](#guess-the-card-command)
 
 ## Modifier
@@ -241,7 +242,7 @@ s: Search for sigils instead of card
 q: Search for cards using Scryfall like syntax. More info [here](#query-syntax)
 
 ## Query Syntax
-You can search card sbased on the following:
+You can search card based on the following:
 - [Sigil](#sigil)
 - [Sigil Effect](#sigil-effect)
 - [Description / flavor text](#description)
@@ -319,6 +320,15 @@ Filter to include a certain power. Can use `>`, `>=`, etc. to search.
 **keyword**: `c` or `color`  
 Filter to include a specific mox color.  
 Possible color: all full color name (`green`, `orange`, etc.), all full gem name (`emerald`, `ruby`, etc. `prism` included) and a short version (all the starting character. `g`, `o`, `e`, `r`, etc.)
+
+## Nicknames
+**keyword**: `is`  
+There nickname for a few shortcut and special card type  
+`vanilla` will give card with no sigils.  
+`tank` will give card that have more than 5 health (card that can survive ebot).  
+`square` will give card with power = health.  
+`glass` will give card with more power than health (glass canon).  
+`reflected` will give card with square and glass stat (for mirror removable).
 
 ## Todo List
 - ~~Support for Augmented Look up~~
