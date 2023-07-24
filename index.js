@@ -393,7 +393,6 @@ const specialMagick = [
 	"Horse Mage",
 ] // these card will be consider magick no matter what
 
-console.clear()
 //downloading all the set and fetch important shit
 console.log(chalk.magenta.underline.bold("Setup please wait"))
 ;(async () => {
@@ -599,7 +598,9 @@ async function messageSearch(message, returnValue = false) {
 		chalk.blue(
 			`Message with content: "${chalk.green(
 				message.content
-			)}" detected searching time ${chalk.magenta("OwO")}`
+			)}" in ${chalk.red.bold(
+				message.guild.name
+			)} detected searching time ${chalk.magenta("OwO")}`
 		)
 	)
 	outer: for (let cardName of message.content
@@ -685,7 +686,7 @@ async function messageSearch(message, returnValue = false) {
 				setsData[selectedSet.name].sigils[bestMatch.target]
 			)
 		} else if (query) {
-			temp = queryCard(name, selectedSet)
+			temp = queryCard(name, selectedSet, compactDisplay)
 		} else {
 			// get the best match
 			const bestMatch = StringSimilarity.findBestMatch(
@@ -897,7 +898,7 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.url = card.pixport_url
 	} else {
 		if (card.set == setList.a.name) {
-			card.url = `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
+			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
 				" ",
 				"%20"
 			)}.png`
@@ -992,7 +993,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			if (card.set == setList.a.name) {
 				context.drawImage(
 					await Canvas.loadImage(
-						`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
+						`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
 							["Common", "Uncommon", "Side Deck"].includes(
 								card.tier
 							)
@@ -1095,21 +1096,24 @@ async function genSigilEmbed(sigilName, sigilDescription) {
 	return [embed, 1]
 }
 
-function queryCard(string, set) {
+function queryCard(string, set, compactDisplay = false) {
 	let embed = new EmbedBuilder().setColor(Colors.Fuchsia)
 	let possibleMatches = setsData[set.name].cards
 
 	for (const tag of string.matchAll(queryRegex)) {
 		let type = tag[1],
 			value = tag[2].replaceAll('"', "")
+
 		const filterPossibleValue = (callback) => {
 			possibleMatches = Object.fromEntries(
 				Object.entries(possibleMatches).filter(callback)
 			)
 		}
-		const keywordList = {
+
+		const queryKeywordList = {
 			sigil: {
 				alias: ["s"],
+				description: "Filter for a sigils",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) =>
 						info.sigils
@@ -1123,6 +1127,7 @@ function queryCard(string, set) {
 			},
 			effect: {
 				alias: ["e"],
+				description: "Filter for a sigil effect",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.sigils) return false
@@ -1139,6 +1144,7 @@ function queryCard(string, set) {
 			},
 			description: {
 				alias: ["d"],
+				description: "Filter for a description",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.description) return false
@@ -1148,6 +1154,8 @@ function queryCard(string, set) {
 			},
 			resourcecost: {
 				alias: ["rc"],
+				description:
+					"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
 				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
@@ -1190,6 +1198,8 @@ function queryCard(string, set) {
 			},
 			resourcetype: {
 				alias: ["rt"],
+				description:
+					"Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)",
 				callback: (value) => {
 					const type =
 						value == "b" || value == "blood"
@@ -1216,6 +1226,8 @@ function queryCard(string, set) {
 			},
 			color: {
 				alias: ["c"],
+				description:
+					"Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
 				callback: (value) => {
 					const color =
 						value == "g" ||
@@ -1260,6 +1272,8 @@ function queryCard(string, set) {
 			},
 			temple: {
 				alias: ["t"],
+				description:
+					"Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
 				callback: (value) => {
 					const temple =
 						value == "b" || value == "beast"
@@ -1267,7 +1281,7 @@ function queryCard(string, set) {
 							: value == "u" || value == "undead"
 							? "Undead"
 							: value == "t" || value == "technology"
-							? "Technology"
+							? "Tech"
 							: value == "m" || value == "magick"
 							? "Magick"
 							: ""
@@ -1276,15 +1290,19 @@ function queryCard(string, set) {
 			},
 			tribe: {
 				alias: ["tb"],
+				description: "Filter for tribe.",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.tribes) return false
-						return info.tribes.includes(value)
+						if (Array.isArray(info.tribes))
+							info.tribes = info.tribes.join(" ")
+						return info.tribes.toLowerCase().includes(value)
 					})
 				},
 			},
 			trait: {
 				alias: ["tr"],
+				description: "Filter for trait.",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) => {
 						if (!info.traits) return false
@@ -1294,6 +1312,8 @@ function queryCard(string, set) {
 			},
 			rarity: {
 				alias: ["r"],
+				description:
+					"Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talking`, etc.) first character of rarity. (`c`, `u`, etc.)",
 				callback: (value) => {
 					const rarity =
 						value == "c" || value == "Common"
@@ -1322,6 +1342,8 @@ function queryCard(string, set) {
 			},
 			health: {
 				alias: ["h"],
+				description:
+					"Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
 				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
@@ -1343,6 +1365,8 @@ function queryCard(string, set) {
 			},
 			power: {
 				alias: ["p"],
+				description:
+					"Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
 				callback: (value) => {
 					const op = value.includes(">=")
 						? ">="
@@ -1364,6 +1388,8 @@ function queryCard(string, set) {
 			},
 			is: {
 				alias: [],
+				description:
+					"Filter for type of card. List of nickname can be found [here]()",
 				callback: (value) => {
 					const nicknameList = {
 						vanilla: ([name, info]) => !info.sigils,
@@ -1383,7 +1409,7 @@ function queryCard(string, set) {
 				alias: "n",
 				callback: (value) => {
 					filterPossibleValue(([name, info]) =>
-						name.toLowerCase().includes(value)
+						name.toLowerCase().includes(value.toLowerCase())
 					)
 				},
 			},
@@ -1394,7 +1420,7 @@ function queryCard(string, set) {
 				},
 			},
 		}
-		for (const [key, keyInfo] of Object.entries(keywordList)) {
+		for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
 				keyInfo.callback(value)
 			}
@@ -1405,7 +1431,9 @@ function queryCard(string, set) {
 		`Result: ${final.length} cards found in ${setsData[set.name].ruleset}`
 	)
 	embed.setDescription(
-		final.length > 0
+		compactDisplay
+			? "Result hidden by compact mode"
+			: final.length > 0
 			? final.join(", ").length > 4096
 				? "Too many result, please be more specific"
 				: final
@@ -1419,7 +1447,9 @@ function queryCard(string, set) {
 // on ready call
 client.once(Events.ClientReady, () => {
 	console.log(
-		chalk.bgRed("Bot is ready but wait until set up is complete to use")
+		chalk.bgRed(
+			"Bot connected to Discord's server but wait until set up is complete to use"
+		)
 	)
 	client.user.setActivity("YOUR MOM")
 })
@@ -2401,7 +2431,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-
 	messageSearch(message)
 })
 

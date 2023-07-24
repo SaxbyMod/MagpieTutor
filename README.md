@@ -17,6 +17,7 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
 - [MagpieTutor](#magpietutor)
   - [Table of Content](#table-of-content)
   - [How to host the bot yourself](#how-to-host-the-bot-yourself)
+  - [Bot Require Permission](#bot-require-permission)
   - [Commands](#commands)
     - [Draft Command](#draft-command)
       - [Argument](#argument)
@@ -28,7 +29,6 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
       - [Normal](#normal)
       - [Scramble](#scramble)
     - [Retry Command](#retry-command)
-  - [Bot Require Permission](#bot-require-permission)
   - [Modifier](#modifier)
   - [Query Syntax](#query-syntax)
   - [Detail](#detail)
@@ -45,7 +45,7 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
     - [Health](#health)
     - [Power](#power)
     - [Mox Color](#mox-color)
-  - [Nicknames](#nicknames)
+    - [Nicknames](#nicknames)
   - [Todo List](#todo-list)
 
 ## How to host the bot yourself
@@ -82,6 +82,14 @@ If you don't know how to setup a discord bot follow these step:
 15. Finally run `npm start` to host the bot.
 
 If you have any problem ask me on Discord my DM should be open. `mouthless_stoat`
+
+## Bot Require Permission
+- Read Messages/View Channels: The Bot needs to see messages to do look up
+- Send Messages: The Bot needs to send message to reply
+- Embed Links: The Bot needs embed for card display and other function
+- Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](#guess-the-card-command)
+- Read Messages History: The Bot needs to see old messages for [/retry](#retry-command) to work
+- Use External Emoji: The Bot needs to use external emoji for cost and number emoji
 
 ## Commands
 
@@ -123,7 +131,7 @@ Current set code:
 - `: no search (Modifier)
 - q: query (Modifier)
 
-info fore modifier can be view [here](#modifier)
+info for modifier can be view [here](#modifier)
 ### Deck Sim Command
 Simulate deck draw for whatever reason
 
@@ -222,15 +230,6 @@ Magpie will look at a message again in case you edit or mess up.
 #### Argument
 - `id`: Id of the message can access by using Developer mode and click `Copy ID` on message.
 
-## Bot Require Permission
-- Read Messages/View Channels: The Bot needs to see messages to do look up
-- Send Messages: The Bot needs to send message to reply
-- Embed Links: The Bot needs embed for card display and other function
-- Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](#guess-the-card-command)
-- Read Messages History: The Bot needs to see old messages for [/retry](#retry-command) to work
-- Use External Emoj The Bot needs to use external emoji for cost and number emoji
-- Add Reaction: The Bot needs to add reaction for [/guess-the-card](#guess-the-card-command)
-
 ## Modifier
 Modifier is special code you can add in front of set code to modify the output. Here are the current modifier
 
@@ -321,7 +320,7 @@ Filter to include a certain power. Can use `>`, `>=`, etc. to search.
 Filter to include a specific mox color.  
 Possible color: all full color name (`green`, `orange`, etc.), all full gem name (`emerald`, `ruby`, etc. `prism` included) and a short version (all the starting character. `g`, `o`, `e`, `r`, etc.)
 
-## Nicknames
+### Nicknames
 **keyword**: `is`  
 There nickname for a few shortcut and special card type  
 `vanilla` will give card with no sigils.  
@@ -338,3 +337,6 @@ There nickname for a few shortcut and special card type
 - ~~Fix Augmented no art bug~~
 - ~~Search with scryfall like syntax~~
 - ~~Augmented specific syntax~~
+- ~~Rewrote pool to make fetch a bit faster~~
+- Make draft work to work with new pool
+- More advance stuff for query (negation, or)
