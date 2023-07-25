@@ -2065,7 +2065,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		} else if (commandName === "tunnel-status") {
 			await http
 				.get("http://localtunnel.me", async (res) => {
-					await interaction.reply("Tunnel is up and running")
+					await interaction.reply(
+						"Tunnel is up and running. If you have problem connecting, restart the game and try again"
+					)
 				})
 				.on("error", async (e) => {
 					await interaction.reply(
