@@ -1398,6 +1398,17 @@ function queryCard(string, set, compactDisplay = false) {
 						square: ([name, info]) => info.attack == info.health,
 						reflected: ([name, info]) => info.attack >= info.health,
 						traitless: ([name, info]) => !info.traits,
+						removal: ([name, info]) => {
+							const removalList = [
+								"explode bot",
+								"strange frog",
+								"mrs. bomb",
+								"adder",
+								"mirrorbot",
+								"shutterbug",
+							]
+							return removalList.includes(name)
+						},
 					}
 					let callback = nicknameList[value]
 					filterPossibleValue(
