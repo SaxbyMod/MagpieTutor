@@ -37,6 +37,10 @@ const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
 
+// Chalk color
+chalk.orange = chalk.hex("#fb922b")
+chalk.pink = chalk.hex("#ff80a4")
+
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -397,10 +401,11 @@ const specialMagick = [
 //downloading all the set and fetch important shit
 console.log(chalk.magenta.underline.bold("Setup please wait"))
 ;(async () => {
-	const start = performance.now()
+	const startSetup = performance.now()
 	console.log(chalk.magenta.underline.bold("Loading set data..."))
 	//fetch all the set json
 	for (const set of Object.values(setList)) {
+		const start = performance.now()
 		if (set.type === "107") {
 			await fetch(
 				`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
@@ -430,7 +435,7 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 			chalk.blue(
 				`Set ${chalk.green.bold(
 					set.name
-				)} loaded! with set code "${chalk.red.bold(
+				)} loaded! with set code "${chalk.orange.bold(
 					Object.keys(setList).find((key) => setList[key] === set)
 				)}"${
 					setsData[set.name]
@@ -442,15 +447,17 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 									: "green"
 						  ](cardCount)} cards`
 						: ""
-				}`
+				} (${chalk.red(
+					`load times: ${(performance.now() - start).toFixed(1)} ms`
+				)})`
 			)
 		)
 	}
 	console.log(
 		chalk.red(
-			`Loading set data took: ${
-				Math.round((performance.now() - start) * 10) / 10
-			}ms`
+			`Loading set data took: ${(performance.now() - startSetup).toFixed(
+				1
+			)}ms`
 		)
 	)
 	// loading all the card pool
@@ -491,7 +498,7 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 	}
 	console.log(
 		chalk.red(
-			`Setup took: ${Math.round((performance.now() - start) * 10) / 10}ms`
+			`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`
 		)
 	)
 	if (!client.isReady()) return
@@ -790,7 +797,7 @@ const queryKeywordList = {
 	is: {
 		alias: [],
 		description:
-			"Filter for type of card. List of nickname can be found [here]()",
+			"Filter for type of card. List of nickname can be found [here](https://github.com/khanhfg/MagpieTutor#nicknames)",
 		callback: (value, filterPossibleValue) => {
 			const nicknameList = {
 				vanilla: ([name, info]) => !info.sigils,
@@ -817,6 +824,7 @@ const queryKeywordList = {
 	},
 	name: {
 		alias: "n",
+		description: "Filter for name",
 		callback: (value, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) =>
 				name.toLowerCase().includes(value.toLowerCase())
@@ -825,6 +833,7 @@ const queryKeywordList = {
 	},
 	regex: {
 		alias: ["rx"],
+		description: "Filter for regex match in name",
 		callback: (value, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => name.match(value))
 		},
@@ -2076,7 +2085,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					return c
 				}
 			})()
-			console.log(card.name)
 			// get the card picture
 			const cardPortrait = await Canvas.loadImage(
 				options.getString("set") == "augmented"
@@ -2386,7 +2394,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
 			await interaction.reply(
-				`Possible query keyword for searching:\n${temp}`
+				`Possible query keyword for searching:\n${temp}\nIf you are don't know how query work visit (the documetation)[https://github.com/khanhfg/MagpieTutor#query-syntax]`
 			)
 		} else if (commandName === "test") {
 			await interaction.reply("Nothing here don't look into it")

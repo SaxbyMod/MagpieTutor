@@ -254,6 +254,7 @@ You can search card based on the following:
 - [Health](#health)
 - [Power](#power)
 - [Mox Color](#mox-color)
+- [Nickname](#nicknames)
 
 ## Detail
 To use the filter search put a `q` modifier in front of everything. Ex:  `q[[h:>2 p:<4]]`  
@@ -343,3 +344,6 @@ There nickname for a few shortcut and special card type
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
+- Move all the bot documentation to the wiki section
+- ~~Query info command~~
+- Better query doc with example
