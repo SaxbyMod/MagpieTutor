@@ -2394,7 +2394,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
 			await interaction.reply(
-				`Possible query keyword for searching:\n${temp}\nIf you are don't know how query work visit (the documetation)[https://github.com/khanhfg/MagpieTutor#query-syntax]`
+				`Possible query keyword for searching:\n${temp}\nIf you are don't know how query work visit [the documetation](https://github.com/khanhfg/MagpieTutor#query-syntax)`
 			)
 		} else if (commandName === "test") {
 			await interaction.reply("Nothing here don't look into it")
