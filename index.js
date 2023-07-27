@@ -15,6 +15,7 @@ const {
 	TextInputBuilder,
 	ModalBuilder,
 	TextInputStyle,
+	MessageFlags,
 } = require("discord.js")
 
 const StringSimilarity = require("string-similarity")
@@ -526,7 +527,7 @@ const queryKeywordList = {
 	sigil: {
 		alias: ["s"],
 		description: "Filter for a sigils",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) =>
 				info.sigils
 					? StringSimilarity.findBestMatch(
@@ -540,7 +541,7 @@ const queryKeywordList = {
 	effect: {
 		alias: ["e"],
 		description: "Filter for a sigil effect",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => {
 				if (!info.sigils) return false
 				let flag = false
@@ -555,7 +556,7 @@ const queryKeywordList = {
 	description: {
 		alias: ["d"],
 		description: "Filter for a description",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => {
 				if (!info.description) return false
 				return info.description.includes(value)
@@ -566,7 +567,7 @@ const queryKeywordList = {
 		alias: ["rc"],
 		description:
 			"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const op = value.includes(">=")
 				? ">="
 				: value.includes("<=")
@@ -608,7 +609,7 @@ const queryKeywordList = {
 		alias: ["rt"],
 		description:
 			"Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const type =
 				value == "b" || value == "blood"
 					? set.name == "augmented"
@@ -636,7 +637,7 @@ const queryKeywordList = {
 		alias: ["c"],
 		description:
 			"Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const color =
 				value == "g" ||
 				value == "green" ||
@@ -682,7 +683,7 @@ const queryKeywordList = {
 		alias: ["t"],
 		description:
 			"Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const temple =
 				value == "b" || value == "beast"
 					? "Beast"
@@ -699,7 +700,7 @@ const queryKeywordList = {
 	tribe: {
 		alias: ["tb"],
 		description: "Filter for tribe.",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => {
 				if (!info.tribes) return false
 				if (Array.isArray(info.tribes))
@@ -711,7 +712,7 @@ const queryKeywordList = {
 	trait: {
 		alias: ["tr"],
 		description: "Filter for trait.",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => {
 				if (!info.traits) return false
 				return info.traits.includes(value)
@@ -721,17 +722,17 @@ const queryKeywordList = {
 	rarity: {
 		alias: ["r"],
 		description:
-			"Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talking`, etc.) first character of rarity. (`c`, `u`, etc.)",
-		callback: (value, filterPossibleValue) => {
+			"Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talk`, `side`, etc.) first character of rarity. (`c`, `u`, etc.)",
+		callback: (value, set, filterPossibleValue) => {
 			const rarity =
-				value == "c" || value == "Common"
-					? set.augmented
+				value == "c" || value == "common"
+					? set.name == "augmented"
 						? "Common"
 						: false
 					: value == "u" || value == "uncommon"
 					? "Uncommon"
 					: value == "r" || value == "rare"
-					? set.augmented
+					? set.name == "augmented"
 						? "Rare"
 						: true
 					: value == "t" || value == "talk"
@@ -752,7 +753,7 @@ const queryKeywordList = {
 		alias: ["h"],
 		description:
 			"Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const op = value.includes(">=")
 				? ">="
 				: value.includes("<=")
@@ -775,7 +776,7 @@ const queryKeywordList = {
 		alias: ["p"],
 		description:
 			"Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const op = value.includes(">=")
 				? ">="
 				: value.includes("<=")
@@ -798,7 +799,7 @@ const queryKeywordList = {
 		alias: [],
 		description:
 			"Filter for type of card. List of nickname can be found [here](https://github.com/khanhfg/MagpieTutor#nicknames)",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			const nicknameList = {
 				vanilla: ([name, info]) => !info.sigils,
 				tank: ([name, info]) => info.health > 5,
@@ -825,7 +826,7 @@ const queryKeywordList = {
 	name: {
 		alias: "n",
 		description: "Filter for name",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) =>
 				name.toLowerCase().includes(value.toLowerCase())
 			)
@@ -834,7 +835,7 @@ const queryKeywordList = {
 	regex: {
 		alias: ["rx"],
 		description: "Filter for regex match in name",
-		callback: (value, filterPossibleValue) => {
+		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => name.match(value))
 		},
 	},
@@ -1414,7 +1415,7 @@ function queryCard(string, set, compactDisplay = false) {
 
 		for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
-				keyInfo.callback(value, filterPossibleValue)
+				keyInfo.callback(value, set, filterPossibleValue)
 			}
 		}
 	}
@@ -2393,9 +2394,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			Object.keys(queryKeywordList).forEach((key) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
-			await interaction.reply(
-				`Possible query keyword for searching:\n${temp}\nIf you are don't know how query work visit [the documetation](https://github.com/khanhfg/MagpieTutor#query-syntax)`
-			)
+			await interaction.reply({
+				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you are don't know how query work visit [the documetation](https://github.com/khanhfg/MagpieTutor#query-syntax)`,
+				flags: [MessageFlags.SuppressEmbeds],
+			})
 		} else if (commandName === "test") {
 			await interaction.reply("Nothing here don't look into it")
 		}
