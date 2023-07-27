@@ -340,3 +340,6 @@ There nickname for a few shortcut and special card type
 - ~~Rewrote pool to make fetch a bit faster~~
 - Make draft work to work with new pool
 - More advance stuff for query (negation, or)
+- Deck submission that give a id to be recall
+- Ruleset submission that give id to be recall
+- Theme submission that give id to be recall

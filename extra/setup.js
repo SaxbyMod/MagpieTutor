@@ -218,6 +218,9 @@ const commands = [
 			option.setName("emoji").setDescription("emoji").setRequired(true)
 		),
 	new SlashCommandBuilder()
+		.setName("query-info")
+		.setDescription("Send a list of all query keyword and how they work"),
+	new SlashCommandBuilder()
 		.setName("test")
 		.setDescription("Testing commands"),
 ].map((command) => command.toJSON())
