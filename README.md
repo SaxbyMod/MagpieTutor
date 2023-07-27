@@ -307,7 +307,7 @@ Filter to include a certain trait.
 ### Rarity
 **keyword**: `r` or `rarity`  
 Filter for rarity/tier.  
-Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talking`, etc.) first character of rarity. (`c`, `u`, etc.)
+Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talk`, `side` etc.) first character of rarity. (`c`, `u`, etc.)
 
 ### Health
 **keyword**: `h` or `health`  
