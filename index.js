@@ -36,6 +36,7 @@ format.extend(String.prototype, {})
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
+
 //set up the bot client
 const client = new Client({
 	intents: [
@@ -456,12 +457,6 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 	console.log(chalk.magenta.underline.bold("Loading card pools..."))
 	for (const setName of Object.keys(setsData)) {
 		console.log(chalk.yellow(`Loading ${setName} pools`))
-		// setsBanPool[set] = []
-		// setsRarePool[set] = []
-		// setsBeastPool[set] = []
-		// setsUndeadPool[set] = []
-		// setsTechPool[set] = []
-		// setsMagickPool[set] = []
 		setsData[setName].pools = {}
 		let temp = {}
 		for (const card of setsData[setName].cards) {
@@ -476,30 +471,6 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 				if (eval(poolType.condition))
 					setsData[setName].pools[poolType.name].push(name)
 			}
-			// if (card.banned) {
-			// 	setsBanPool[set].push(name)
-			// }
-
-			// if (card.rare) {
-			// 	setsRarePool[set].push(name)
-			// }
-
-			// if (specialMagick.includes(card.name)) {
-			// 	setsMagickPool[set].push(name)
-			// } else {
-			// 	if (card.blood_cost) {
-			// 		setsBeastPool[set].push(name)
-			// 	}
-			// 	if (card.bone_cost) {
-			// 		setsUndeadPool[set].push(name)
-			// 	}
-			// 	if (card.energy_cost) {
-			// 		setsTechPool[set].push(name)
-			// 	}
-			// 	if (card.mox_cost) {
-			// 		setsMagickPool[set].push(name)
-			// 	}
-			// }
 		}
 		setsData[setName].cards = temp
 		console.log(
@@ -523,6 +494,12 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 			`Setup took: ${Math.round((performance.now() - start) * 10) / 10}ms`
 		)
 	)
+	if (!client.isReady()) return
+	console.log(
+		chalk.bgGreen.black(
+			"Setup is complete and bot is connected to Discord's sever"
+		)
+	)
 	const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
 	console.log(chalk.cyan(`Bot is in ${servers.length} server`))
 	console.log(chalk.cyan(`Servers: ${chalk.yellow(servers.join(", "))}`))
@@ -536,6 +513,322 @@ const specialAttackDescription = {
 	ant: "This card's power is number of ant you control.",
 	bell: "This card's power is how close it is to the bell",
 	hand: "This card's power is the number of the cards in your hand",
+}
+
+const queryKeywordList = {
+	sigil: {
+		alias: ["s"],
+		description: "Filter for a sigils",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) =>
+				info.sigils
+					? StringSimilarity.findBestMatch(
+							value,
+							info.sigils.map((s) => s.toLowerCase())
+					  ).bestMatch.rating >= 0.8
+					: false
+			)
+		},
+	},
+	effect: {
+		alias: ["e"],
+		description: "Filter for a sigil effect",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) => {
+				if (!info.sigils) return false
+				let flag = false
+				info.sigils.forEach((sigil) => {
+					if (setsData[set.name].sigils[sigil].includes(value))
+						flag = true
+				})
+				return flag
+			})
+		},
+	},
+	description: {
+		alias: ["d"],
+		description: "Filter for a description",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) => {
+				if (!info.description) return false
+				return info.description.includes(value)
+			})
+		},
+	},
+	resourcecost: {
+		alias: ["rc"],
+		description:
+			"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
+		callback: (value, filterPossibleValue) => {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			filterPossibleValue(
+				([name, info]) =>
+					eval(`${info.blood_cost}${op}${value}`) ||
+					eval(`${info.bone_cost}${op}${value}`) ||
+					eval(`${info.energy_cost}${op}${value}`) ||
+					eval(
+						`${
+							info.mox_cost || info.mox
+								? info[
+										set.name == "augmeted"
+											? "mox"
+											: "mox_cost"
+								  ].length
+								: undefined
+						}${op}${value}`
+					) ||
+					eval(
+						`${
+							info.shattered ? info.shattered.length : undefined
+						}${op}${value}`
+					)
+			)
+		},
+	},
+	resourcetype: {
+		alias: ["rt"],
+		description:
+			"Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)",
+		callback: (value, filterPossibleValue) => {
+			const type =
+				value == "b" || value == "blood"
+					? set.name == "augmented"
+						? "blood"
+						: "blood_cost"
+					: value == "o" || value == "bone"
+					? set.name == "augmented"
+						? "bone"
+						: "bone_cost"
+					: value == "e" || value == "energy"
+					? set.name == "augmented"
+						? "energy"
+						: "energy_cost"
+					: value == "m" || value == "mox"
+					? set.name == "augmented"
+						? "mox"
+						: "mox_cost"
+					: value == "s" || value == "shattered"
+					? "shattered"
+					: ""
+			filterPossibleValue(([name, info]) => info[type])
+		},
+	},
+	color: {
+		alias: ["c"],
+		description:
+			"Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
+		callback: (value, filterPossibleValue) => {
+			const color =
+				value == "g" ||
+				value == "green" ||
+				value == "e" ||
+				value == "emerald"
+					? set.name == "augmented"
+						? "emerald"
+						: "Green"
+					: value == "o" ||
+					  value == "orange" ||
+					  value == "r" ||
+					  value == "ruby"
+					? set.name == "augmented"
+						? "ruby"
+						: "Orange"
+					: value == "b" ||
+					  value == "blue" ||
+					  value == "s" ||
+					  value == "sapphire"
+					? set.name == "augmented"
+						? "sapphire"
+						: "Blue"
+					: value == "c" ||
+					  value == "colorless" ||
+					  value == "p" ||
+					  value == "prism"
+					? "prism"
+					: ""
+			// if mox cost exist check for color then if shattered exist also check for color
+			// or between mox and shattered
+			filterPossibleValue(([name, info]) =>
+				info.mox || info.mox_cost
+					? info[
+							set.name == "augmented" ? "mox" : "mox_cost"
+					  ].includes(color)
+					: false || info.shattered
+					? info.shattered.includes(`shattered_${color}`)
+					: false
+			)
+		},
+	},
+	temple: {
+		alias: ["t"],
+		description:
+			"Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
+		callback: (value, filterPossibleValue) => {
+			const temple =
+				value == "b" || value == "beast"
+					? "Beast"
+					: value == "u" || value == "undead"
+					? "Undead"
+					: value == "t" || value == "technology"
+					? "Tech"
+					: value == "m" || value == "magick"
+					? "Magick"
+					: ""
+			filterPossibleValue(([name, info]) => info.temple == temple)
+		},
+	},
+	tribe: {
+		alias: ["tb"],
+		description: "Filter for tribe.",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) => {
+				if (!info.tribes) return false
+				if (Array.isArray(info.tribes))
+					info.tribes = info.tribes.join(" ")
+				return info.tribes.toLowerCase().includes(value)
+			})
+		},
+	},
+	trait: {
+		alias: ["tr"],
+		description: "Filter for trait.",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) => {
+				if (!info.traits) return false
+				return info.traits.includes(value)
+			})
+		},
+	},
+	rarity: {
+		alias: ["r"],
+		description:
+			"Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talking`, etc.) first character of rarity. (`c`, `u`, etc.)",
+		callback: (value, filterPossibleValue) => {
+			const rarity =
+				value == "c" || value == "Common"
+					? set.augmented
+						? "Common"
+						: false
+					: value == "u" || value == "uncommon"
+					? "Uncommon"
+					: value == "r" || value == "rare"
+					? set.augmented
+						? "Rare"
+						: true
+					: value == "t" || value == "talk"
+					? "Talking"
+					: value == "s" || value == "side"
+					? "Side Deck"
+					: ""
+			filterPossibleValue(([name, info]) =>
+				set.name == "augmented"
+					? info.tier == rarity
+					: rarity
+					? info.rare
+					: !info.rare
+			)
+		},
+	},
+	health: {
+		alias: ["h"],
+		description:
+			"Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
+		callback: (value, filterPossibleValue) => {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			filterPossibleValue(([name, info]) =>
+				eval(`${info.health}${op}${value}`)
+			)
+		},
+	},
+	power: {
+		alias: ["p"],
+		description:
+			"Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
+		callback: (value, filterPossibleValue) => {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			filterPossibleValue(([name, info]) =>
+				eval(`${info.attack}${op}${value}`)
+			)
+		},
+	},
+	is: {
+		alias: [],
+		description:
+			"Filter for type of card. List of nickname can be found [here]()",
+		callback: (value, filterPossibleValue) => {
+			const nicknameList = {
+				vanilla: ([name, info]) => !info.sigils,
+				tank: ([name, info]) => info.health > 5,
+				glass: ([name, info]) => info.attack > info.health,
+				square: ([name, info]) => info.attack == info.health,
+				reflected: ([name, info]) => info.attack >= info.health,
+				traitless: ([name, info]) => !info.traits,
+				removal: ([name, info]) => {
+					const removalList = [
+						"explode bot",
+						"strange frog",
+						"mrs. bomb",
+						"adder",
+						"mirrorbot",
+						"shutterbug",
+					]
+					return removalList.includes(name)
+				},
+			}
+			let callback = nicknameList[value]
+			filterPossibleValue(callback ? callback : ([name, info]) => false)
+		},
+	},
+	name: {
+		alias: "n",
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) =>
+				name.toLowerCase().includes(value.toLowerCase())
+			)
+		},
+	},
+	regex: {
+		alias: ["rx"],
+		callback: (value, filterPossibleValue) => {
+			filterPossibleValue(([name, info]) => name.match(value))
+		},
+	},
 }
 
 function getEmoji(name) {
@@ -1110,330 +1403,9 @@ function queryCard(string, set, compactDisplay = false) {
 			)
 		}
 
-		const queryKeywordList = {
-			sigil: {
-				alias: ["s"],
-				description: "Filter for a sigils",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) =>
-						info.sigils
-							? StringSimilarity.findBestMatch(
-									value,
-									info.sigils.map((s) => s.toLowerCase())
-							  ).bestMatch.rating >= 0.8
-							: false
-					)
-				},
-			},
-			effect: {
-				alias: ["e"],
-				description: "Filter for a sigil effect",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) => {
-						if (!info.sigils) return false
-						let flag = false
-						info.sigils.forEach((sigil) => {
-							if (
-								setsData[set.name].sigils[sigil].includes(value)
-							)
-								flag = true
-						})
-						return flag
-					})
-				},
-			},
-			description: {
-				alias: ["d"],
-				description: "Filter for a description",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) => {
-						if (!info.description) return false
-						return info.description.includes(value)
-					})
-				},
-			},
-			resourcecost: {
-				alias: ["rc"],
-				description:
-					"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
-				callback: (value) => {
-					const op = value.includes(">=")
-						? ">="
-						: value.includes("<=")
-						? "<="
-						: value.includes(">")
-						? ">"
-						: value.includes("<")
-						? "<"
-						: "=="
-					value = value
-						.replaceAll("<", "")
-						.replaceAll(">", "")
-						.replaceAll("=", "")
-					filterPossibleValue(
-						([name, info]) =>
-							eval(`${info.blood_cost}${op}${value}`) ||
-							eval(`${info.bone_cost}${op}${value}`) ||
-							eval(`${info.energy_cost}${op}${value}`) ||
-							eval(
-								`${
-									info.mox_cost || info.mox
-										? info[
-												set.name == "augmeted"
-													? "mox"
-													: "mox_cost"
-										  ].length
-										: undefined
-								}${op}${value}`
-							) ||
-							eval(
-								`${
-									info.shattered
-										? info.shattered.length
-										: undefined
-								}${op}${value}`
-							)
-					)
-				},
-			},
-			resourcetype: {
-				alias: ["rt"],
-				description:
-					"Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)",
-				callback: (value) => {
-					const type =
-						value == "b" || value == "blood"
-							? set.name == "augmented"
-								? "blood"
-								: "blood_cost"
-							: value == "o" || value == "bone"
-							? set.name == "augmented"
-								? "bone"
-								: "bone_cost"
-							: value == "e" || value == "energy"
-							? set.name == "augmented"
-								? "energy"
-								: "energy_cost"
-							: value == "m" || value == "mox"
-							? set.name == "augmented"
-								? "mox"
-								: "mox_cost"
-							: value == "s" || value == "shattered"
-							? "shattered"
-							: ""
-					filterPossibleValue(([name, info]) => info[type])
-				},
-			},
-			color: {
-				alias: ["c"],
-				description:
-					"Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
-				callback: (value) => {
-					const color =
-						value == "g" ||
-						value == "green" ||
-						value == "e" ||
-						value == "emerald"
-							? set.name == "augmented"
-								? "emerald"
-								: "Green"
-							: value == "o" ||
-							  value == "orange" ||
-							  value == "r" ||
-							  value == "ruby"
-							? set.name == "augmented"
-								? "ruby"
-								: "Orange"
-							: value == "b" ||
-							  value == "blue" ||
-							  value == "s" ||
-							  value == "sapphire"
-							? set.name == "augmented"
-								? "sapphire"
-								: "Blue"
-							: value == "c" ||
-							  value == "colorless" ||
-							  value == "p" ||
-							  value == "prism"
-							? "prism"
-							: ""
-					// if mox cost exist check for color then if shattered exist also check for color
-					// or between mox and shattered
-					filterPossibleValue(([name, info]) =>
-						info.mox || info.mox_cost
-							? info[
-									set.name == "augmented" ? "mox" : "mox_cost"
-							  ].includes(color)
-							: false || info.shattered
-							? info.shattered.includes(`shattered_${color}`)
-							: false
-					)
-				},
-			},
-			temple: {
-				alias: ["t"],
-				description:
-					"Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
-				callback: (value) => {
-					const temple =
-						value == "b" || value == "beast"
-							? "Beast"
-							: value == "u" || value == "undead"
-							? "Undead"
-							: value == "t" || value == "technology"
-							? "Tech"
-							: value == "m" || value == "magick"
-							? "Magick"
-							: ""
-					filterPossibleValue(([name, info]) => info.temple == temple)
-				},
-			},
-			tribe: {
-				alias: ["tb"],
-				description: "Filter for tribe.",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) => {
-						if (!info.tribes) return false
-						if (Array.isArray(info.tribes))
-							info.tribes = info.tribes.join(" ")
-						return info.tribes.toLowerCase().includes(value)
-					})
-				},
-			},
-			trait: {
-				alias: ["tr"],
-				description: "Filter for trait.",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) => {
-						if (!info.traits) return false
-						return info.traits.includes(value)
-					})
-				},
-			},
-			rarity: {
-				alias: ["r"],
-				description:
-					"Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talking`, etc.) first character of rarity. (`c`, `u`, etc.)",
-				callback: (value) => {
-					const rarity =
-						value == "c" || value == "Common"
-							? set.augmented
-								? "Common"
-								: false
-							: value == "u" || value == "uncommon"
-							? "Uncommon"
-							: value == "r" || value == "rare"
-							? set.augmented
-								? "Rare"
-								: true
-							: value == "t" || value == "talk"
-							? "Talking"
-							: value == "s" || value == "side"
-							? "Side Deck"
-							: ""
-					filterPossibleValue(([name, info]) =>
-						set.name == "augmented"
-							? info.tier == rarity
-							: rarity
-							? info.rare
-							: !info.rare
-					)
-				},
-			},
-			health: {
-				alias: ["h"],
-				description:
-					"Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
-				callback: (value) => {
-					const op = value.includes(">=")
-						? ">="
-						: value.includes("<=")
-						? "<="
-						: value.includes(">")
-						? ">"
-						: value.includes("<")
-						? "<"
-						: "=="
-					value = value
-						.replaceAll("<", "")
-						.replaceAll(">", "")
-						.replaceAll("=", "")
-					filterPossibleValue(([name, info]) =>
-						eval(`${info.health}${op}${value}`)
-					)
-				},
-			},
-			power: {
-				alias: ["p"],
-				description:
-					"Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
-				callback: (value) => {
-					const op = value.includes(">=")
-						? ">="
-						: value.includes("<=")
-						? "<="
-						: value.includes(">")
-						? ">"
-						: value.includes("<")
-						? "<"
-						: "=="
-					value = value
-						.replaceAll("<", "")
-						.replaceAll(">", "")
-						.replaceAll("=", "")
-					filterPossibleValue(([name, info]) =>
-						eval(`${info.attack}${op}${value}`)
-					)
-				},
-			},
-			is: {
-				alias: [],
-				description:
-					"Filter for type of card. List of nickname can be found [here]()",
-				callback: (value) => {
-					const nicknameList = {
-						vanilla: ([name, info]) => !info.sigils,
-						tank: ([name, info]) => info.health > 5,
-						glass: ([name, info]) => info.attack > info.health,
-						square: ([name, info]) => info.attack == info.health,
-						reflected: ([name, info]) => info.attack >= info.health,
-						traitless: ([name, info]) => !info.traits,
-						removal: ([name, info]) => {
-							const removalList = [
-								"explode bot",
-								"strange frog",
-								"mrs. bomb",
-								"adder",
-								"mirrorbot",
-								"shutterbug",
-							]
-							return removalList.includes(name)
-						},
-					}
-					let callback = nicknameList[value]
-					filterPossibleValue(
-						callback ? callback : ([name, info]) => false
-					)
-				},
-			},
-			name: {
-				alias: "n",
-				callback: (value) => {
-					filterPossibleValue(([name, info]) =>
-						name.toLowerCase().includes(value.toLowerCase())
-					)
-				},
-			},
-			regex: {
-				alias: ["rx"],
-				callback: (value) => {
-					filterPossibleValue(([name, info]) => name.match(value))
-				},
-			},
-		}
 		for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
-				keyInfo.callback(value)
+				keyInfo.callback(value, filterPossibleValue)
 			}
 		}
 	}
@@ -2408,22 +2380,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 			).react(options.getString("emoji"))
 			await interaction.reply({ content: "Reacted", ephemeral: true })
+		} else if (commandName === "query-info") {
+			var temp = ""
+			Object.keys(queryKeywordList).forEach((key) => {
+				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
+			})
+			await interaction.reply(
+				`Possible query keyword for searching:\n${temp}`
+			)
 		} else if (commandName === "test") {
-			const message = await interaction.reply({
-				content: "hello",
-				fetchReply: true,
-			})
-			await message.reply({
-				content: "test",
-				components: [
-					new ActionRowBuilder().addComponents(
-						new ButtonBuilder()
-							.setLabel("Test")
-							.setCustomId("test")
-							.setStyle(ButtonStyle.Primary)
-					),
-				],
-			})
+			await interaction.reply("Nothing here don't look into it")
 		}
 	}
 	if (interaction.isButton()) {
