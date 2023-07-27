@@ -47,6 +47,7 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
     - [Mox Color](#mox-color)
     - [Nicknames](#nicknames)
   - [Todo List](#todo-list)
+  - [Plan for next update:](#plan-for-next-update)
 
 ## How to host the bot yourself
 If you know how to set up a discord bot with discord.js already, then download all the package with `npm setup`, then created a `config.json` with these information: 
@@ -338,13 +339,21 @@ There nickname for a few shortcut and special card type
 - ~~New Guess the Card submit using model instead of messages (Less bug?)~~
 - ~~Fix Augmented no art bug~~
 - ~~Search with scryfall like syntax~~
-- ~~Augmented specific syntax~~
-- ~~Rewrote pool to make fetch a bit faster~~
-- Make draft work to work with new pool
-- More advance stuff for query (negation, or)
+- More advance stuff for query (negation, or, etc.)
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
 - Move all the bot documentation to the wiki section
 - ~~Query info command~~
 - Better query doc with example
+
+## Plan for next update:
+- Regex for query
+- Name for query
+- ~~Augmented specific query syntax~~
+- Resource type for query
+- Compact mode for query
+- New nickname removal for query
+- Query info command
+- ~~Rewrote pool to make fetch a bit faster~~
+- Fix draft with new pool
