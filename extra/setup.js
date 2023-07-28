@@ -38,34 +38,6 @@ const commands = [
 					"The deck size (how many pack do you want to open)"
 				)
 				.setMinValue(1)
-		)
-		.addBooleanOption((option) =>
-			option
-				.setName("beast")
-				.setDescription(
-					"Exclude Beast (card that cost Blood) card when drafting"
-				)
-		)
-		.addBooleanOption((option) =>
-			option
-				.setName("undead")
-				.setDescription(
-					"Exclude Undead (card that cost Bone) card when drafting"
-				)
-		)
-		.addBooleanOption((option) =>
-			option
-				.setName("tech")
-				.setDescription(
-					"Exclude Tech (card that cost Energy) card when drafting"
-				)
-		)
-		.addBooleanOption((option) =>
-			option
-				.setName("magick")
-				.setDescription(
-					"Exclude Magick (card that cost Mox or support only Mox) card when drafting"
-				)
 		),
 	new SlashCommandBuilder()
 		.setName("echo")

@@ -37,6 +37,13 @@ format.extend(String.prototype, {})
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
+const devMode = true
+function debugLog(...str) {
+	if (devMode) console.log(...str)
+}
+function infoLog(...str) {
+	if (!devMode) console.log(...str)
+}
 
 // Chalk color
 chalk.orange = chalk.hex("#fb922b")
@@ -65,8 +72,17 @@ const randomChoice = (list) => {
 
 const randomChoices = (list, num) => {
 	let out = []
+	let already = []
 	for (let choice = 0; choice < num; choice++) {
-		out.push(list[Math.floor(Math.random() * list.length)])
+		let n
+		while (true) {
+			n = Math.floor(Math.random() * list.length)
+			if (already.includes(n)) continue
+			break
+		}
+		out.push(list[n])
+		already.push(n)
+		if (list.length <= already.length) return out
 	}
 	return out
 }
@@ -118,7 +134,9 @@ const getMessage = async (channel, id) => {
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
 //define the ruleset shit
-const setFormatList = {
+
+//define how card should be render
+const SetFormatList = {
 	imf: {
 		general: {
 			type: "general",
@@ -186,6 +204,23 @@ const setFormatList = {
 			],
 		},
 	},
+	imfDraft: [
+		{ text: "**{name} ", type: "sub" },
+		{ text: "[RARE] ", type: "con", con: "card.rare" },
+		{ text: "(", type: "normal" },
+		{ text: "{blood_cost} Blood", type: "sub" },
+		{ text: "{bone_cost} Bone", type: "sub" },
+		{ text: "{energy_cost} Energy", type: "sub" },
+		{ text: "{mox_cost}", type: "mox" },
+		{ text: ")**\n", type: "normal" },
+		{
+			text: "Stat: {s}\n",
+			type: "stat",
+			attackVar: "attack",
+			healthVar: "health",
+		},
+		{ text: "Sigils: {s}", type: "list", var: "sigils" },
+	],
 	augmented: {
 		general: {
 			type: "general",
@@ -275,6 +310,7 @@ const setFormatList = {
 	},
 }
 
+// const for what a imf pool look like
 const ImfPool = [
 	{ name: "ban", condition: "card.ban" },
 	{ name: "rare", condition: "card.rare" },
@@ -287,13 +323,36 @@ const ImfPool = [
 	},
 	{ name: "common", condition: "!card.rare" },
 ]
-const setList = {
+
+//structure of a pack for drafting
+const PackStructure = {
+	imf: [
+		{ type: "rare", amount: 1, replacement: "common" },
+		{ type: "common", amount: 4 },
+		{ type: "ban", amount: 0 },
+	],
+}
+
+//deck restriction when drafting
+const DraftRestriction = {
+	imf: {
+		rare: { amount: 1, restrictType: "name" },
+		common: { amount: 4, restrictType: "name" },
+	},
+	eternal: {
+		rare: { amount: 1, restrictType: "name" },
+		common: { amount: 3, restrictType: "name" },
+	},
+}
+
+// list of all the set and their setting
+const SetList = {
 	//imf set
 	comp: {
 		name: "competitive",
 		type: "107",
-		format: setFormatList.imf,
-		compactFormat: setFormatList.imfCompact,
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
 		pools: [
 			{ name: "ban", condition: "card.banned" },
 			{ name: "rare", condition: "card.rare" },
@@ -306,26 +365,29 @@ const setList = {
 			},
 			{ name: "common", condition: "!card.rare" },
 		],
+		packStructure: PackStructure.imf,
+		draftFormat: SetFormatList.imfDraft,
+		draftRestriction: DraftRestriction.imf,
 	},
 	e: {
 		name: "eternal",
 		type: "107",
-		format: setFormatList.imf,
-		compactFormat: setFormatList.imfCompact,
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
 		pools: ImfPool,
 	},
 	v: {
 		name: "vanilla",
 		type: "107",
-		format: setFormatList.imf,
-		compactFormat: setFormatList.imfCompact,
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
 		pools: ImfPool,
 	},
 	g: {
 		name: "mr.egg",
 		type: "url",
-		format: setFormatList.imf,
-		compactFormat: setFormatList.imfCompact,
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
 		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
 		pools: ImfPool,
 	},
@@ -334,16 +396,16 @@ const setList = {
 	a: {
 		name: "augmented",
 		type: "specialLoad",
-		format: setFormatList.augmented,
-		compactFormat: setFormatList.augmentedCompact,
+		format: SetFormatList.augmented,
+		compactFormat: SetFormatList.augmentedCompact,
 		file: "./extra/augmentedProcess.js",
 		pools: ImfPool,
 	},
 	r: {
 		name: "redux",
 		type: "specialLoad",
-		format: setFormatList.redux,
-		compactFormat: setFormatList.redux,
+		format: SetFormatList.redux,
+		compactFormat: SetFormatList.redux,
 		file: "./extra/reduxProcess.js",
 		pools: ImfPool,
 	},
@@ -379,13 +441,6 @@ const setList = {
 }
 
 let setsData = {}
-let setsBanPool = {}
-let setsRarePool = {}
-
-let setsBeastPool = {}
-let setsUndeadPool = {}
-let setsTechPool = {}
-let setsMagickPool = {}
 
 const specialMagick = [
 	"Mox Module",
@@ -400,12 +455,12 @@ const specialMagick = [
 ] // these card will be consider magick no matter what
 
 //downloading all the set and fetch important shit
-console.log(chalk.magenta.underline.bold("Setup please wait"))
+infoLog(chalk.magenta.underline.bold("Setup please wait"))
 ;(async () => {
 	const startSetup = performance.now()
-	console.log(chalk.magenta.underline.bold("Loading set data..."))
+	infoLog(chalk.magenta.underline.bold("Loading set data..."))
 	//fetch all the set json
-	for (const set of Object.values(setList)) {
+	for (const set of Object.values(SetList)) {
 		const start = performance.now()
 		if (set.type === "107") {
 			await fetch(
@@ -432,12 +487,12 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 		const cardCount = setsData[set.name]
 			? setsData[set.name].cards.length
 			: 0
-		console.log(
+		infoLog(
 			chalk.blue(
 				`Set ${chalk.green.bold(
 					set.name
 				)} loaded! with set code "${chalk.orange.bold(
-					Object.keys(setList).find((key) => setList[key] === set)
+					Object.keys(SetList).find((key) => SetList[key] === set)
 				)}"${
 					setsData[set.name]
 						? ` and ${chalk[
@@ -454,7 +509,7 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 			)
 		)
 	}
-	console.log(
+	infoLog(
 		chalk.red(
 			`Loading set data took: ${(performance.now() - startSetup).toFixed(
 				1
@@ -462,16 +517,16 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 		)
 	)
 	// loading all the card pool
-	console.log(chalk.magenta.underline.bold("Loading card pools..."))
+	infoLog(chalk.magenta.underline.bold("Loading card pools..."))
 	for (const setName of Object.keys(setsData)) {
-		console.log(chalk.yellow(`Loading ${setName} pools`))
+		infoLog(chalk.yellow(`Loading ${setName} pools`))
 		setsData[setName].pools = {}
 		let temp = {}
 		for (const card of setsData[setName].cards) {
 			const name = card.name.toLowerCase()
 			temp[name] = card
 
-			for (const poolType of Object.values(setList).find(
+			for (const poolType of Object.values(SetList).find(
 				(i) => i.name == setName
 			).pools) {
 				if (!setsData[setName].pools[poolType.name])
@@ -481,7 +536,7 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 			}
 		}
 		setsData[setName].cards = temp
-		console.log(
+		infoLog(
 			chalk.green(
 				`Finish loading ${setName} pools. Loaded ${chalk.blue(
 					Object.keys(setsData[setName].pools).length
@@ -497,11 +552,14 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 			)
 		)
 	}
-	console.log(
+	infoLog(
 		chalk.red(
 			`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`
 		)
 	)
+
+	debugLog("Setup completed")
+
 	if (!client.isReady()) return
 	console.log(
 		chalk.bgGreen.black(
@@ -509,8 +567,8 @@ console.log(chalk.magenta.underline.bold("Setup please wait"))
 		)
 	)
 	const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
-	console.log(chalk.cyan(`Bot is in ${servers.length} server`))
-	console.log(chalk.cyan(`Servers: ${chalk.yellow(servers.join(", "))}`))
+	infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
+	infoLog(chalk.cyan(`Servers: ${chalk.yellow(servers.join(", "))}`))
 })()
 
 const specialAttackDescription = {
@@ -911,9 +969,9 @@ async function messageSearch(message, returnValue = false) {
 	outer: for (let cardName of message.content
 		.toLowerCase()
 		.matchAll(searchRegex)) {
-		let selectedSet = setList[cardName[1][0]]
-			? setList[cardName[1][0]]
-			: setList.comp
+		let selectedSet = SetList[cardName[1][0]]
+			? SetList[cardName[1][0]]
+			: SetList.comp
 		let name = cardName[2]
 		let card
 		let noAlter = false
@@ -955,9 +1013,9 @@ async function messageSearch(message, returnValue = false) {
 					query = true
 				}
 				cardName[1] = cardName[1].slice(1)
-				selectedSet = setList[cardName[1][0]]
-					? setList[cardName[1][0]]
-					: setList.comp
+				selectedSet = SetList[cardName[1][0]]
+					? SetList[cardName[1][0]]
+					: SetList.comp
 				continue redo
 			}
 			break
@@ -1202,7 +1260,7 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
 	} else {
-		if (card.set == setList.a.name) {
+		if (card.set == SetList.a.name) {
 			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
 				" ",
 				"%20"
@@ -1295,7 +1353,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			)
 			const context = portrait.getContext("2d")
 			context.imageSmoothingEnabled = false
-			if (card.set == setList.a.name) {
+			if (card.set == SetList.a.name) {
 				context.drawImage(
 					await Canvas.loadImage(
 						`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
@@ -1345,7 +1403,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 		)
 
 	const info = genDescription(
-		Object.values(setList).find((set) => set.name == card.set)[
+		Object.values(SetList).find((set) => set.name == card.set)[
 			compactDisplay ? "compactFormat" : "format"
 		],
 		card
@@ -1483,9 +1541,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			})
 		} else if (commandName === "set-code") {
 			var temp = ""
-			Object.keys(setList).forEach((key) => {
-				temp += `**${key}**: ${setList[key].name}${
-					setList[key].type == "modifier" ? " (Modifier)" : ""
+			Object.keys(SetList).forEach((key) => {
+				temp += `**${key}**: ${SetList[key].name}${
+					SetList[key].type == "modifier" ? " (Modifier)" : ""
 				}\n`
 			})
 			await interaction.reply(
@@ -1523,149 +1581,161 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			} else await interaction.reply("no")
 		} else if (commandName === "draft") {
 			// grab the important shit
-			const set = options.getString("set") // get the set
-			const deckSize = options.getInteger("size") // size of deck
+			const setName = options.getString("set") // get the set name
+			const set = Object.values(SetList).find((v) => v.name == setName)
+			const deckSize = options.getInteger("size") // get deck size
 				? options.getInteger("size")
 				: 20
-			const pool = listDiff(
-				setsCardPool[set],
-				[]
-					.concat(
-						options.getBoolean("beast") ? setsBeastPool[set] : []
-					)
-					.concat(
-						options.getBoolean("undead") ? setsUndeadPool[set] : []
-					)
-					.concat(options.getBoolean("tech") ? setsTechPool[set] : [])
-					.concat(
-						options.getBoolean("magick") ? setsMagickPool[set] : []
-					)
-			) // load the pool by adding in the selected type pool
 
 			const message = await interaction.reply({
 				content: "Loading...",
 				fetchReply: true,
 			})
 
-			var deck = { cards: [], side_deck: "10 Squirrel" }
+			//get the set pack struture
+			const packStructure = set.packStructure
+
+			//fetch only the require card from the pack structure
+			const pool = (() => {
+				let out = {}
+				for (const type of packStructure) {
+					if (type.amount == 0) {
+						Object.keys(out).forEach((k) => {
+							out[k] = listDiff(
+								out[k],
+								setsData[setName].pools[type.type]
+							)
+						})
+						continue
+					}
+					out[type.type] = setsData[setName].pools[type.type]
+				}
+				return out
+			})()
+
+			var deck = {
+				cards: [],
+				side_deck: "10 Squirrel",
+			}
 			var wildCount = 0
-			let flag = false
+			let flag = false // exit flag
+			let deckUniqueCount = {}
 
+			// repeat for deck size
 			for (let cycle = 0; cycle < deckSize; cycle++) {
-				// take 4 random common
-				let temp = randomChoices(
-					listDiff(
-						listDiff(pool, setsRarePool[set]),
-						setsBanPool[set]
-					),
-					4
-				)
+				// putting card name into the pack
+				let temp = []
 
-				// 1 one random rare
-				temp.push(
-					randomChoice(
-						listDiff(
-							listDiff(
-								listInter(pool, setsRarePool[set]),
-								deck.cards
-									.map((c) =>
-										c.startsWith("*")
-											? c.replaceAll("*", "")
-											: c
-									)
-									.map((n) => n.toLowerCase())
-							),
-							setsBanPool[set]
-						)
-					)
-				)
-
-				// generating stuff
-
-				//set up a pack
-				let pack = Object.fromEntries(
-					Object.entries(setsData[set].cards).filter(([name, card]) =>
-						temp.includes(name.toLowerCase())
-					)
-				)
-				// sort the pack by rare first then alphabetical
-				pack.sort((a, b) =>
-					a.rare ? -1 : b.rare ? 1 : a.name.localeCompare(b.name)
-				)
-
-				//adding in wild if duplicate is found
-				if (pack.length < 5) {
-					// for every duplicate add in a different one
-					for (let card = 0; card < 5 - pack.length; card++) {
-						// get a new card by subtracting the already found pool and the full pool
-						const newCard = randomChoice(
-							listDiff(
-								listDiff(
-									listDiff(pool, setsRarePool[set]),
-									setsBanPool[set]
-								),
-								temp
+				for (let type of packStructure) {
+					// if exclude type skip or pool too small and move on
+					if (type.amount == 0) continue
+					let amount = type.amount
+					//if the pool have 0 card and have a replacement use the replacement
+					if (pool[type.type].length < 1)
+						if (type.replacement) {
+							type = packStructure.find(
+								(t) => t.type == type.replacement
 							)
-						)
+						} else continue
 
-						// add it in
-						pack.push(
-							setsData[set].cards.find(
-								(c) => c.name.toLowerCase() === newCard
-							)
-						)
+					if (!temp[type.type]) temp[type.type] = []
+
+					temp[type.type] = temp[type.type].concat(
+						randomChoices(pool[type.type], amount)
+					)
+				}
+				//put card data in the pack using
+				let pack = []
+				for (const type of Object.keys(temp)) {
+					for (const name of temp[type]) {
+						let card = setsData[setName].cards[name]
+						card.type = type
+						pack.push(card)
 					}
 				}
 
-				// generating embed and button
+				// if the pack is missing cards push in wild card
+				if (
+					pack.length <
+					packStructure.reduce(
+						(partialSum, a) => partialSum + a.amount,
+						0
+					)
+				) {
+					pack.push({
+						name: "WILD CARD",
+						attack: 100,
+						health: 100,
+					})
+				}
+
+				// generating embed and selection
 				const embed = new EmbedBuilder()
 					.setColor(Colors.Blue)
 					.setTitle(
 						`Pack Left: ${deckSize - cycle}\nCard in deck: ${
 							deck.cards.length
-						}`
+						}\nWild Count: ${wildCount}`
 					)
+
 				const selectionList = new StringSelectMenuBuilder()
 					.setCustomId("select")
 					.setPlaceholder("Select a card!")
 
 				var description = ""
 
-				for (let c in pack) {
-					const card = pack[c]
+				//generate the pack list
+				for (const card of pack) {
+					for (let line of set.draftFormat) {
+						if (line.type == "sub") {
+							if (
+								!card[
+									line.text.match(/{(\w+)}/g)[0].slice(1, -1)
+								]
+							)
+								continue
+							description += line.text.format(card)
+						} else if (line.type == "normal") {
+							description += line.text
+						} else if (line.type == "con") {
+							if (eval(line.con)) description += line.text
+						} else if (line.type == "mox") {
+							if (
+								!card[
+									line.text.match(/{(\w+)}/g)[0].slice(1, -1)
+								]
+							)
+								continue
+							description += line.text.format(card)
+						} else if (line.type == "stat") {
+							description += line.text.replace(
+								"{s}",
+								`${
+									card.atkspecial
+										? `:${card.atkspecial}:`
+										: card[line.attackVar]
+								} / ${card[line.healthVar]}`
+							)
+						} else if (line.type == "list") {
+							if (!card[line.var]) continue
+							description += line.text.replace(
+								"{s}",
+								card[line.var]
+							)
+						}
+					}
+					description += "\n\n"
 
-					// generating the card description
-					description += `**${
-						card.rare ? `${card.name} [RARE]` : card.name
-					} (${card.blood_cost ? `${card.blood_cost} Blood ` : ""}${
-						card.bone_cost ? `${card.bone_cost} Bone ` : ""
-					}${card.energy_cost ? `${card.energy_cost} Energy ` : ""}${
-						card.mox_cost ? `${card.mox_cost.join(", ")} ` : ""
-					}${
-						!card.blood_cost &&
-						!card.bone_cost &&
-						!card.energy_cost &&
-						!card.mox_cost
-							? "Free"
-							: ""
-					})**\nPower: ${
-						card.atkspecial
-							? getEmoji(card.atkspecial)
-							: card.attack
-					}\nHealth: ${card.health}\n${
-						card.sigils ? `Sigils: ${card.sigils.join(", ")}` : ""
-					}\n\n`
-
-					// add the selection
+					// add the card to selection
 					selectionList.addOptions({
 						label: card.name,
-						value: `${card.rare ? "*" : ""}${card.name}${c}`,
+						value: card.name,
 					})
 				}
 
-				// load the deck list
+				// load the deck dup to check for restriction later
 				let deckStr = ""
-				temp = countDeckDup(
+				let deckDup = countDeckDup(
 					deck.cards.sort((a, b) =>
 						a.startsWith("*")
 							? -1
@@ -1675,12 +1745,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					)
 				)
 
-				// print it out
-				for (const card of Object.keys(temp)) {
-					deckStr += `${temp[card]}x | ${card}\n`
+				// generate the deck preview
+				for (const card of Object.keys(deckDup)) {
+					deckStr += `${deckDup[card]}x | ${card}\n`
 				}
 
-				// add it into embed
+				// add pack and preview into embed
 				embed.addFields(
 					{
 						name: "=============== PACK ===============",
@@ -1705,6 +1775,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 				const filter = (i) => i.user.id === interaction.user.id
 
+				// process the selection
 				let error = ""
 				await message
 					.awaitMessageComponent({
@@ -1713,39 +1784,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						filter,
 					})
 					.then(async (i) => {
-						const cardName = i.values[0].slice(0, -1)
-						let temp = cardName.startsWith("*")
-							? `**${cardName.slice(1)}**`
-							: cardName
-
-						if (
-							deck.cards.filter(
-								(c) => c.toLowerCase() === temp.toLowerCase()
-							).length >= 4
-						) {
-							deck.cards.push("** *WILD CARD* **")
+						const card = pack.find((c) => c.name == i.values[0])
+						if (card.name == "WILD CARD") {
 							wildCount++
-						} else deck.cards.push(temp)
-
-						await i.update({
-							embeds: [embed],
-						})
+						} else {
+							deck.cards.push(card.name)
+							if (
+								set.draftRestriction[card.type].restrictType ==
+								"name"
+							) {
+								if (
+									countDeckDup(deck.cards)[card.name] >=
+									set.draftRestriction[card.type].amount
+								) {
+									pool[card.type].splice(
+										pool[card.type].indexOf(
+											card.name.toLowerCase()
+										),
+										1
+									)
+								}
+							} else if (
+								set.draftRestriction[card.type].restrictType ==
+								"deck"
+							) {
+								if (!deckUniqueCount[card.type])
+									deckUniqueCount[card.type] = 0
+								deckUniqueCount[card.type]++
+								if (
+									deckUniqueCount[card.type] >=
+									set.draftRestriction[card.type].amount
+								)
+									pool[card.type] = []
+							}
+						}
+						await i.update("added")
 					})
 					.catch((err) => {
 						flag = true
 						error = err
 					})
-
-				deck.cards = deck.cards
-					.map((c) => {
-						let out
-						out = c.replaceAll("*", "").trim()
-						if (out === "WILD CARD") {
-							out = ""
-						}
-						return out
-					})
-					.filter((c) => c != "")
 
 				if (flag) {
 					await interaction.editReply({
