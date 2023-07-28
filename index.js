@@ -38,6 +38,7 @@ const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
 const devMode = true
+
 function debugLog(...str) {
 	if (devMode) console.log(...str)
 }
@@ -336,12 +337,12 @@ const PackStructure = {
 //deck restriction when drafting
 const DraftRestriction = {
 	imf: {
-		rare: { amount: 1, restrictType: "name" },
-		common: { amount: 4, restrictType: "name" },
+		rare: { copyPerDeck: 1, uniquePerDeck: Infinity },
+		common: { copyPerDeck: 3, uniquePerDeck: Infinity },
 	},
 	eternal: {
-		rare: { amount: 1, restrictType: "name" },
-		common: { amount: 3, restrictType: "name" },
+		rare: { copyPerDeck: 1, uniquePerDeck: Infinity },
+		common: { copyPerDeck: 3, uniquePerDeck: Infinity },
 	},
 }
 
@@ -399,7 +400,13 @@ const SetList = {
 		format: SetFormatList.augmented,
 		compactFormat: SetFormatList.augmentedCompact,
 		file: "./extra/augmentedProcess.js",
-		pools: ImfPool,
+		pools: [
+			{ name: "common", condition: 'card.tier == "Common"' },
+			{ name: "uncommon", condition: 'card.tier == "Uncommon"' },
+			{ name: "rare", condition: 'card.tier == "Rare"' },
+			{ name: "talk", condition: 'card.tier == "Talking"' },
+			{ name: "side", condition: 'card.tier == "Side Deck"' },
+		],
 	},
 	r: {
 		name: "redux",
@@ -1789,33 +1796,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							wildCount++
 						} else {
 							deck.cards.push(card.name)
+							if (!deckUniqueCount[card.type])
+								deckUniqueCount[card.type] = 0
+							deckUniqueCount[card.type]++
 							if (
-								set.draftRestriction[card.type].restrictType ==
-								"name"
+								countDeckDup(deck.card) >=
+								set.draftRestriction[card.type].copyPerDeck
 							) {
-								if (
-									countDeckDup(deck.cards)[card.name] >=
-									set.draftRestriction[card.type].amount
-								) {
-									pool[card.type].splice(
-										pool[card.type].indexOf(
-											card.name.toLowerCase()
-										),
-										1
-									)
-								}
-							} else if (
-								set.draftRestriction[card.type].restrictType ==
-								"deck"
-							) {
-								if (!deckUniqueCount[card.type])
-									deckUniqueCount[card.type] = 0
-								deckUniqueCount[card.type]++
-								if (
-									deckUniqueCount[card.type] >=
-									set.draftRestriction[card.type].amount
+								// if more than or equal to the allowed same name copy per deck remove this card from pool
+								pool[card.type].splice(
+									pool[card.type].indexOf(
+										card.name.toLowerCase()
+									),
+									1
 								)
-									pool[card.type] = []
+							}
+							if (
+								deckUniqueCount[card.type] >=
+								set.draftRestriction[card.type].uniquePerDeck
+							) {
+								//if more than or equal to the amount of unique copy remove this pool completely
+								pool[card.type] = []
 							}
 						}
 						await i.update("added")
