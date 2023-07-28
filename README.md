@@ -333,18 +333,11 @@ There nickname for a few shortcut and special card type
 `reflected` will give card with square and glass stat (for mirror removable).
 
 ## Todo List
-- ~~Support for Augmented Look up~~
-- Support for Augmented Draft
-- ~~Support for Augmented Guess the Card~~
-- ~~New Guess the Card submit using model instead of messages (Less bug?)~~
-- ~~Fix Augmented no art bug~~
-- ~~Search with scryfall like syntax~~
 - More advance stuff for query (negation, or, etc.)
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
 - Move all the bot documentation to the wiki section
-- ~~Query info command~~
 - Better query doc with example
 
 ## Plan for next update:
@@ -356,4 +349,5 @@ There nickname for a few shortcut and special card type
 - ~~removal nickname for query~~
 - ~~Query info command~~
 - ~~Rewrote pool to make fetch a bit faster~~
-- Fix draft with new pool
+- ~~Fix draft with new pool~~
+- ~~Support for Augmented Draft~~

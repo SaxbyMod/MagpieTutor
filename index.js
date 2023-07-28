@@ -274,6 +274,25 @@ const SetFormatList = {
 			],
 		},
 	},
+	augmentedDraft: [
+		{ text: "**{name} ", type: "sub" },
+		{ text: "[{tier}] ", type: "sub" },
+		{ text: "(", type: "normal" },
+		{ text: "{blood} Blood", type: "sub" },
+		{ text: "{bone} Bone", type: "sub" },
+		{ text: "{energy} Energy", type: "sub" },
+		{ text: "{mox}", type: "mox" },
+		{ text: "{shattered}", type: "mox" },
+		{ text: ")** | ", type: "normal" },
+		{
+			text: "Stat: {s} | ",
+			type: "stat",
+			attackVar: "attack",
+			healthVar: "health",
+		},
+		{ text: "Sigils: {s}", type: "list", var: "sigils" },
+		{ text: "Traits: {s}", type: "list", var: "traits" },
+	],
 	redux: {
 		general: {
 			type: "general",
@@ -332,6 +351,12 @@ const PackStructure = {
 		{ type: "common", amount: 4 },
 		{ type: "ban", amount: 0 },
 	],
+	augmented: [
+		{ type: "talk", amount: 1, replacement: "rare" },
+		{ type: "rare", amount: 1, replacement: "uncommon" },
+		{ type: "uncommon", amount: 2 },
+		{ type: "common", amount: 5 },
+	],
 }
 
 //deck restriction when drafting
@@ -343,6 +368,12 @@ const DraftRestriction = {
 	eternal: {
 		rare: { copyPerDeck: 1, uniquePerDeck: Infinity },
 		common: { copyPerDeck: 3, uniquePerDeck: Infinity },
+	},
+	augmented: {
+		common: { copyPerDeck: 3, uniquePerDeck: Infinity },
+		uncommon: { copyPerDeck: 3, uniquePerDeck: Infinity },
+		rare: { copyPerDeck: 1, uniquePerDeck: 3 },
+		talk: { copyPerDeck: 1, uniquePerDeck: 1 },
 	},
 }
 
@@ -407,6 +438,9 @@ const SetList = {
 			{ name: "talk", condition: 'card.tier == "Talking"' },
 			{ name: "side", condition: 'card.tier == "Side Deck"' },
 		],
+		packStructure: PackStructure.augmented,
+		draftFormat: SetFormatList.augmentedDraft,
+		draftRestriction: DraftRestriction.augmented,
 	},
 	r: {
 		name: "redux",
@@ -1638,12 +1672,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					if (type.amount == 0) continue
 					let amount = type.amount
 					//if the pool have 0 card and have a replacement use the replacement
-					if (pool[type.type].length < 1)
-						if (type.replacement) {
-							type = packStructure.find(
-								(t) => t.type == type.replacement
-							)
-						} else continue
+					outer: while (true) {
+						if (pool[type.type].length < 1)
+							if (type.replacement) {
+								type = packStructure.find(
+									(t) => t.type == type.replacement
+								)
+								continue outer
+							} else continue
+						else {
+							break
+						}
+					}
 
 					if (!temp[type.type]) temp[type.type] = []
 
