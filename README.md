@@ -341,13 +341,4 @@ There nickname for a few shortcut and special card type
 - Better query doc with example
 
 ## Plan for next update:
-- ~~Regex for query~~
-- ~~Name for query~~
-- ~~Augmented specific query syntax~~
-- ~~Resource type for query~~
-- ~~Compact mode for query~~
-- ~~removal nickname for query~~
-- ~~Query info command~~
-- ~~Rewrote pool to make fetch a bit faster~~
-- ~~Fix draft with new pool~~
-- ~~Support for Augmented Draft~~
+TBA
