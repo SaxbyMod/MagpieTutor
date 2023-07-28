@@ -815,6 +815,8 @@ const queryKeywordList = {
 						"adder",
 						"mirrorbot",
 						"shutterbug",
+						"drowned soul",
+						"long elk",
 					]
 					return removalList.includes(name)
 				},
