@@ -37,7 +37,7 @@ format.extend(String.prototype, {})
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
-const devMode = true
+const devMode = false
 
 function debugLog(...str) {
 	if (devMode) console.log(...str)
@@ -380,7 +380,7 @@ const DraftRestriction = {
 // list of all the set and their setting
 const SetList = {
 	//imf set
-	comp: {
+	".": {
 		name: "competitive",
 		type: "107",
 		format: SetFormatList.imf,
