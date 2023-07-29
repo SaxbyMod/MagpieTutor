@@ -66,6 +66,8 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Theme submission that give id to be recall
 - Move all the bot documentation to the wiki section
 - Better query doc with example
+- Default set per server
+- Query support for redux
 
 ## Plan for next update:
 TBA
