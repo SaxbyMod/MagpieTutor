@@ -1048,7 +1048,7 @@ async function messageSearch(message, returnValue = false) {
 		.matchAll(searchRegex)) {
 		let selectedSet = SetList[cardName[1][0]]
 			? SetList[cardName[1][0]]
-			: SetList.comp
+			: SetList["."]
 		let name = cardName[2]
 		let card
 		let noAlter = false
@@ -1092,7 +1092,7 @@ async function messageSearch(message, returnValue = false) {
 				cardName[1] = cardName[1].slice(1)
 				selectedSet = SetList[cardName[1][0]]
 					? SetList[cardName[1][0]]
-					: SetList.comp
+					: SetList["."]
 				continue redo
 			}
 			break

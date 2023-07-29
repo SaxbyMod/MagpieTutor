@@ -64,8 +64,6 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
-- Move all the bot documentation to the wiki section
-- Better query doc with example
 - Default set per server
 - Query support for redux
 
