@@ -589,7 +589,9 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 							? chalk.yellow(p.length)
 							: chalk.green(p.length)
 					)
-					.join(", ")} cards`
+					.join(", ")} cards. Pool names: ${chalk.pink(
+					Object.keys(setsData[setName].pools).join(", ")
+				)}`
 			)
 		)
 	}
@@ -665,7 +667,7 @@ const queryKeywordList = {
 	resourcecost: {
 		alias: ["rc"],
 		description:
-			"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
+			"Filter for resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
 		callback: (value, set, filterPossibleValue) => {
 			const op = value.includes(">=")
 				? ">="
@@ -701,6 +703,40 @@ const queryKeywordList = {
 							info.shattered ? info.shattered.length : undefined
 						}${op}${value}`
 					)
+			)
+		},
+	},
+	convertedresourcecost: {
+		alias: ["crc"],
+		description:
+			"Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
+		callback: (value, set, filterPossibleValue) => {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			filterPossibleValue(([name, info]) =>
+				eval(
+					`${
+						(info.blood_cost ? info.blood_cost : 0) +
+						(info.bone_cost ? info.bone_cost : 0) +
+						(info.energy_cost ? info.energy_cost : 0) +
+						(info.mox_cost || info.mox
+							? info[set.name == "augmeted" ? "mox" : "mox_cost"]
+									.length
+							: 0) +
+						(info.shattered ? info.shattered.length : 0)
+					}${op}${value}`
+				)
 			)
 		},
 	},
