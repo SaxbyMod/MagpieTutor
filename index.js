@@ -6,7 +6,6 @@ const {
 	EmbedBuilder,
 	Colors,
 	AttachmentBuilder,
-	Attachment,
 	Partials,
 	ActionRowBuilder,
 	ComponentType,
@@ -16,19 +15,25 @@ const {
 	ModalBuilder,
 	TextInputStyle,
 	MessageFlags,
+	PermissionFlagsBits,
+	ButtonBuilder,
+	MessageAttachment,
+	Attachment,
 } = require("discord.js")
 
+// specific own module
 const StringSimilarity = require("string-similarity")
 const scryfall = require("scryfall")
 const chalk = require("chalk")
-
 const Canvas = require("@napi-rs/canvas")
+const format = require("string-format")
+
+// general module (don;t need installing)
 const fetch = require("node-fetch")
 const http = require("http")
+const fs = require("fs")
 
 const { token, clientId } = require("./config.json")
-const { ButtonBuilder } = require("@discordjs/builders")
-const format = require("string-format")
 
 const sigilList = require("./extra/sigilList.json")
 
@@ -38,12 +43,14 @@ const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
 const devMode = false
-
+let log = ""
 function debugLog(...str) {
 	if (devMode) console.log(...str)
+	log += str.join(" ") + "\n"
 }
 function infoLog(...str) {
 	if (!devMode) console.log(...str)
+	log += str.join(" ") + "\n"
 }
 
 // Chalk color
@@ -128,6 +135,11 @@ const isPerm = (interaction) =>
 			role.id == "1028537837169156156" ||
 			role.id == "1111314861226459180"
 	) || interaction.user.id == "601821309881810973"
+
+const havePerm = (interaction) =>
+	interaction.member.roles.cache.some(
+		(role) => role.permission == PermissionFlagsBits.Administrator
+	)
 
 const getMessage = async (channel, id) => {
 	return await channel.messages.fetch(id)
@@ -385,28 +397,21 @@ const SetList = {
 		type: "107",
 		format: SetFormatList.imf,
 		compactFormat: SetFormatList.imfCompact,
-		pools: [
-			{ name: "ban", condition: "card.banned" },
-			{ name: "rare", condition: "card.rare" },
-			{ name: "beast", condition: "card.blood_cost" },
-			{ name: "undead", condition: "card.bone_cost" },
-			{ name: "tech", condition: "card.energy_cost" },
-			{
-				name: "magick",
-				condition: "card.mox_cost || specialMagick.includes(card.name)",
-			},
-			{ name: "common", condition: "!card.rare" },
-		],
+		pools: ImfPool,
 		packStructure: PackStructure.imf,
 		draftFormat: SetFormatList.imfDraft,
 		draftRestriction: DraftRestriction.imf,
 	},
 	e: {
 		name: "eternal",
-		type: "107",
+		type: "url",
+		url: "https://raw.githubusercontent.com/EternalHours/EternalFormat/main/IMF_Eternal.json",
 		format: SetFormatList.imf,
 		compactFormat: SetFormatList.imfCompact,
 		pools: ImfPool,
+		packStructure: PackStructure.imf,
+		draftFormat: SetFormatList.imfDraft,
+		draftRestriction: DraftRestriction.eternal,
 	},
 	v: {
 		name: "vanilla",
@@ -418,10 +423,13 @@ const SetList = {
 	g: {
 		name: "mr.egg",
 		type: "url",
+		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
 		format: SetFormatList.imf,
 		compactFormat: SetFormatList.imfCompact,
-		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
 		pools: ImfPool,
+		packStructure: PackStructure.imf,
+		draftFormat: SetFormatList.imfDraft,
+		draftRestriction: DraftRestriction.imf,
 	},
 
 	//other set
@@ -516,11 +524,19 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 		} else if (set.type == "specialLoad") {
 			setsData[set.name] = await require(set.file).load()
 		} else if (set.type == "url") {
-			await fetch(set.url)
-				.then((res) => res.json())
-				.then((json) => {
-					setsData[set.name] = json
-				})
+			try {
+				await fetch(set.url)
+					.then((res) => res.json())
+					.then((json) => {
+						setsData[set.name] = json
+					})
+			} catch (err) {
+				infoLog(chalk.bgRed("ETERNAL MESS UP THE JSON AGAIN!!!"))
+				infoLog(chalk.pink.background(err))
+				setsData[set.name] = JSON.parse(
+					JSON.stringify(setsData["competitive"])
+				)
+			}
 		}
 		// TODO temporary solution pls fix later
 		if (set.type == "107" || set.type == "url")
@@ -978,6 +994,7 @@ const queryKeywordList = {
 	},
 }
 
+// function hell
 function getEmoji(name) {
 	return `<:${
 		client.emojis.cache.find((emoji) => emoji.name === name).identifier
@@ -1590,7 +1607,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		const { commandName, options } = interaction
 		if (commandName === "echo") {
 			//if (interaction.user.id != 601821309881810973) return
-			if (!isPerm(interaction)) {
+			if (!(isPerm(interaction) && havePerm(interaction))) {
 				interaction.reply({ content: "NO fuck you", ephemeral: true })
 				return
 			}
@@ -2557,9 +2574,53 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			})
 		} else if (commandName === "test") {
 			await interaction.reply("Nothing here don't look into it")
+		} else if (commandName === "poll") {
+			const pollOption = options.getString("option").split(",")
+			const timeEnd = options.getString("time").endsWith("m")
+				? parseInt(options.getString("time")) * 60000
+				: options.getString("time").endsWith("s")
+				? parseInt(options.getString("time")) * 1000
+				: options.getString("time")
+
+			const embed = new EmbedBuilder()
+				.setColor(Colors.Purple)
+				.setTitle(`Poll: ${options.getString("question")}`)
+				.setDescription(
+					pollOption
+						.map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
+						.join("\n")
+				)
+			const selectMenu = new StringSelectMenuBuilder()
+				.setCustomId("pollSelect")
+				.setPlaceholder("Choose a option")
+			for (const [index, option] of pollOption.entries()) {
+				selectMenu.addOptions({
+					label: option,
+					value: index.toString(),
+				})
+			}
+			const message = await interaction.reply({
+				embeds: [embed],
+				components: [new ActionRowBuilder().addComponents(selectMenu)],
+				fetchReply: true,
+			})
+
+			let pollData = require("./extra/poll.json")
+			pollData[message.id] = {
+				endTime: Date.now() + timeEnd,
+				question: options.getString("question"),
+				optionResult: pollOption.map((value) => {
+					return { option: value, amount: 0 }
+				}),
+				alreadyVote: [],
+			}
+			fs.writeFileSync(
+				"./extra/poll.json",
+				JSON.stringify(pollData),
+				"utf8"
+			)
 		}
-	}
-	if (interaction.isButton()) {
+	} else if (interaction.isButton()) {
 		if (interaction.component.customId == "retry") {
 			await interaction.update(
 				await messageSearch(
@@ -2569,6 +2630,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					),
 					true
 				)
+			)
+		}
+	} else if (interaction.isStringSelectMenu()) {
+		if (interaction.component.customId == "pollSelect") {
+			let fullPollData = require("./extra/poll.json")
+			let pollData = fullPollData[interaction.message.id]
+			if (Date.now() > pollData.endTime) {
+				await interaction.update({
+					content: "Poll ended",
+					embeds: [
+						new EmbedBuilder()
+							.setTitle(pollData.question)
+							.setDescription(
+								`Winner: ${
+									pollData.optionResult.sort(
+										(a, b) => a.amount - b.amount
+									)[0].option
+								}`
+							),
+					],
+					components: [],
+				})
+				delete fullPollData[interaction.message.id]
+			} else if (pollData.alreadyVote.includes(interaction.user.id)) {
+				await interaction.reply({
+					content: "You already voted",
+					ephemeral: true,
+				})
+			} else {
+				pollData.optionResult[interaction.values[0]].amount++
+				pollData.alreadyVote.push(interaction.user.id)
+				await interaction.reply({
+					content: "Vote Success",
+					ephemeral: true,
+				})
+			}
+			fs.writeFileSync(
+				"./extra/poll.json",
+				JSON.stringify(fullPollData),
+				"utf8"
 			)
 		}
 	}

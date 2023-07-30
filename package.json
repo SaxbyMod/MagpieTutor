@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -x \"node index.js || copy /b index.js +,,\" --ignore test.js --ignore augmented/augmented.json",
+    "start": "nodemon -x \"node index.js || copy /b index.js +,,\" --ignore test.js --ignore extra/poll.json",
     "setup": "npm i && node ./extra/setup.js"
   },
   "keywords": [],

@@ -27,6 +27,7 @@ const commands = [
 					},
 					{ name: "Eternal", value: "eternal" },
 					{ name: "Vanilla", value: "vanilla" },
+					{ name: "Mr.Egg", value: "mr.egg" },
 					{ name: "Augmented", value: "augmented" }
 				)
 				.setRequired(true)
@@ -195,6 +196,30 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("test")
 		.setDescription("Testing commands"),
+	new SlashCommandBuilder()
+		.setName("poll")
+		.setDescription("Make a poll")
+		.addStringOption((option) =>
+			option
+				.setName("question")
+				.setDescription("The poll question")
+				.setRequired(true)
+		)
+		.addStringOption((option) =>
+			option
+				.setName("option")
+				.setDescription(
+					'The poll option separate by commas(","). Max of 25 option.'
+				)
+				.setRequired(true)
+		)
+		.addStringOption((option) =>
+			option
+				.setName("time")
+				.setDescription(
+					"Time the poll will run for. put `m` at the end for minute, `s` for second"
+				).setRequired(true)
+		),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module
