@@ -146,6 +146,12 @@ const getMessage = async (channel, id) => {
 }
 
 const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+
+const sleep = (ms) => {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms)
+	})
+}
 //define the ruleset shit
 
 //define how card should be render
@@ -2573,22 +2579,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				flags: [MessageFlags.SuppressEmbeds],
 			})
 		} else if (commandName === "test") {
-			await interaction.reply("Nothing here don't look into it")
+			await interaction.reply(
+				`<t:${Math.round(Date.now() / 1000)}> ${Date.now() / 1000}`
+			)
 		} else if (commandName === "poll") {
 			const pollOption = options.getString("option").split(",")
-			const timeEnd = options.getString("time").endsWith("m")
-				? parseInt(options.getString("time")) * 60000
+			const time = options.getString("time").endsWith("m")
+				? parseInt(options.getString("time").slice(0, -1)) * 60000
 				: options.getString("time").endsWith("s")
-				? parseInt(options.getString("time")) * 1000
+				? parseInt(options.getString("time").slice(0, -1)) * 1000
 				: options.getString("time")
-
+			const endTime = Math.round((Date.now() + time) / 1000)
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Purple)
 				.setTitle(`Poll: ${options.getString("question")}`)
 				.setDescription(
-					pollOption
-						.map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
-						.join("\n")
+					`Poll end <t:${endTime}:R>\n` +
+						pollOption
+							.map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
+							.join("\n")
 				)
 			const selectMenu = new StringSelectMenuBuilder()
 				.setCustomId("pollSelect")
@@ -2607,13 +2616,39 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			let pollData = require("./extra/poll.json")
 			pollData[message.id] = {
-				endTime: Date.now() + timeEnd,
+				endTime: endTime,
 				question: options.getString("question"),
 				optionResult: pollOption.map((value) => {
 					return { option: value, amount: 0 }
 				}),
 				alreadyVote: [],
 			}
+			fs.writeFileSync(
+				"./extra/poll.json",
+				JSON.stringify(pollData),
+				"utf8"
+			)
+
+			await sleep(time)
+
+			pollData = require("./extra/poll.json")
+			await message.edit({
+				content: "Poll ended",
+				embeds: [
+					new EmbedBuilder()
+						.setTitle(pollData[message.id].question)
+						.setDescription(
+							`Winner: ${
+								pollData[message.id].optionResult.sort(
+									(a, b) => b.amount - a.amount
+								)[0].option
+							}`
+						),
+				],
+				components: [],
+			})
+			delete pollData[message.id]
+
 			fs.writeFileSync(
 				"./extra/poll.json",
 				JSON.stringify(pollData),
@@ -2636,24 +2671,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.component.customId == "pollSelect") {
 			let fullPollData = require("./extra/poll.json")
 			let pollData = fullPollData[interaction.message.id]
-			if (Date.now() > pollData.endTime) {
-				await interaction.update({
-					content: "Poll ended",
-					embeds: [
-						new EmbedBuilder()
-							.setTitle(pollData.question)
-							.setDescription(
-								`Winner: ${
-									pollData.optionResult.sort(
-										(a, b) => a.amount - b.amount
-									)[0].option
-								}`
-							),
-					],
-					components: [],
-				})
-				delete fullPollData[interaction.message.id]
-			} else if (pollData.alreadyVote.includes(interaction.user.id)) {
+			if (pollData.alreadyVote.includes(interaction.user.id)) {
 				await interaction.reply({
 					content: "You already voted",
 					ephemeral: true,
