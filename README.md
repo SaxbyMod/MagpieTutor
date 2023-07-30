@@ -68,4 +68,5 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Query support for redux
 
 ## Plan for next update:
-TBA
+- Poll system
+- Ruleset community vote
