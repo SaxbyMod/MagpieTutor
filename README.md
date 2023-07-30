@@ -55,8 +55,8 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Read Messages/View Channels: The Bot needs to see messages to do look up
 - Send Messages: The Bot needs to send message to reply
 - Embed Links: The Bot needs embed for card display and other function
-- Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](#guess-the-card-command)
-- Read Messages History: The Bot needs to see old messages for [/retry](#retry-command) to work
+- Attach Files: The Bot needs to attach file or images for card portrait and [/guess-the-card](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Command#guess-the-card-command)
+- Read Messages History: The Bot needs to see old messages for [/retry](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Command#retry-command) to work
 - Use External Emoji: The Bot needs to use external emoji for cost and number emoji
 
 ## Todo List
