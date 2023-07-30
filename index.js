@@ -846,7 +846,7 @@ const queryKeywordList = {
 					? "Beast"
 					: value == "u" || value == "undead"
 					? "Undead"
-					: value == "t" || value == "technology"
+					: value == "t" || value == "technology" || "tech"
 					? "Tech"
 					: value == "m" || value == "magick"
 					? "Magick"
