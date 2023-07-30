@@ -14,7 +14,7 @@ IF you have any request for new set send me a message on discord. `mouthless_sto
   - [How to host the bot yourself](#how-to-host-the-bot-yourself)
   - [Bot Require Permission](#bot-require-permission)
   - [Todo List](#todo-list)
-  - [Plan for next update:](#plan-for-next-update)
+  - [Plan for next update](#plan-for-next-update)
 
 ## How to host the bot yourself
 If you know how to set up a discord bot with discord.js already, then download all the package with `npm setup`, then created a `config.json` with these information: 
@@ -67,6 +67,6 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Default set per server
 - Query support for redux
 
-## Plan for next update:
+## Plan for next update
 - Poll system
 - Ruleset community vote
