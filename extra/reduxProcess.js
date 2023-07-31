@@ -1,18 +1,6 @@
 var imfJson = {
 	ruleset: "Inscryption Redux",
-	hammers_per_turn: 1,
-	ant_limit: 2,
-	deck_size_min: 1,
-	max_commons_main: 4,
-	max_commons_side: 10,
-	num_candles: 2,
-	variable_attack_nerf: false,
-	allow_snuffing_candles: true,
-	opt_actives: false,
-	portrait: "portraits/Stoat",
-	description: "Redux Ruleset in IMF, parse by Magpie.",
 	cards: [],
-	sigils: {},
 }
 
 async function load() {

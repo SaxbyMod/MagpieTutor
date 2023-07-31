@@ -1,0 +1,2282 @@
+{
+    "ruleset": "Vanilla Card",
+    "cards": [
+        {
+            "name": "Adder",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 2,
+            "tribes": "Reptile",
+            "sigils": [
+                "Touch of Death"
+            ],
+            "traits": "Kills Survivors",
+            "noArt": true
+        },
+        {
+            "name": "Alpha",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 4,
+            "tribes": "Canine",
+            "sigils": [
+                "Leader"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Amalgam",
+            "attack": 3,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "Avian,Canine,Hooved,Reptile,Insect,Squirrel",
+            "noArt": true
+        },
+        {
+            "name": "Amoeba",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 2,
+            "sigils": [
+                "Amorphous"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Worker Ant",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "traits": "Ant",
+            "noArt": true
+        },
+        {
+            "name": "Ant Queen",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "Insect",
+            "sigils": [
+                "Ant Spawner"
+            ],
+            "traits": "Ant",
+            "noArt": true
+        },
+        {
+            "name": "Bat",
+            "attack": 2,
+            "health": 1,
+            "bone_cost": 4,
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Beaver",
+            "attack": 1,
+            "health": 4,
+            "blood_cost": 2,
+            "sigils": [
+                "Dam Builder"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Bee",
+            "attack": 1,
+            "health": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Beehive",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Bees Within"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Bloodhound",
+            "attack": 2,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "Canine",
+            "sigils": [
+                "Guardian"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Bullfrog",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Reptile",
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Caged Wolf",
+            "attack": 0,
+            "health": 6,
+            "blood_cost": 2,
+            "tribes": "Canine",
+            "traits": "Terrain,No Deathcard",
+            "noArt": true
+        },
+        {
+            "name": "Cat",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "sigils": [
+                "Many Lives"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Undead Cat",
+            "attack": 3,
+            "health": 6,
+            "blood_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Cockroach",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 4,
+            "tribes": "Insect",
+            "sigils": [
+                "Unkillable"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Coyote",
+            "attack": 2,
+            "health": 1,
+            "bone_cost": 4,
+            "tribes": "Canine",
+            "noArt": true
+        },
+        {
+            "name": "The Daus",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "sigils": [
+                "Bellist"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Tail",
+            "attack": 0,
+            "health": 2,
+            "noArt": true
+        },
+        {
+            "name": "Elk",
+            "attack": 2,
+            "health": 4,
+            "blood_cost": 2,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Elk Fawn",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter",
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Field Mice",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "sigils": [
+                "Fecundity"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Geck",
+            "attack": 1,
+            "health": 1,
+            "tribes": "Reptile",
+            "noArt": true
+        },
+        {
+            "name": "Black Goat",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Hooved",
+            "sigils": [
+                "Worthy Sacrifice"
+            ],
+            "traits": "Goat",
+            "noArt": true
+        },
+        {
+            "name": "Grizzly",
+            "attack": 4,
+            "health": 6,
+            "blood_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Child 13",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Hooved",
+            "sigils": [
+                "Many Lives"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Kingfisher",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne",
+                "Waterborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Corpse Maggots",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 5,
+            "tribes": "Insect",
+            "sigils": [
+                "Corpse Eater"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Magpie",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 2,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne",
+                "Hoarder"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mantis",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Bifurcated Strike"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mantis God",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Trifurcated Strike"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mole",
+            "attack": 0,
+            "health": 4,
+            "blood_cost": 1,
+            "sigils": [
+                "Burrower"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mole Man",
+            "attack": 0,
+            "health": 6,
+            "blood_cost": 1,
+            "sigils": [
+                "Burrower",
+                "Mighty Leap"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Moose Buck",
+            "attack": 3,
+            "health": 7,
+            "blood_cost": 3,
+            "tribes": "Hooved",
+            "sigils": [
+                "Hefty"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Strange Larva",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Strange Pupa",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mothman",
+            "attack": 7,
+            "health": 3,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Pack Mule",
+            "attack": 0,
+            "health": 5,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter"
+            ],
+            "traits": "Uncuttable",
+            "noArt": true
+        },
+        {
+            "name": "Opossum",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "River Otter",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "sigils": [
+                "Waterborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Ouroboros",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 2,
+            "tribes": "Reptile",
+            "sigils": [
+                "Unkillable"
+            ],
+            "traits": "Satisfies Ring Trial",
+            "noArt": true
+        },
+        {
+            "name": "Pack Rat",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "sigils": [
+                "Trinket Bearer"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Porcupine",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 1,
+            "sigils": [
+                "Sharp Quills"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Pronghorn",
+            "attack": 1,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter",
+                "Bifurcated Strike"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Rabbit",
+            "attack": 0,
+            "health": 1,
+            "noArt": true
+        },
+        {
+            "name": "Rat King",
+            "attack": 2,
+            "health": 1,
+            "blood_cost": 2,
+            "sigils": [
+                "Bone King"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Rattler",
+            "attack": 3,
+            "health": 1,
+            "bone_cost": 6,
+            "tribes": "Reptile",
+            "noArt": true
+        },
+        {
+            "name": "Raven",
+            "attack": 2,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Raven Egg",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Avian",
+            "sigils": [
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Great White",
+            "attack": 4,
+            "health": 2,
+            "blood_cost": 3,
+            "sigils": [
+                "Waterborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Skink",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Reptile",
+            "sigils": [
+                "Loose Tail"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Wriggling Tail",
+            "attack": 0,
+            "health": 2,
+            "tribes": "Reptile",
+            "noArt": true
+        },
+        {
+            "name": "Skunk",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 1,
+            "sigils": [
+                "Stinky"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "River Snapper",
+            "attack": 1,
+            "health": 6,
+            "blood_cost": 2,
+            "tribes": "Reptile",
+            "noArt": true
+        },
+        {
+            "name": "Long Elk",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 4,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter",
+                "Touch of Death"
+            ],
+            "traits": "Kills Survivors",
+            "noArt": true
+        },
+        {
+            "name": "Sparrow",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Bell Tentacle",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Card Tentacle",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Mirror Tentacle",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Squirrel",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Squirrel",
+            "noArt": true
+        },
+        {
+            "name": "Stoat",
+            "attack": 1,
+            "health": 3,
+            "blood_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Tail Feathers",
+            "attack": 0,
+            "health": 2,
+            "noArt": true
+        },
+        {
+            "name": "Furry Tail",
+            "attack": 0,
+            "health": 2,
+            "noArt": true
+        },
+        {
+            "name": "Wriggling Leg",
+            "attack": 0,
+            "health": 2,
+            "noArt": true
+        },
+        {
+            "name": "Urayuli",
+            "attack": 7,
+            "health": 7,
+            "blood_cost": 4,
+            "noArt": true
+        },
+        {
+            "name": "Turkey Vulture",
+            "attack": 3,
+            "health": 3,
+            "bone_cost": 8,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Warren",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 1,
+            "sigils": [
+                "Rabbit Hole"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Wolf",
+            "attack": 3,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Canine",
+            "traits": "Wolf",
+            "noArt": true
+        },
+        {
+            "name": "Wolf Cub",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Canine",
+            "sigils": [
+                "Fledgling"
+            ],
+            "traits": "Wolf",
+            "noArt": true
+        },
+        {
+            "name": "Ring Worm",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "traits": "Kills Survivors,Satisfies Ring Trial",
+            "noArt": true
+        },
+        {
+            "name": "Hrokkall",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Leshy",
+            "sigils": [
+                "Waterborne",
+                "Battery Bearer"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Squirrel Ball",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Leshy",
+            "sigils": [
+                "Squirrel Shedder"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Salmon",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Leshy",
+            "sigils": [
+                "Waterborne",
+                "Sprinter"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Spore Mice",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Leshy",
+            "sigils": [
+                "Fecundity",
+                "Fecundity"
+            ],
+            "traits": "(Fused Card)",
+            "noArt": true
+        },
+        {
+            "name": "Bone Heap",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Grimora",
+            "sigils": [
+                "Enlarge"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Tomb Robber",
+            "attack": 0,
+            "health": 2,
+            "tribes": "Grimora",
+            "sigils": [
+                "Disentomb"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Necromancer",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 3,
+            "tribes": "Grimora",
+            "sigils": [
+                "Double Death"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Drowned Soul",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 4,
+            "tribes": "Grimora",
+            "sigils": [
+                "Waterborne",
+                "Touch of Death"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Dead Hand",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 5,
+            "tribes": "Grimora",
+            "sigils": [
+                "Handy"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Headless Horseman",
+            "attack": 5,
+            "health": 5,
+            "bone_cost": 13,
+            "tribes": "Grimora",
+            "sigils": [
+                "Airborne",
+                "Sprinter"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Skeleton",
+            "attack": 1,
+            "health": 1,
+            "tribes": "Grimora",
+            "sigils": [
+                "Brittle"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Draugr",
+            "attack": 0,
+            "health": 1,
+            "bone_cost": 1,
+            "tribes": "Grimora",
+            "sigils": [
+                "Frozen Away"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Gravedigger",
+            "attack": 0,
+            "health": 3,
+            "bone_cost": 1,
+            "tribes": "Grimora",
+            "sigils": [
+                "Bone Digger"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Sporedigger",
+            "attack": 0,
+            "health": 3,
+            "bone_cost": 1,
+            "tribes": "Grimora",
+            "sigils": [
+                "Bone Digger",
+                "Bone Digger"
+            ],
+            "traits": "(Fused Card)",
+            "noArt": true
+        },
+        {
+            "name": "Banshee",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 2,
+            "tribes": "Grimora",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Skelemagus",
+            "attack": 4,
+            "health": 1,
+            "bone_cost": 2,
+            "tribes": "Grimora",
+            "sigils": [
+                "Brittle",
+                "Gem Dependant"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Zombie",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 2,
+            "tribes": "Grimora",
+            "noArt": true
+        },
+        {
+            "name": "Bone Lord's Horn",
+            "attack": 1,
+            "health": 1,
+            "bone_cost": 3,
+            "tribes": "Grimora",
+            "sigils": [
+                "Bonehorn"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Broken Obol (left)",
+            "attack": 0,
+            "health": 2,
+            "bone_cost": 3,
+            "tribes": "Grimora",
+            "sigils": [
+                "Sharp Quills"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Broken Obol (right)",
+            "attack": 0,
+            "health": 2,
+            "bone_cost": 3,
+            "tribes": "Grimora",
+            "sigils": [
+                "Bone King"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Revenant",
+            "attack": 3,
+            "health": 1,
+            "bone_cost": 3,
+            "tribes": "Grimora",
+            "sigils": [
+                "Brittle"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Ghost Ship",
+            "attack": 0,
+            "health": 1,
+            "bone_cost": 4,
+            "tribes": "Grimora",
+            "sigils": [
+                "Waterborne",
+                "Skeleton Crew"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Sarcophagus",
+            "attack": 0,
+            "health": 2,
+            "bone_cost": 4,
+            "tribes": "Grimora",
+            "sigils": [
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "The Walkers",
+            "attack": 1,
+            "health": 2,
+            "bone_cost": 4,
+            "tribes": "Grimora",
+            "sigils": [
+                "Bone King"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Frank & Stein",
+            "attack": 2,
+            "health": 2,
+            "bone_cost": 5,
+            "tribes": "Grimora",
+            "noArt": true
+        },
+        {
+            "name": "Pharaoh's Pets",
+            "attack": 0,
+            "health": 1,
+            "bone_cost": 6,
+            "tribes": "Grimora",
+            "sigils": [
+                "Worthy Sacrifice",
+                "Many Lives"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Bonehound",
+            "attack": 2,
+            "health": 3,
+            "bone_cost": 7,
+            "tribes": "Grimora",
+            "sigils": [
+                "Guardian"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mummy Lord",
+            "attack": 3,
+            "health": 3,
+            "bone_cost": 8,
+            "tribes": "Grimora",
+            "noArt": true
+        },
+        {
+            "name": "Plasma Jimmy",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 2,
+            "tribes": "P03",
+            "sigils": [
+                "Energy Gun"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Curve Hopper",
+            "attack": 2,
+            "health": 3,
+            "blood_cost": 4,
+            "tribes": "P03",
+            "noArt": true
+        },
+        {
+            "name": "Energy Conduit",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 3,
+            "tribes": "P03",
+            "sigils": [
+                "Energy Conduit (sigil)"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mox Module",
+            "attack": 0,
+            "health": 3,
+            "blood_cost": 3,
+            "tribes": "P03",
+            "sigils": [
+                "Great Mox"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mrs. Bomb",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 3,
+            "tribes": "P03",
+            "sigils": [
+                "Mrs. Bomb"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "L33pB0t",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 1,
+            "tribes": "P03",
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Sentry Spore",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "P03",
+            "sigils": [
+                "Sentry",
+                "Sentry"
+            ],
+            "traits": "(Fused card)",
+            "noArt": true
+        },
+        {
+            "name": "M3atB0t",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 2,
+            "tribes": "P03",
+            "sigils": [
+                "Worthy Sacrifice"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Factory Conduit",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 3,
+            "tribes": "P03",
+            "sigils": [
+                "Spawn Conduit"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Gamblobot",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 3,
+            "tribes": "P03",
+            "sigils": [
+                "Power Dice"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Steel Mice",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 4,
+            "tribes": "P03",
+            "sigils": [
+                "Fecundity"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Thick Droid",
+            "attack": 1,
+            "health": 3,
+            "blood_cost": 5,
+            "tribes": "P03",
+            "noArt": true
+        },
+        {
+            "name": "Steambot",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 6,
+            "tribes": "P03",
+            "noArt": true
+        },
+        {
+            "name": "Bleene's Mox",
+            "attack": 0,
+            "health": 2,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Blue Mox",
+                "Green Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Goranj's Mox",
+            "attack": 0,
+            "health": 2,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Green Mox",
+                "Orange Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Orlu's Mox",
+            "attack": 0,
+            "health": 2,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Orange Mox",
+                "Blue Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Master Bleene",
+            "attack": 0,
+            "health": 4,
+            "mox_cost": [
+                "Blue",
+                "Green"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "True Scholar"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Master Goranj",
+            "attack": 2,
+            "health": 6,
+            "mox_cost": [
+                "Green",
+                "Orange"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Gem Dependant"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Master Orlu",
+            "attack": 1,
+            "health": 1,
+            "mox_cost": [
+                "Orange",
+                "Blue"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Airborne",
+                "Looter"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Emerald Mox",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Green Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Ruby Mox",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Orange Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Sapphire Mox",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Blue Mox"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Mage Pupil",
+            "attack": 1,
+            "health": 1,
+            "tribes": "Magnificus",
+            "sigils": [
+                "Gem Dependant"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Gourmage",
+            "attack": 0,
+            "health": 2,
+            "mox_cost": [
+                "Green Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Enlarge"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Green Mage",
+            "attack": 0,
+            "health": 2,
+            "mox_cost": [
+                "Green Mox"
+            ],
+            "tribes": "Magnificus",
+            "noArt": true
+        },
+        {
+            "name": "Junior Sage",
+            "attack": 1,
+            "health": 2,
+            "mox_cost": [
+                "Green Mox"
+            ],
+            "tribes": "Magnificus",
+            "noArt": true
+        },
+        {
+            "name": "Muscle Mage",
+            "attack": 1,
+            "health": 1,
+            "mox_cost": [
+                "Green Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Hefty"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Stim Mage",
+            "attack": 0,
+            "health": 2,
+            "mox_cost": [
+                "Green Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Stimulate"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mage Knight",
+            "attack": 1,
+            "health": 3,
+            "mox_cost": [
+                "Orange Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Gem Dependant"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Orange Mage",
+            "attack": 0,
+            "health": 1,
+            "mox_cost": [
+                "Orange Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Gem Animator"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Practice Wizard",
+            "attack": 0,
+            "health": 3,
+            "mox_cost": [
+                "Orange Mox"
+            ],
+            "tribes": "Magnificus",
+            "noArt": true
+        },
+        {
+            "name": "Ruby Golem",
+            "attack": 1,
+            "health": 1,
+            "mox_cost": [
+                "Orange Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Ruby Heart"
+            ],
+            "traits": "Can't be sacrificed.",
+            "noArt": true
+        },
+        {
+            "name": "Blue Mage",
+            "attack": 0,
+            "health": 1,
+            "mox_cost": [
+                "Blue Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Mental Gemnastics"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Blue Sporemage",
+            "attack": 0,
+            "health": 1,
+            "mox_cost": [
+                "Blue Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Mental Gemnastics",
+                "Mental Gemnastics"
+            ],
+            "traits": "(Fused card)",
+            "noArt": true
+        },
+        {
+            "name": "Force Mage",
+            "attack": 0,
+            "health": 1,
+            "mox_cost": [
+                "Blue Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Repulsive"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Gem Fiend",
+            "attack": 2,
+            "health": 1,
+            "mox_cost": [
+                "Blue Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Gem Dependant"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Hover Mage",
+            "attack": 1,
+            "health": 1,
+            "mox_cost": [
+                "Blue Mox"
+            ],
+            "tribes": "Magnificus",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Empty Vessel",
+            "attack": 0,
+            "health": 2,
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Emerald Vessel",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Green Mox"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Ruby Vessel",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Orange Mox"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Sapphire Vessel",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Blue Mox"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Bleene’s Vessel",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Green Mox",
+                "Blue Mox"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Goranj’s Vessel",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Orange Mox",
+                "Green Mox"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Orlu’s Vessel",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Blue Mox",
+                "Orange Mox"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Energy Bot",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Battery Bearer"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Automaton",
+            "attack": 1,
+            "health": 1,
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Shieldbot",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Nano Armor"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "L33pbot",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Sniper Bot",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Sniper"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Double Gunner",
+            "attack": 2,
+            "health": 1,
+            "sigils": [
+                "Bifurcated Strike"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "49er",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Sprinter"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Insectodrone",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Airborne"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Swapbot",
+            "attack": 1,
+            "health": 5,
+            "sigils": [
+                "Swapper"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "Alarm Bot",
+            "attack": 2,
+            "health": 1,
+            "sigils": [
+                "Annoying"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Explode Bot",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Detonator"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Sentry Drone",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Sentry"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Exeskeleton",
+            "attack": 2,
+            "health": 2,
+            "sigils": [
+                "Brittle"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Shield Latcher",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Shield Latch"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Bomb Latcher",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Bomb Latch"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Skel-E-Latcher",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Brittle Latch"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Amoebot",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Amorphous"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Fishbot",
+            "attack": 1,
+            "health": 3,
+            "sigils": [
+                "Gift Bearer"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Bad Fish",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Annoying",
+                "Brittle"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Good Fish",
+            "attack": 2,
+            "health": 2,
+            "sigils": [
+                "Mighty Leap",
+                "Sentry",
+                "Sharp Quills",
+                "Sniper"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "More Fish",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Gift Bearer"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Lonely Wizbot",
+            "attack": 2,
+            "health": 1,
+            "sigils": [
+                "Clinger"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Gift Bot",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Gift Bearer"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Gem Detonator",
+            "attack": 1,
+            "health": 2,
+            "sigils": [
+                "Gem Detonator"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Gem Guardian",
+            "attack": 1,
+            "health": 2,
+            "sigils": [
+                "Gem Guardian"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Gembound Ripper",
+            "attack": 3,
+            "health": 1,
+            "energy_cost": 5,
+            "noArt": true
+        },
+        {
+            "name": "Bolthound",
+            "attack": 2,
+            "health": 2,
+            "sigils": [
+                "Guardian"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "Son1a",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Transformer"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Qu177",
+            "attack": 2,
+            "health": 2,
+            "sigils": [
+                "Transformer"
+            ],
+            "energy_cost": 5,
+            "noArt": true
+        },
+        {
+            "name": "Gr1zz",
+            "attack": 0,
+            "health": 4,
+            "sigils": [
+                "Transformer"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "Null Conduit",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Null Conduit (sigil)"
+            ],
+            "energy_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Buff Conduit",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Attack Conduit"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Gems Conduit",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Gem Spawn Conduit"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Busted 3D Printer",
+            "attack": 0,
+            "health": 3,
+            "sigils": [
+                "Vessel Printer"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Tough Cell",
+            "attack": 1,
+            "health": 2,
+            "sigils": [
+                "Buff When Powered"
+            ],
+            "energy_cost": 3,
+            "noArt": true
+        },
+        {
+            "name": "Kind Cell",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Gift When Powered"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Splinter Cell",
+            "attack": 1,
+            "health": 2,
+            "sigils": [
+                "Trifurcated When Powered"
+            ],
+            "energy_cost": 4,
+            "noArt": true
+        },
+        {
+            "name": "Shutterbug",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Touch of Death",
+                "Sentry"
+            ],
+            "energy_cost": 5,
+            "noArt": true
+        },
+        {
+            "name": "Librarian",
+            "attack": 1,
+            "health": 2,
+            "sigils": [
+                "Mighty Leap",
+                "Dead Byte"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Ourobot",
+            "attack": 1,
+            "health": 1,
+            "sigils": [
+                "Unkillable"
+            ],
+            "energy_cost": 6,
+            "noArt": true
+        },
+        {
+            "name": "Captive File",
+            "attack": 4,
+            "health": 4,
+            "sigils": [
+                "Hostage File"
+            ],
+            "energy_cost": 2,
+            "noArt": true
+        },
+        {
+            "name": "Broken Bot",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Detonator"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Tombstone",
+            "attack": 0,
+            "health": 5,
+            "sigils": [
+                "Repulsive"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Annoy FM",
+            "attack": 0,
+            "health": 3,
+            "sigils": [
+                "Annoying"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Conduit Tower",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Null Conduit"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Bridge Rails",
+            "attack": 0,
+            "health": 6,
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Dead Tree",
+            "attack": 0,
+            "health": 1,
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Ancient Fir",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Snowy Fir",
+            "attack": 0,
+            "health": 2,
+            "sigils": [
+                "Mighty Leap"
+            ],
+            "energy_cost": 0,
+            "noArt": true
+        },
+        {
+            "name": "Stoat kmod",
+            "attack": 1,
+            "health": 2,
+            "blood_cost": 1,
+            "noArt": true
+        },
+        {
+            "name": "Wild Bull",
+            "attack": 3,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Hooved",
+            "sigils": [
+                "Rampager"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Cuckoo",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne",
+                "Brood Parasite"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Ijiraq",
+            "attack": 4,
+            "health": 1,
+            "sigils": [
+                "Repulsive"
+            ],
+            "traits": "Ijiraq",
+            "noArt": true
+        },
+        {
+            "name": "Flying Ant",
+            "attack": 0,
+            "health": 1,
+            "blood_cost": 1,
+            "tribes": "Insect",
+            "sigils": [
+                "Airborne"
+            ],
+            "traits": "Ant",
+            "noArt": true
+        },
+        {
+            "name": "Mud Turtle",
+            "attack": 2,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Reptile",
+            "sigils": [
+                "Armored"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Dire Wolf Pup",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 2,
+            "tribes": "Canine",
+            "sigils": [
+                "Bone Digger",
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Dire Wolf",
+            "attack": 2,
+            "health": 5,
+            "blood_cost": 3,
+            "tribes": "Canine",
+            "sigils": [
+                "Double Strike"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Mealworm",
+            "attack": 0,
+            "health": 2,
+            "bone_cost": 2,
+            "tribes": "Insect",
+            "sigils": [
+                "Morsel"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Wolverine",
+            "attack": 1,
+            "health": 3,
+            "bone_cost": 5,
+            "sigils": [
+                "Blood Lust"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Raccoon",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "sigils": [
+                "Scavenger"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Lammergeier",
+            "attack": 0,
+            "health": 4,
+            "blood_cost": 3,
+            "tribes": "Avian",
+            "sigils": [
+                "Airborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Red Hart",
+            "attack": 0,
+            "health": 2,
+            "blood_cost": 2,
+            "tribes": "Hooved",
+            "sigils": [
+                "Sprinter"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Tadpole",
+            "attack": 0,
+            "health": 1,
+            "tribes": "Reptile",
+            "sigils": [
+                "Waterborne",
+                "Fledgling"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Pelt Lice",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 4,
+            "tribes": "Insect",
+            "sigils": [
+                "Double Strike"
+            ],
+            "traits": "Pelt Lice",
+            "noArt": true
+        },
+        {
+            "name": "Hodag",
+            "attack": 1,
+            "health": 5,
+            "blood_cost": 2,
+            "sigils": [
+                "Blood Lust"
+            ],
+            "traits": "Hodag",
+            "noArt": true
+        },
+        {
+            "name": "Great Kraken",
+            "attack": 1,
+            "health": 1,
+            "blood_cost": 1,
+            "sigils": [
+                "Kraken Waterborne"
+            ],
+            "noArt": true
+        },
+        {
+            "name": "Curious Egg",
+            "attack": 0,
+            "health": 1,
+            "bone_cost": 1,
+            "sigils": [
+                "Finical Hatchling"
+            ],
+            "traits": "Curious Egg",
+            "noArt": true
+        },
+        {
+            "name": "Hydra",
+            "attack": 1,
+            "health": 5,
+            "bone_cost": 1,
+            "tribes": "Avian,Canine,Hooved,Reptile,Insect",
+            "sigils": [
+                "Bifurcated Strike",
+                "Trifurcated Strike"
+            ],
+            "noArt": true
+        }
+    ],
+    "sigils": {
+        "Mighty Leap": "This card blocks opposing Airborne creatures",
+        "Bifurcated Strike": "This card will strike each opposing space to the left and right of the spaces across it",
+        "Trifurcated Strike": "This card will deal damage to the opposing spaces left, right, and opposite of it",
+        "Frozen Away": "When this card perishes, the creature inside takes its place.",
+        "Steel Trap": "When this card dies, the card opposing it also dies. A Wolf Pelt is created in your hand.",
+        "Rabbit Hole": "When this card is played, a Rabbit is created in your hand.",
+        "Sprinter": "At the end of the owner's turn, this card will move in the sigil's direction",
+        "Touch of Death": "This card instantly kills any card it damages",
+        "Fledgling": "After surviving for 1 turn, this card grows into a stronger form.",
+        "Burrower": "This card will move to any empty space that is attacked by an enemy to block it",
+        "Fecundity": "When this card is played, a copy of it enters your hand.",
+        "Bone King": "When this card dies, 4 Bones are awarded instead of 1.",
+        "Unkillable": "When this card perishes, a copy of it enters your hand",
+        "Sharp Quills": "Once this card is struck, the striker is dealt 1 damage",
+        "Hefty": "At the end of the owner's turn, this and adjacent cards move in the sigil's direction",
+        "Guardian": "When an opposing card is played opposite an empty space, this card moves to that space",
+        "Airborne": "This card will ignore opposing cards and strike an opponent directly",
+        "Many Lives": "When this card is sacrificed, it does not perish.",
+        "Repulsive": "If a creature would attack this card, it does not",
+        "Worthy Sacrifice": "This card counts as 3 Blood rather than 1 Blood when sacrificed.",
+        "Bone Digger": "At the end of the owner's turn, this card generates 1 Bone",
+        "Brittle": "After attacking, this card perishes",
+        "Skeleton Crew": "At the end of the owner's turn, this card moves in the sigil's direction and plays a Skeleton in the space behind it.",
+        "Green Mox": "While this card is on the board, it provides a Green Gem",
+        "Orange Mox": "While this card is on the board, it provides an Orange Gem",
+        "Blue Mox": "While this card is on the board, it provides a Blue Gem",
+        "Gem Animator": "Mox cards on the owner's side of the board gain 1 Power.",
+        "Ruby Heart": "When this card perishes, a Ruby Mox replaces it.",
+        "Mental Gemnastics": "When this card is played, you draw cards equal to the amount of your Mox cards played.",
+        "Gem Dependant": "If this card's owner controls no Mox cards, this card perishes.",
+        "Great Mox": "While this card is on the board, it provides all 3 Gems to its owner.",
+        "Handy": "When this card is played, discard your hand then draw 4 cards.",
+        "Squirrel Shedder": "At the end of the owner's turn, this card moves in the sigil's direction and plays a Squirrel in the space behind it.",
+        "Attack Conduit": "Other creatures within a circuit completed by this card gain 1 Power",
+        "Spawn Conduit": "Empty spaces in a circuit created by this card play L33pB0ts at the end of the owner's turn.",
+        "Null Conduit": "This card may complete a circuit, but provides no effect",
+        "Battery Bearer": "When this card is played, you gain an Energy Cell",
+        "Detonator": "When this card dies, adjacent and opposing cards are dealt 10 damage",
+        "Sentry": "When a creature moves into the space opposite this card, they take 1 damage",
+        "Energy Conduit": "If this card is part of a completed circuit, your Energy never depletes.",
+        "Bomb Spewer": "When this card is played, fill all empty spaces with Explode Bots.",
+        "Double Death": "When another creature you own dies, it dies again.",
+        "Power Dice": "Activate: Pay 1 Energy to set the Power of this card randomly between 1 and 6.",
+        "Enlarge": "Activate: Pay 2 Bones to increase the Power and Health of this card by 1.",
+        "Disentomb": "Activate: Pay 1 Bone to create a Skeleton in your hand.",
+        "Energy Gun": "Activate: Pay 1 Energy to deal 1 damage to the space across from this card.",
+        "Looter": "When this card deals damage directly, draw a card for each damage dealt.",
+        "True Scholar": "Activate: If you have a Blue gem, destroy this card to draw 3 cards.",
+        "Stimulate": "Activate: Pay 3 Energy to increase the Power and Health of this card by 1.",
+        "Bonehorn": "Activate: Pay 1 Energy to gain 3 Bones.",
+        "Waterborne": "On the opponent's turn, creatures attacking this card's space attack directly.",
+        "Kraken Waterborne": "Same as Waterborne, except that this card becomes a Tentacle card when it emerges.",
+        "Bees Within": "When this card is struck, a Bee is created in your hand.",
+        "Dam Builder": "When this card is played, Dams are created on adjacent empty spaces.",
+        "Hoarder": "When this card is played, choose a card from your deck to be drawn immediately.",
+        "Loose Tail": "When this card would be struck, a tail is created in its place and this card moves to the right.",
+        "Corpse Eater": "If a card that you own dies by combat, this card is played from your hand on its space.",
+        "Ant Spawner": "When this card is played, an Ant enters your hand.",
+        "Trinket Bearer": "When this card is played, you will receive an item if you have room.",
+        "Amorphous": "When this card is drawn, this sigil is replaced by a random sigil",
+        "Tidal Lock": "At the beginning of its owner's turn, this card will remove all Squirrels and Rabbits from the board.",
+        "Omni Strike": "This card will strike all opposing creatures, or attack directly if there are none.",
+        "Leader": "Creatures adjacent to this card gain 1 Power.",
+        "Bellist": "When this card is played, Chimes are created on adjacent empty spaces.",
+        "Stinky": "The creature opposing this card loses 1 Power",
+        "Sniper": "You may choose which opposing spaces this card strikes",
+        "Nano Armor": "The first time this card would take damage, prevent it",
+        "Overclocked": "This card has 1 additional Power, but its removed from your deck if it dies",
+        "Bomb Latch": "When this card perishes, give a card the Detonator sigil",
+        "Brittle Latch": "When this card perishes, give a card the Brittle sigil",
+        "Shield Latch": "When this card perishes, give a card the Nano Armor sigil",
+        "Dead Byte": "When this card perishes, select a file and deal damage proportional to its size",
+        "Hostage File": "When this card perishes, the file used to create it is deleted",
+        "Transformer": "At the start of your turn, this card toggles its Beast mode",
+        "Gem Detonator": "Gem Vessels now Detonate",
+        "Gem Guardian": "When this card is played, all Gem Vessels on the owner's side gain Nano Armor",
+        "Vessel Printer": "When this card is struck, draw an Empty Vessel",
+        "Swapper": "After this card is dealt damage, swap its Power and Health",
+        "Annoying": "The creature opposing this card gains 1 Power",
+        "Gem Spawn Conduit": "Empty spaces in a circuit created by this card play Gem Vessels at the end of the owner's turn",
+        "Gift Bearer": "When this card perishes, gain a random card",
+        "Buff When Powered": "If this card is inside a circuit, it gains 2 Power",
+        "Gift When Powered": "If this card is inside a circuit when it perishes, gain a random card",
+        "Trifurcated When Powered": "If this card is within a circuit, it will deal damage to the opposing spaces left, right, and opposite of it",
+        "Clinger": "When you play another card, this card moves as close as possible to it",
+        "Brood Parasite": "When a card bearing this sigil is played, an egg is created on the opposing space",
+        "Rampager": "At the end of the owner's turn, this card will move in the direction on the sigil. Cards in the way will replace where it was previously",
+        "Made of Stone": "A card bearing this sigil is immune to the effects of Touch of Death and Stinky",
+        "Double Strike": "A card bearing this sigil will strike the opposing space an extra time when attacking",
+        "Blood Lust": "When this card kills an opposing card, it gains 1 Power",
+        "Morsel": "When this card is sacrificed, it transfers its stats onto the card it was sacrificed for",
+        "Armored": "The first time a card bearing this sigil would take damage, prevent that damage",
+        "Scavenger": "While this card is played, opposing cards also grant Bones upon death",
+        "Finical Hatchling": "This card hatches when drawn if all lights on the egg are lit up. These correspond to the Power, Health, and Tribe of your deck"
+    }
+}

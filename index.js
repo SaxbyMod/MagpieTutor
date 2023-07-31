@@ -419,13 +419,6 @@ const SetList = {
 		draftFormat: SetFormatList.imfDraft,
 		draftRestriction: DraftRestriction.eternal,
 	},
-	v: {
-		name: "vanilla",
-		type: "107",
-		format: SetFormatList.imf,
-		compactFormat: SetFormatList.imfCompact,
-		pools: ImfPool,
-	},
 	g: {
 		name: "mr.egg",
 		type: "url",
@@ -438,7 +431,7 @@ const SetList = {
 		draftRestriction: DraftRestriction.imf,
 	},
 
-	//other set
+	//special load set
 	a: {
 		name: "augmented",
 		type: "specialLoad",
@@ -462,6 +455,16 @@ const SetList = {
 		format: SetFormatList.redux,
 		compactFormat: SetFormatList.redux,
 		file: "./extra/reduxProcess.js",
+		pools: ImfPool,
+	},
+
+	//file set
+	v: {
+		name: "vanilla",
+		type: "other",
+		file: "./extra/vanilla.json",
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
 		pools: ImfPool,
 	},
 
@@ -622,7 +625,23 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 			`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`
 		)
 	)
-
+	for (const [key, value] of Object.entries(process.memoryUsage())) {
+		infoLog(
+			chalk.red(
+				`Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `
+			)
+		)
+	}
+	infoLog(
+		chalk.red(
+			`Total memory use: ${(
+				Object.values(process.memoryUsage()).reduce(
+					(acc, c) => acc + c,
+					0
+				) / 1000000
+			).toFixed(1)}MB`
+		)
+	)
 	debugLog("Setup completed")
 
 	if (!client.isReady()) return
@@ -1256,8 +1275,8 @@ async function messageSearch(message, returnValue = false) {
 	const end = performance.now()
 
 	if (msg != "") replyOption["content"] = msg
-	if (embedList.length > 0) replyOption["embeds"] = embedList
-	if (attachmentList.length > 0) replyOption["files"] = attachmentList
+	replyOption["embeds"] = embedList
+	replyOption["files"] = attachmentList
 	if (
 		replyOption["content"] ||
 		replyOption["embeds"] ||
@@ -1297,9 +1316,6 @@ function genDescription(textFormat, card) {
 					completeInfo += info.text
 					continue
 				}
-				console.log(card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)])
-				console.log(info.text.match(/{(\w+)}/g)[0].slice(1, -1))
-				console.log(card)
 				let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
 				if (!temp) continue
 				if (info.type == "mox") {
