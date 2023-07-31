@@ -40,7 +40,7 @@ const sigilList = require("./extra/sigilList.json")
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(-|)(\w+):(\w+|"[^"]+")/g
+const queryRegex = /(-|)(\w+):([^\s]+|"[^"]+")/g
 const matchPercentage = 0.4
 const devMode = false
 let log = ""
@@ -823,6 +823,7 @@ const queryKeywordList = {
 					  value == "prism"
 					? "prism"
 					: ""
+
 			// if mox cost exist check for color then if shattered exist also check for color
 			// or between mox and shattered
 			filterPossibleValue(([name, info]) =>
