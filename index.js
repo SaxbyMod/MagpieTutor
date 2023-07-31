@@ -40,7 +40,7 @@ const sigilList = require("./extra/sigilList.json")
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(\w+):(\w+|"[^"]+")/g
+const queryRegex = /(-|)(\w+):(\w+|"[^"]+")/g
 const matchPercentage = 0.4
 const devMode = false
 let log = ""
@@ -1296,6 +1296,9 @@ function genDescription(textFormat, card) {
 					completeInfo += info.text
 					continue
 				}
+				console.log(card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)])
+				console.log(info.text.match(/{(\w+)}/g)[0].slice(1, -1))
+				console.log(card)
 				let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
 				if (!temp) continue
 				if (info.type == "mox") {
@@ -1413,8 +1416,6 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 			"Remember that face when you arrive in hell - Squidman005#8375 the Squirrel Ball Man"
 	} else if (card.name == "Ouroboros") {
 		card.description = "Ouroboros is the source of all evil - 107"
-	} else if (card.name == "Master Orlu") {
-		card.description = undefined
 	} else if (card.name == "Blue Mage") {
 		card.url =
 			"https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
@@ -1564,12 +1565,15 @@ function queryCard(string, set, compactDisplay = false) {
 	let possibleMatches = setsData[set.name].cards
 
 	for (const tag of string.matchAll(queryRegex)) {
-		let type = tag[1],
-			value = tag[2].replaceAll('"', "")
+		let type = tag[2],
+			value = tag[3].replaceAll('"', "")
+		let negation = !!tag[1]
 
 		const filterPossibleValue = (callback) => {
 			possibleMatches = Object.fromEntries(
-				Object.entries(possibleMatches).filter(callback)
+				Object.entries(possibleMatches).filter((c) =>
+					negation ? !callback(c) : callback(c)
+				)
 			)
 		}
 

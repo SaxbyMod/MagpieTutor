@@ -64,9 +64,10 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
-- Default set per server
 - Query support for redux
 
 ## Plan for next update
 - Poll system
 - Ruleset community vote
+- Default set per server
+- Negation
