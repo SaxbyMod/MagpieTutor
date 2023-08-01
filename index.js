@@ -43,14 +43,13 @@ const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(-|)(\w+):([^\s]+|"[^"]+")/g
 const matchPercentage = 0.4
 const devMode = false
+let scream = false
 let log = ""
 function debugLog(...str) {
 	if (devMode) console.log(...str)
-	log += str.join(" ") + "\n"
 }
 function infoLog(...str) {
 	if (!devMode) console.log(...str)
-	log += str.join(" ") + "\n"
 }
 
 // Chalk color
@@ -541,7 +540,9 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 					})
 			} catch (err) {
 				infoLog(chalk.bgRed("ETERNAL MESS UP THE JSON AGAIN!!!"))
-				infoLog(chalk.pink.background(err))
+				console.log(err)
+				scream = true
+				log = err
 				setsData[set.name] = JSON.parse(
 					JSON.stringify(setsData["competitive"])
 				)
@@ -678,6 +679,7 @@ const queryKeywordList = {
 					  ).bestMatch.rating >= 0.8
 					: false
 			)
+			return `have ${value}`
 		},
 	},
 	effect: {
@@ -693,6 +695,7 @@ const queryKeywordList = {
 				})
 				return flag
 			})
+			return `have sigil effect includes "${value}"`
 		},
 	},
 	description: {
@@ -703,12 +706,13 @@ const queryKeywordList = {
 				if (!info.description) return false
 				return info.description.includes(value)
 			})
+			return `have description includes "${value}"`
 		},
 	},
 	resourcecost: {
 		alias: ["rc"],
 		description:
-			"Filter for resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
+			"Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)",
 		callback: (value, set, filterPossibleValue) => {
 			const op = value.includes(">=")
 				? ">="
@@ -745,6 +749,8 @@ const queryKeywordList = {
 						}${op}${value}`
 					)
 			)
+
+			return `with rc ${op}${value}`
 		},
 	},
 	convertedresourcecost: {
@@ -779,6 +785,8 @@ const queryKeywordList = {
 					}${op}${value}`
 				)
 			)
+
+			return `with crc ${op}${value}`
 		},
 	},
 	resourcetype: {
@@ -807,6 +815,20 @@ const queryKeywordList = {
 					? "shattered"
 					: ""
 			filterPossibleValue(([name, info]) => info[type])
+
+			return `cost ${
+				value == "b" || value == "blood"
+					? "blood"
+					: value == "o" || value == "bone"
+					? "bone"
+					: value == "e" || value == "energy"
+					? "energy"
+					: value == "m" || value == "mox"
+					? "mox"
+					: value == "s" || value == "shattered"
+					? "shattered"
+					: ""
+			}`
 		},
 	},
 	color: {
@@ -854,6 +876,8 @@ const queryKeywordList = {
 					? info.shattered.includes(`shattered_${color}`)
 					: false
 			)
+
+			return `is ${color}`
 		},
 	},
 	temple: {
@@ -872,6 +896,8 @@ const queryKeywordList = {
 					? "Magick"
 					: ""
 			filterPossibleValue(([name, info]) => info.temple == temple)
+
+			return `from ${temple}`
 		},
 	},
 	tribe: {
@@ -884,6 +910,8 @@ const queryKeywordList = {
 					info.tribes = info.tribes.join(" ")
 				return info.tribes.toLowerCase().includes(value)
 			})
+
+			return `is ${value}`
 		},
 	},
 	trait: {
@@ -894,6 +922,8 @@ const queryKeywordList = {
 				if (!info.traits) return false
 				return info.traits.includes(value)
 			})
+
+			return `have ${value}`
 		},
 	},
 	rarity: {
@@ -924,6 +954,8 @@ const queryKeywordList = {
 					? info.rare
 					: !info.rare
 			)
+
+			return `is ${rarity}`
 		},
 	},
 	health: {
@@ -947,6 +979,7 @@ const queryKeywordList = {
 			filterPossibleValue(([name, info]) =>
 				eval(`${info.health}${op}${value}`)
 			)
+			return `have health ${op}${value}`
 		},
 	},
 	power: {
@@ -970,6 +1003,8 @@ const queryKeywordList = {
 			filterPossibleValue(([name, info]) =>
 				eval(`${info.attack}${op}${value}`)
 			)
+
+			return `have power ${op}${value}`
 		},
 	},
 	is: {
@@ -1000,6 +1035,7 @@ const queryKeywordList = {
 			}
 			let callback = nicknameList[value]
 			filterPossibleValue(callback ? callback : ([name, info]) => false)
+			return `is ${value}`
 		},
 	},
 	name: {
@@ -1009,6 +1045,8 @@ const queryKeywordList = {
 			filterPossibleValue(([name, info]) =>
 				name.toLowerCase().includes(value.toLowerCase())
 			)
+
+			return `name includes ${value}`
 		},
 	},
 	regex: {
@@ -1016,6 +1054,8 @@ const queryKeywordList = {
 		description: "Filter for regex match in name",
 		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => name.match(value))
+
+			return `name match ${value}`
 		},
 	},
 }
@@ -1580,7 +1620,7 @@ async function genSigilEmbed(sigilName, sigilDescription) {
 function queryCard(string, set, compactDisplay = false) {
 	let embed = new EmbedBuilder().setColor(Colors.Fuchsia)
 	let possibleMatches = setsData[set.name].cards
-
+	let searchExplain = []
 	for (const tag of string.matchAll(queryRegex)) {
 		let type = tag[2],
 			value = tag[3].replaceAll('"', "")
@@ -1596,7 +1636,9 @@ function queryCard(string, set, compactDisplay = false) {
 
 		for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
-				keyInfo.callback(value, set, filterPossibleValue)
+				searchExplain.push(
+					keyInfo.callback(value, set, filterPossibleValue)
+				)
 			}
 		}
 	}
@@ -1608,11 +1650,14 @@ function queryCard(string, set, compactDisplay = false) {
 		compactDisplay
 			? "Result hidden by compact mode"
 			: final.length > 0
-			? final.join(", ").length > 4096
+			? `Card that ${searchExplain.join(", ")}:\n${final
+					.join(", ")
+					.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`.length >
+			  4096 // checking if it excess the char limit
 				? "Too many result, please be more specific"
-				: final
+				: `Card that ${searchExplain.join(", ")}:\n${final
 						.join(", ")
-						.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())
+						.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
 			: "No card found"
 	)
 	return [embed, 1]
@@ -1626,6 +1671,11 @@ client.once(Events.ClientReady, () => {
 		)
 	)
 	client.user.setActivity("YOUR MOM")
+	if (scream) {
+		client.channels.cache
+			.find((c) => c.id == "1095885953958158426")
+			.send(`Hey you mess up the Json again.\n\`\`\`${log}\`\`\``)
+	}
 })
 
 // on commands call
