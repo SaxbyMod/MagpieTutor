@@ -1,4 +1,6 @@
-/node_modules
-/test
-/extra/poll.json
-.gitgnore
+config.json
+node_modules
+test
+extra/poll.json
+extra/default.json
+.gitignore
