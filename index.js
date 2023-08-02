@@ -64,8 +64,9 @@ const client = new Client({
 		GatewayIntentBits.MessageContent,
 		GatewayIntentBits.GuildEmojisAndStickers,
 		GatewayIntentBits.GuildMessageReactions,
+		GatewayIntentBits.DirectMessages,
 	],
-	partials: [Partials.Message],
+	partials: [Partials.Message, Partials.Channel],
 })
 
 // stuff for bot
@@ -496,6 +497,8 @@ const SetList = {
 		type: "modifier",
 	},
 }
+
+const serverDefaultSet = require("./extra/default.json")
 
 let setsData = {}
 
@@ -1122,7 +1125,7 @@ async function messageSearch(message, returnValue = false) {
 			`Message with content: "${chalk.green(
 				message.content
 			)}" in ${chalk.red.bold(
-				message.guild.name
+				message.guild ? message.guild.name : "DM"
 			)} detected searching time ${chalk.magenta("OwO")}`
 		)
 	)
@@ -1131,7 +1134,7 @@ async function messageSearch(message, returnValue = false) {
 		.matchAll(searchRegex)) {
 		let selectedSet = SetList[cardName[1][0]]
 			? SetList[cardName[1][0]]
-			: SetList["."]
+			: SetList[serverDefaultSet[message.guildId] ?? "."]
 		let name = cardName[2]
 		let card
 		let noAlter = false
@@ -1175,7 +1178,7 @@ async function messageSearch(message, returnValue = false) {
 				cardName[1] = cardName[1].slice(1)
 				selectedSet = SetList[cardName[1][0]]
 					? SetList[cardName[1][0]]
-					: SetList["."]
+					: SetList[serverDefaultSet[message.guildId] ?? "."]
 				continue redo
 			}
 			break
