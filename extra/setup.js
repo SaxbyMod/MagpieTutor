@@ -1,4 +1,9 @@
-const { REST, Routes, SlashCommandBuilder } = require("discord.js")
+const {
+	REST,
+	Routes,
+	SlashCommandBuilder,
+	PermissionFlagsBits,
+} = require("discord.js")
 const { clientId, token } = require("../config.json")
 
 const commands = [
@@ -12,7 +17,8 @@ const commands = [
 		),
 	new SlashCommandBuilder()
 		.setName("restart")
-		.setDescription("Force the bot to reset"),
+		.setDescription("Force the bot to reset")
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	new SlashCommandBuilder()
 		.setName("draft")
 		.setDescription("Open packs and draft a deck")
@@ -56,7 +62,8 @@ const commands = [
 			option
 				.setName("message")
 				.setDescription("The message id to reply to")
-		),
+		)
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	new SlashCommandBuilder()
 		.setName("deck-sim")
 		.setDescription(
@@ -189,7 +196,8 @@ const commands = [
 		)
 		.addStringOption((option) =>
 			option.setName("emoji").setDescription("emoji").setRequired(true)
-		),
+		)
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	new SlashCommandBuilder()
 		.setName("query-info")
 		.setDescription("Send a list of all query keyword and how they work"),
@@ -218,8 +226,31 @@ const commands = [
 				.setName("time")
 				.setDescription(
 					"Time the poll will run for. put `m` at the end for minute, `s` for second"
-				).setRequired(true)
+				)
+				.setRequired(true)
 		),
+	new SlashCommandBuilder()
+		.setName("default-code")
+		.setDescription(
+			"Default code or codes to apply in front of search if not present"
+		)
+		.addStringOption((option) =>
+			option
+				.setName("default-set-code")
+				.setDescription(
+					"Default set code to use when not present. What set to be the default when call with [[]]."
+				)
+				.setMaxLength(1)
+				.setRequired(true)
+		)
+		.addStringOption((option) =>
+			option
+				.setName("addon-set-code")
+				.setDescription(
+					"Default set codes to use when not present. What to add on when call with [[]]."
+				)
+		)
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

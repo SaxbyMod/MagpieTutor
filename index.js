@@ -66,7 +66,7 @@ const client = new Client({
 		GatewayIntentBits.GuildMessageReactions,
 		GatewayIntentBits.DirectMessages,
 	],
-	partials: [Partials.Message, Partials.Channel],
+	partials: [Partials.Message],
 })
 
 // stuff for bot
@@ -135,11 +135,6 @@ const isPerm = (interaction) =>
 			role.id == "1028537837169156156" ||
 			role.id == "1111314861226459180"
 	) || interaction.user.id == "601821309881810973"
-
-const havePerm = (interaction) =>
-	interaction.member.roles.cache.some(
-		(role) => role.permission == PermissionFlagsBits.Administrator
-	)
 
 const getMessage = async (channel, id) => {
 	return await channel.messages.fetch(id)
@@ -1132,9 +1127,14 @@ async function messageSearch(message, returnValue = false) {
 	outer: for (let cardName of message.content
 		.toLowerCase()
 		.matchAll(searchRegex)) {
-		let selectedSet = SetList[cardName[1][0]]
-			? SetList[cardName[1][0]]
-			: SetList[serverDefaultSet[message.guildId] ?? "."]
+		cardName[1] =
+			cardName[1][0] || !serverDefaultSet[message.guildId]
+				? cardName[1]
+				: serverDefaultSet[message.guildId]?.addon ?? ""
+		let selectedSet =
+			SetList[cardName[1][0]] ??
+			SetList[serverDefaultSet[message.guildId]?.default] ??
+			SetList["."]
 		let name = cardName[2]
 		let card
 		let noAlter = false
@@ -1176,9 +1176,10 @@ async function messageSearch(message, returnValue = false) {
 					query = true
 				}
 				cardName[1] = cardName[1].slice(1)
-				selectedSet = SetList[cardName[1][0]]
-					? SetList[cardName[1][0]]
-					: SetList[serverDefaultSet[message.guildId] ?? "."]
+				selectedSet =
+					SetList[cardName[1][0]] ??
+					SetList[serverDefaultSet[message.guildId].default] ??
+					SetList["."]
 				continue redo
 			}
 			break
@@ -1687,10 +1688,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		const { commandName, options } = interaction
 		if (commandName === "echo") {
 			//if (interaction.user.id != 601821309881810973) return
-			if (!(isPerm(interaction) && havePerm(interaction))) {
-				interaction.reply({ content: "NO fuck you", ephemeral: true })
-				return
-			}
 			const message = options.getString("text")
 			console.log(`${interaction.user.username} say ${message}`)
 			const channel =
@@ -2727,6 +2724,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				"./extra/poll.json",
 				JSON.stringify(pollData),
 				"utf8"
+			)
+		} else if (commandName === "default-code") {
+			serverDefaultSet[interaction.guildId] = {
+				default: options.getString("default-set-code"),
+				addon: options.getString("addon-set-code"),
+			}
+			await interaction.reply({
+				content: "Default added",
+				ephemeral: true,
+			})
+			fs.writeFileSync(
+				"./extra/default.json",
+				JSON.stringify(serverDefaultSet)
 			)
 		}
 	} else if (interaction.isButton()) {
