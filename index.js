@@ -21,21 +21,37 @@ const {
 	Attachment,
 } = require("discord.js")
 
-// specific own module
+// installed module
 const StringSimilarity = require("string-similarity")
 const scryfall = require("scryfall")
 const chalk = require("chalk")
 const Canvas = require("@napi-rs/canvas")
 const format = require("string-format")
 
-// general module (don;t need installing)
+// general module (don't need installing)
 const fetch = require("node-fetch")
 const http = require("http")
 const fs = require("fs")
 
+// my module
 const { token, clientId } = require("./config.json")
-
 const sigilList = require("./extra/sigilList.json")
+const {
+	debugLog,
+	infoLog,
+	randInt,
+	randomChoice,
+	randomChoices,
+	drawList,
+	shuffleList,
+	countDeckDup,
+	listDiff,
+	listInter,
+	isPerm,
+	getMessage,
+	clamp,
+	sleep,
+} = require("./extra/utils")
 
 format.extend(String.prototype, {})
 
@@ -45,12 +61,6 @@ const matchPercentage = 0.4
 const devMode = false
 let scream = false
 let log = ""
-function debugLog(...str) {
-	if (devMode) console.log(...str)
-}
-function infoLog(...str) {
-	if (!devMode) console.log(...str)
-}
 
 // Chalk color
 chalk.orange = chalk.hex("#fb922b")
@@ -69,84 +79,6 @@ const client = new Client({
 	partials: [Partials.Message],
 })
 
-// stuff for bot
-
-const randInt = (min, max) => {
-	return Math.floor(Math.random() * (max - min + 1)) + min
-}
-const randomChoice = (list) => {
-	return list[Math.floor(Math.random() * list.length)]
-}
-
-const randomChoices = (list, num) => {
-	let out = []
-	let already = []
-	for (let choice = 0; choice < num; choice++) {
-		let n
-		while (true) {
-			n = Math.floor(Math.random() * list.length)
-			if (already.includes(n)) continue
-			break
-		}
-		out.push(list[n])
-		already.push(n)
-		if (list.length <= already.length) return out
-	}
-	return out
-}
-
-const drawList = (list, num) => {
-	let out = []
-	for (let choice = 0; choice < num; choice++) {
-		if (list.length < 1) return out
-		let e = Math.floor(Math.random() * list.length)
-		out.push(list[e])
-		list.splice(e, 1)
-	}
-	return out
-}
-
-const shuffleList = (list) => {
-	for (let i = list.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1))
-		;[list[i], list[j]] = [list[j], list[i]]
-	}
-	return list
-}
-
-const countDeckDup = (deck) => {
-	const singleDeck = new Set(deck)
-	var out = {}
-	for (const card of singleDeck) {
-		out[card] = deck.filter(
-			(c) => c.toLowerCase() === card.toLowerCase()
-		).length
-	}
-	return out
-}
-
-const listDiff = (list1, list2) => list1.filter((x) => !list2.includes(x))
-const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
-
-const isPerm = (interaction) =>
-	interaction.member.roles.cache.some(
-		(role) =>
-			role.id == "994578531671609426" ||
-			role.id == "1028537837169156156" ||
-			role.id == "1111314861226459180"
-	) || interaction.user.id == "601821309881810973"
-
-const getMessage = async (channel, id) => {
-	return await channel.messages.fetch(id)
-}
-
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
-
-const sleep = (ms) => {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms)
-	})
-}
 //define the ruleset shit
 
 //define how card should be render
@@ -2738,6 +2670,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				"./extra/default.json",
 				JSON.stringify(serverDefaultSet)
 			)
+		} else if (commandName === "deck-analysis") {
 		}
 	} else if (interaction.isButton()) {
 		if (interaction.component.customId == "retry") {
