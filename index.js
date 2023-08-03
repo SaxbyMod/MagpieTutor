@@ -1178,7 +1178,7 @@ async function messageSearch(message, returnValue = false) {
 				cardName[1] = cardName[1].slice(1)
 				selectedSet =
 					SetList[cardName[1][0]] ??
-					SetList[serverDefaultSet[message.guildId].default] ??
+					SetList[serverDefaultSet[message.guildId]?.default] ??
 					SetList["."]
 				continue redo
 			}
