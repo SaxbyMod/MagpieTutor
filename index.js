@@ -44,13 +44,14 @@ const {
 	randomChoices,
 	drawList,
 	shuffleList,
-	countDeckDup,
+	countDup,
 	listDiff,
 	listInter,
 	isPerm,
 	getMessage,
 	clamp,
 	sleep,
+	combinations,
 } = require("./extra/utils")
 
 format.extend(String.prototype, {})
@@ -58,7 +59,6 @@ format.extend(String.prototype, {})
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(-|)(\w+):([^\s]+|"[^"]+")/g
 const matchPercentage = 0.4
-const devMode = false
 let scream = false
 let log = ""
 
@@ -1844,7 +1844,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 				// load the deck dup to check for restriction later
 				let deckStr = ""
-				let deckDup = countDeckDup(
+				let deckDup = countDup(
 					deck.cards.sort((a, b) =>
 						a.startsWith("*")
 							? -1
@@ -1902,7 +1902,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 								deckUniqueCount[card.type] = 0
 							deckUniqueCount[card.type]++
 							if (
-								countDeckDup(deck.card) >=
+								countDup(deck.card) >=
 								set.draftRestriction[card.type].copyPerDeck
 							) {
 								// if more than or equal to the allowed same name copy per deck remove this card from pool
@@ -2007,7 +2007,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 			while (stillRunning) {
 				let tempstr = ""
-				let currDup = countDeckDup(hand)
+				let currDup = countDup(hand)
 				Object.keys(currDup).forEach((c) => {
 					tempstr += `${currDup[c]}x ${c}\n`
 				})
@@ -2026,8 +2026,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 				if (detailMode) {
 					tempstr = ""
-					let currDup = countDeckDup(currDeck)
-					let fullDup = countDeckDup(fullDeck)
+					let currDup = countDup(currDeck)
+					let fullDup = countDup(fullDeck)
 					Object.keys(currDup).forEach((c) => {
 						const percentage = (currDup[c] / currDeck.length) * 100
 						tempstr += `${currDup[c]}/${
@@ -2671,6 +2671,88 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				JSON.stringify(serverDefaultSet)
 			)
 		} else if (commandName === "deck-analysis") {
+			await interaction.reply("Crunching number, this may take a while")
+			let mainDeck = []
+			let sideDeck = []
+			if (options.getSubcommand("file")) {
+				const deckFile = JSON.parse(
+					await (
+						await fetch(options.getAttachment("deck-file").url)
+					).text()
+				)
+				mainDeck = deckFile.cards
+
+				const set = options.getString("set")
+				if (deckFile.side_deck_cards) {
+					sideDeck = deckFile.side_deck_cards
+				} else if (deckFile.side_deck_cat) {
+					sideDeck = Array(
+						setsData[set].side_decks[deckFile.side_deck].cards[
+							deckFile.side_deck_cat
+						].count
+					).fill(
+						setsData[set].side_decks[deckFile.side_deck].cards[
+							deckFile.side_deck_cat
+						].card
+					)
+				} else {
+					sideDeck = Array(
+						setsData[set].side_decks[deckFile.side_deck].count
+					).fill(setsData[set].side_decks[deckFile.side_deck].card)
+				}
+			} else if (options.getSubcommand("list")) {
+				let temp = options.getString("deck-list").split(";")
+				temp = temp.map((i) => i.split(","))
+				mainDeck = temp[0]
+				sideDeck = temp[1] ? temp[1] : []
+			}
+
+			const embed = new EmbedBuilder()
+				.setColor(Colors.Gold)
+				.setTitle("Deck Analysis result")
+				.setDescription("eeeeeeeee")
+
+			const possibleMainHandCombinations = combinations(mainDeck, 3)
+			const deckDup = countDup(mainDeck)
+			embed.addFields({
+				name: "Draw Percentage",
+				value: Object.keys(deckDup)
+					.map(
+						(c) =>
+							`${deckDup[c]}x | ${c} (${Math.round(
+								(deckDup[c] / mainDeck.length) * 100
+							)}%)`
+					)
+					.join("\n"),inline:true
+			})
+			embed.addFields({
+				name: "Starting hand",
+				value: `**Possible starting hand combination**: ${
+					possibleMainHandCombinations.length
+				}\n**Possible unquie starting hand combination**: ${
+					new Set(
+						possibleMainHandCombinations.map((h) => h.join(","))
+					).size
+				}\nMost common starting hands:\n${(() => {
+					const temp = Object.entries(
+						countDup(
+							possibleMainHandCombinations.map((h) => h.join(","))
+						)
+					).sort(([, a], [, b]) => b - a)
+					return `1. ${temp[0][0]} (${Math.round(
+						(temp[0][1] / possibleMainHandCombinations.length) * 100
+					)}%)\n2. ${temp[1][0]} (${Math.round(
+						(temp[1][1] / possibleMainHandCombinations.length) * 100
+					)}%)\n3. ${temp[2][0]} (${Math.round(
+						(temp[2][1] / possibleMainHandCombinations.length) * 100
+					)}%)`
+				})(possibleMainHandCombinations)}`,
+				inline: true,
+			})
+			console.log()
+			await interaction.editReply({
+				embeds: [embed],
+			})
 		}
 	} else if (interaction.isButton()) {
 		if (interaction.component.customId == "retry") {

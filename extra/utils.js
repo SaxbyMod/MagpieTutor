@@ -1,3 +1,4 @@
+const devMode = false
 function debugLog(...str) {
 	if (devMode) console.log(...str)
 }
@@ -54,9 +55,7 @@ const countDup = (list) => {
 	const listNoDup = new Set(list)
 	var out = {}
 	for (const i of listNoDup) {
-		out[i] = list.filter(
-			(c) => c.toLowerCase() === i.toLowerCase()
-		).length
+		out[i] = list.filter((c) => c.toLowerCase() === i.toLowerCase()).length
 	}
 	return out
 }
@@ -84,6 +83,38 @@ const sleep = (ms) => {
 	})
 }
 
+//stackoverflow.com/questions/67720548/generate-unique-combinations-in-javascript-from-n-objects-with-r-samples
+// Modified to filter out duplicate
+function combinations(a, c) {
+	let index = []
+	let n = a.length
+
+	for (let j = 0; j < c; j++) index[j] = j
+	index[c] = n
+
+	let ok = true
+	let result = []
+
+	while (ok) {
+		let comb = []
+		for (let j = 0; j < c; j++) comb[j] = a[index[j]]
+		result.push(comb)
+
+		ok = false
+
+		for (let j = c; j > 0; j--) {
+			if (index[j - 1] < index[j] - 1) {
+				index[j - 1]++
+				for (let k = j; k < c; k++) index[k] = index[k - 1] + 1
+				ok = true
+				break
+			}
+		}
+	}
+
+	return result
+}
+
 module.exports = {
 	debugLog,
 	infoLog,
@@ -92,11 +123,12 @@ module.exports = {
 	randomChoices,
 	drawList,
 	shuffleList,
-	countDeckDup: countDup,
+	countDup,
 	listDiff,
 	listInter,
 	isPerm,
 	getMessage,
 	clamp,
 	sleep,
+	combinations,
 }
