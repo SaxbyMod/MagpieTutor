@@ -18,7 +18,8 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("restart")
 		.setDescription("Force the bot to reset")
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 	new SlashCommandBuilder()
 		.setName("draft")
 		.setDescription("Open packs and draft a deck")
@@ -63,7 +64,8 @@ const commands = [
 				.setName("message")
 				.setDescription("The message id to reply to")
 		)
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 	new SlashCommandBuilder()
 		.setName("deck-sim")
 		.setDescription(
@@ -197,7 +199,8 @@ const commands = [
 		.addStringOption((option) =>
 			option.setName("emoji").setDescription("emoji").setRequired(true)
 		)
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 	new SlashCommandBuilder()
 		.setName("query-info")
 		.setDescription("Send a list of all query keyword and how they work"),
@@ -250,7 +253,8 @@ const commands = [
 					"Default set codes to use when not present. What to add on when call with [[]]."
 				)
 		)
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 	new SlashCommandBuilder()
 		.setName("deck-analysis")
 		.setDescription("Analyze and give useful information about a deck")
@@ -310,7 +314,8 @@ const commands = [
 				.setDescription("The card json")
 				.setRequired(true)
 		)
-		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module
