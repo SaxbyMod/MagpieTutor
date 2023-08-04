@@ -388,7 +388,7 @@ const SetList = {
 	//file set
 	v: {
 		name: "vanilla",
-		type: "other",
+		type: "file",
 		file: "./extra/vanilla.json",
 		format: SetFormatList.imf,
 		compactFormat: SetFormatList.imfCompact,
@@ -461,7 +461,7 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 				.then((json) => {
 					setsData[set.name] = json
 				})
-		} else if (set.type == "other") {
+		} else if (set.type == "file") {
 			setsData[set.name] = require(set.file)
 		} else if (set.type == "specialLoad") {
 			setsData[set.name] = await require(set.file).load()
@@ -523,6 +523,10 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 	// loading all the card pool
 	infoLog(chalk.magenta.underline.bold("Loading card pools..."))
 	for (const setName of Object.keys(setsData)) {
+		if (
+			Object.values(SetList).find((i) => i.name == setName).type == "file"
+		)
+			continue
 		infoLog(chalk.yellow(`Loading ${setName} pools`))
 		setsData[setName].pools = {}
 		let temp = {}
@@ -2790,14 +2794,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			}
 			try {
 				console.log()
-				setsData.vanilla.cards[
-					JSON.parse(options.getString("card-json")).name
-				] = JSON.parse(options.getString("card-json"))
-				let temp = JSON.parse(JSON.stringify(setsData.vanilla))
-				temp.cards = Object.values(temp.cards)
 				fs.writeFileSync(
 					"./extra/vanilla.json",
-					JSON.stringify(temp)
+					JSON.stringify(setsData.vanilla)
 				)
 				await interaction.reply("Card added")
 			} catch (err) {
