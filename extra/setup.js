@@ -301,6 +301,16 @@ const commands = [
 						)
 				)
 		),
+	new SlashCommandBuilder()
+		.setName("add-vanilla")
+		.setDescription("Add vanilla card")
+		.addStringOption((option) =>
+			option
+				.setName("card-json")
+				.setDescription("The card json")
+				.setRequired(true)
+		)
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 ].map((command) => command.toJSON())
 
 // Construct and prepare an instance of the REST module

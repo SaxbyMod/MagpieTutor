@@ -423,6 +423,10 @@ const SetList = {
 		name: "query",
 		type: "modifier",
 	},
+	j: {
+		name: "json",
+		type: "modifier",
+	},
 }
 
 const serverDefaultSet = require("./extra/default.json")
@@ -464,7 +468,10 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 		} else if (set.type == "url") {
 			try {
 				await fetch(set.url)
-					.then((res) => res.json())
+					.then((res) => {
+						temp = res
+						return res.json()
+					})
 					.then((json) => {
 						setsData[set.name] = json
 					})
@@ -1074,6 +1081,7 @@ async function messageSearch(message, returnValue = false) {
 		let noArt = false
 		let sigilSearch = false
 		let query = false
+		let json = false
 		redo: while (true) {
 			if (selectedSet.type == "special") {
 				if (selectedSet.name == "magic the gathering") {
@@ -1106,6 +1114,8 @@ async function messageSearch(message, returnValue = false) {
 					continue outer
 				} else if (selectedSet.name == "query") {
 					query = true
+				} else if (selectedSet.name == "json") {
+					json = true
 				}
 				cardName[1] = cardName[1].slice(1)
 				selectedSet =
@@ -1117,7 +1127,7 @@ async function messageSearch(message, returnValue = false) {
 			break
 		}
 
-		let temp
+		let temp = []
 
 		if (sigilSearch) {
 			// get the best match
@@ -1146,6 +1156,22 @@ async function messageSearch(message, returnValue = false) {
 			)
 		} else if (query) {
 			temp = queryCard(name, selectedSet, compactDisplay)
+		} else if (json) {
+			const bestMatch = StringSimilarity.findBestMatch(
+				name,
+				Object.keys(setsData[selectedSet.name].cards)
+			).bestMatch
+
+			msg += `\`\`\`json\n${JSON.stringify(
+				await fetchCard(
+					bestMatch.target,
+					selectedSet.name,
+					noAlter,
+					noArt
+				),
+				null,
+				2
+			)}\`\`\``
 		} else {
 			// get the best match
 			const bestMatch = StringSimilarity.findBestMatch(
@@ -1230,8 +1256,10 @@ async function messageSearch(message, returnValue = false) {
 
 			temp = await genCardEmbed(card, compactDisplay)
 		}
-		embedList.push(temp[0])
-		if (temp[1] != 1) attachmentList.push(temp[1])
+		if (temp.length > 1) {
+			embedList.push(temp[0])
+			if (temp[1] != 1) attachmentList.push(temp[1])
+		}
 	}
 
 	var replyOption = {
@@ -1251,8 +1279,9 @@ async function messageSearch(message, returnValue = false) {
 	const end = performance.now()
 
 	if (msg != "") replyOption["content"] = msg
-	replyOption["embeds"] = embedList
-	replyOption["files"] = attachmentList
+	if (embedList.length > 0) replyOption["embeds"] = embedList
+	if (attachmentList.length > 0) replyOption["files"] = attachmentList
+
 	if (
 		replyOption["content"] ||
 		replyOption["embeds"] ||
@@ -1260,7 +1289,7 @@ async function messageSearch(message, returnValue = false) {
 	) {
 		replyOption["content"] =
 			(replyOption["content"] ? replyOption["content"] : "") +
-			`Search for complete in ${Math.round((end - start) * 10) / 10}ms`
+			`\nSearch complete in ${Math.round((end - start) * 10) / 10}ms`
 		if (returnValue) return replyOption
 		await message.reply(replyOption)
 	}
@@ -1618,7 +1647,7 @@ client.once(Events.ClientReady, () => {
 client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.isChatInputCommand()) {
 		const { commandName, options } = interaction
-		if (commandName === "echo") {
+		if (commandName == "echo") {
 			//if (interaction.user.id != 601821309881810973) return
 			const message = options.getString("text")
 			console.log(`${interaction.user.username} say ${message}`)
@@ -1642,7 +1671,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				content: "Sent",
 				ephemeral: true,
 			})
-		} else if (commandName === "set-code") {
+		} else if (commandName == "set-code") {
 			var temp = ""
 			Object.keys(SetList).forEach((key) => {
 				temp += `**${key}**: ${SetList[key].name}${
@@ -1652,7 +1681,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.reply(
 				`Possible set code for searching:\n\n${temp}\nModifier can be add infront of set code to modify the output. Ex: \`se\` will look up a sigil in the Eternal set`
 			)
-		} else if (commandName === "ping") {
+		} else if (commandName == "ping") {
 			await interaction.reply(
 				randInt(1, 4) == 4
 					? randomChoice([
@@ -1671,7 +1700,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					  ])
 					: "Pong!"
 			)
-		} else if (commandName === "restart") {
+		} else if (commandName == "restart") {
 			if (isPerm(interaction)) {
 				await interaction.reply(
 					randomChoice([
@@ -1682,7 +1711,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 				throw new Error("death")
 			} else await interaction.reply("no")
-		} else if (commandName === "draft") {
+		} else if (commandName == "draft") {
 			// grab the important shit
 			const setName = options.getString("set") // get the set name
 			const set = Object.values(SetList).find((v) => v.name == setName)
@@ -1955,7 +1984,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				embeds: [],
 				components: [],
 			})
-		} else if (commandName === "deck-sim") {
+		} else if (commandName == "deck-sim") {
 			let fullDeck = []
 			let fullSide = []
 			if (options.getAttachment("deck-file")) {
@@ -2227,7 +2256,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				],
 				components: [],
 			})
-		} else if (commandName === "tunnel-status") {
+		} else if (commandName == "tunnel-status") {
 			await http
 				.get("http://localtunnel.me", async (res) => {
 					await interaction.reply(
@@ -2239,7 +2268,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						"Stoat's laptop say tunnel is down, but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
 					)
 				})
-		} else if (commandName === "color-text") {
+		} else if (commandName == "color-text") {
 			await interaction.reply({
 				content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
 					options.getString("string"),
@@ -2249,7 +2278,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)}`,
 				ephemeral: true,
 			})
-		} else if (commandName === "guess-the-card") {
+		} else if (commandName == "guess-the-card") {
 			// TODO filter the list instead of this abomnination
 			const card = (() => {
 				while (true) {
@@ -2557,14 +2586,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							`Error: ${coloredString(`$$r${e}`)}`
 						)
 				)
-		} else if (commandName === "retry") {
+		} else if (commandName == "retry") {
 			await messageSearch(
 				await interaction.channel.messages.fetch(
 					options.getString("message")
 				)
 			)
 			await interaction.reply({ content: "Retried", ephemeral: true })
-		} else if (commandName === "react") {
+		} else if (commandName == "react") {
 			;(
 				await getMessage(
 					interaction.channel,
@@ -2572,7 +2601,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 			).react(options.getString("emoji"))
 			await interaction.reply({ content: "Reacted", ephemeral: true })
-		} else if (commandName === "query-info") {
+		} else if (commandName == "query-info") {
 			var temp = ""
 			Object.keys(queryKeywordList).forEach((key) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
@@ -2581,11 +2610,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documetation](https://github.com/khanhfg/MagpieTutor#query-syntax)`,
 				flags: [MessageFlags.SuppressEmbeds],
 			})
-		} else if (commandName === "test") {
+		} else if (commandName == "test") {
 			await interaction.reply(
 				`<t:${Math.round(Date.now() / 1000)}> ${Date.now() / 1000}`
 			)
-		} else if (commandName === "poll") {
+		} else if (commandName == "poll") {
 			const pollOption = options.getString("option").split(",")
 			const time = options.getString("time").endsWith("m")
 				? parseInt(options.getString("time").slice(0, -1)) * 60000
@@ -2657,7 +2686,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				JSON.stringify(pollData),
 				"utf8"
 			)
-		} else if (commandName === "default-code") {
+		} else if (commandName == "default-code") {
 			serverDefaultSet[interaction.guildId] = {
 				default: options.getString("default-set-code"),
 				addon: options.getString("addon-set-code"),
@@ -2670,7 +2699,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				"./extra/default.json",
 				JSON.stringify(serverDefaultSet)
 			)
-		} else if (commandName === "deck-analysis") {
+		} else if (commandName == "deck-analysis") {
 			await interaction.reply("Crunching number, this may take a while")
 			let mainDeck = []
 			let sideDeck = []
@@ -2723,7 +2752,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 								(deckDup[c] / mainDeck.length) * 100
 							)}%)`
 					)
-					.join("\n"),inline:true
+					.join("\n"),
+				inline: true,
 			})
 			embed.addFields({
 				name: "Starting hand",
@@ -2753,6 +2783,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			await interaction.editReply({
 				embeds: [embed],
 			})
+		} else if (commandName == "add-vanilla") {
+			if (!isPerm(interaction)) {
+				await interaction.reply("no")
+				return
+			}
+			try {
+				console.log()
+				setsData.vanilla.cards[
+					JSON.parse(options.getString("card-json")).name
+				] = JSON.parse(options.getString("card-json"))
+				let temp = JSON.parse(JSON.stringify(setsData.vanilla))
+				temp.cards = Object.values(temp.cards)
+				fs.writeFileSync(
+					"./extra/vanilla.json",
+					JSON.stringify(temp)
+				)
+				await interaction.reply("Card added")
+			} catch (err) {
+				await interaction.reply(`\`\`\`\n${err}\`\`\``)
+			}
 		}
 	} else if (interaction.isButton()) {
 		if (interaction.component.customId == "retry") {
