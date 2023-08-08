@@ -57,7 +57,7 @@ const {
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(-|)(\w+):([^\s]+|"[^"]+")/g
+const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g
 const matchPercentage = 0.4
 let scream = false
 let log = ""
@@ -2611,7 +2611,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
 			await interaction.reply({
-				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documetation](https://github.com/khanhfg/MagpieTutor#query-syntax)`,
+				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documetation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query#syntax)`,
 				flags: [MessageFlags.SuppressEmbeds],
 			})
 		} else if (commandName == "test") {
