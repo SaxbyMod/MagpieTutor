@@ -76,7 +76,7 @@ async function load() {
 
 		cardFormated[
 			"footnote"
-		] = `This card was made by ${card["Credit"]}.\nLast Edited: ${card["edited"]}`
+		] = `This card art was made by ${card["Credit"]}.\nLast Edited: ${card["edited"]}`
 		// console.log(cardFormated["sigils"], !cardFormated["sigils"])
 		if (!cardFormated["sigils"] || cardFormated["sigils"].length <= 0) {
 			delete cardFormated["sigils"]
