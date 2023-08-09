@@ -838,7 +838,7 @@ const queryKeywordList = {
 					: ""
 			filterPossibleValue(([name, info]) => info.temple == temple)
 
-			return `from ${temple}`
+			return `from ${temple} temple`
 		},
 	},
 	tribe: {
@@ -987,7 +987,7 @@ const queryKeywordList = {
 				name.toLowerCase().includes(value.toLowerCase())
 			)
 
-			return `name includes ${value}`
+			return `have name includes ${value}`
 		},
 	},
 	regex: {
@@ -996,7 +996,7 @@ const queryKeywordList = {
 		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => name.match(value))
 
-			return `name match ${value}`
+			return `have name match ${value}`
 		},
 	},
 }
@@ -1188,8 +1188,7 @@ async function messageSearch(message, returnValue = false) {
 				if (name == "old_data") {
 					card = {
 						name: "Lorem",
-						description:
-							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+						description: "Lorem ipsum dolor.",
 						sigils: ["Repulsive", "Bone King"],
 						blood_cost: -69,
 						bone_cost: -69,
@@ -1217,8 +1216,7 @@ async function messageSearch(message, returnValue = false) {
 				} else if (name == "deep_data") {
 					card = {
 						name: "Lorem",
-						description:
-							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+						description: "Lorem ipsum dolor.",
 						sigils: ["Repulsive", "Bone King"],
 						blood: -69,
 						bone: -69,
@@ -1437,9 +1435,6 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.name = "peak"
 		card.description = "peak"
 		card.sigils = Array(6).fill("Handy")
-	} else if (card.name == "Squirrel Ball") {
-		card.description =
-			"Remember that face when you arrive in hell - Squidman005#8375 the Squirrel Ball Man"
 	} else if (card.name == "Ouroboros") {
 		card.description = "Ouroboros is the source of all evil - 107"
 	} else if (card.name == "Blue Mage") {
@@ -1612,6 +1607,10 @@ function queryCard(string, set, compactDisplay = false) {
 		}
 	}
 	const final = Object.keys(possibleMatches)
+	const result = `**Card that ${searchExplain.join(", ")}**:\n${final
+		.join(", ")
+		.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
+
 	embed.setTitle(
 		`Result: ${final.length} cards found in ${setsData[set.name].ruleset}`
 	)
@@ -1619,14 +1618,9 @@ function queryCard(string, set, compactDisplay = false) {
 		compactDisplay
 			? "Result hidden by compact mode"
 			: final.length > 0
-			? `Card that ${searchExplain.join(", ")}:\n${final
-					.join(", ")
-					.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`.length >
-			  4096 // checking if it excess the char limit
+			? result.length > 4096 // checking if it excess the char limit
 				? "Too many result, please be more specific"
-				: `Card that ${searchExplain.join(", ")}:\n${final
-						.join(", ")
-						.replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
+				: result
 			: "No card found"
 	)
 	return [embed, 1]
@@ -1683,7 +1677,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}\n`
 			})
 			await interaction.reply(
-				`Possible set code for searching:\n\n${temp}\nModifier can be add infront of set code to modify the output. Ex: \`se\` will look up a sigil in the Eternal set`
+				`Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`se\` will look up a sigil in the Eternal set`
 			)
 		} else if (commandName == "ping") {
 			await interaction.reply(
@@ -1692,7 +1686,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							"Mike, If you are reading this, you've been in a coma for 5 years, we're trying a new technique, please, wake up.",
 							"Something Something",
 							"Soon",
-							"We been trying to reach you about your car extended warrenty",
+							"We been trying to reach you about your car extended warranty",
 							"babe wake up the bot is online",
 							"I'm doing your mom at this very instance",
 							"What did I miss",
@@ -1728,7 +1722,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				fetchReply: true,
 			})
 
-			//get the set pack struture
+			//get the set pack structure
 			const packStructure = set.packStructure
 
 			//fetch only the require card from the pack structure
@@ -2039,10 +2033,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let hand = drawList(currDeck, 3)
 
 			while (stillRunning) {
-				let tempstr = ""
+				let tempStr = ""
 				let currDup = countDup(hand)
 				Object.keys(currDup).forEach((c) => {
-					tempstr += `${currDup[c]}x ${c}\n`
+					tempStr += `${currDup[c]}x ${c}\n`
 				})
 
 				let embed = new EmbedBuilder()
@@ -2053,26 +2047,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					)
 					.addFields({
 						name: "====== HAND ======",
-						value: tempstr,
+						value: tempStr,
 						inline: true,
 					})
 
 				if (detailMode) {
-					tempstr = ""
+					tempStr = ""
 					let currDup = countDup(currDeck)
 					let fullDup = countDup(fullDeck)
 					Object.keys(currDup).forEach((c) => {
 						const percentage = (currDup[c] / currDeck.length) * 100
-						tempstr += `${currDup[c]}/${
+						tempStr += `${currDup[c]}/${
 							fullDup[c]
 						}) ${c} (${Math.round(percentage)}%)\n`
 					})
-					if (tempstr === "") {
-						tempstr += "No Card Left"
+					if (tempStr === "") {
+						tempStr += "No Card Left"
 					}
 					embed.addFields({
 						name: "====== DRAW PERCENTAGE ======",
-						value: tempstr,
+						value: tempStr,
 						inline: true,
 					})
 				}
@@ -2283,7 +2277,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				ephemeral: true,
 			})
 		} else if (commandName == "guess-the-card") {
-			// TODO filter the list instead of this abomnination
+			// TODO filter the list instead of this abomination
 			const card = (() => {
 				while (true) {
 					const keys = Object.keys(
@@ -2611,7 +2605,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
 			await interaction.reply({
-				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documetation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query#syntax)`,
+				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documentation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query#syntax)`,
 				flags: [MessageFlags.SuppressEmbeds],
 			})
 		} else if (commandName == "test") {
@@ -2763,7 +2757,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				name: "Starting hand",
 				value: `**Possible starting hand combination**: ${
 					possibleMainHandCombinations.length
-				}\n**Possible unquie starting hand combination**: ${
+				}\n**Possible unique starting hand combination**: ${
 					new Set(
 						possibleMainHandCombinations.map((h) => h.join(","))
 					).size
