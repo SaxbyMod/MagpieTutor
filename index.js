@@ -371,6 +371,7 @@ const SetList = {
 			{ name: "rare", condition: 'card.tier == "Rare"' },
 			{ name: "talk", condition: 'card.tier == "Talking"' },
 			{ name: "side", condition: 'card.tier == "Side Deck"' },
+			{ name: "art", condition: 'card.art == "Done"' },
 		],
 		packStructure: PackStructure.augmented,
 		draftFormat: SetFormatList.augmentedDraft,
@@ -2277,41 +2278,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				ephemeral: true,
 			})
 		} else if (commandName == "guess-the-card") {
-			// TODO filter the list instead of this abomination
-			const card = (() => {
-				while (true) {
-					const keys = Object.keys(
-						setsData[options.getString("set")].cards
-					)
-					let c =
-						setsData[options.getString("set")].cards[
-							keys[(keys.length * Math.random()) << 0]
-						]
-					if (
-						options.getString("set") == "augmented" &&
-						c.art != "Done"
-					) {
-						continue
-					}
-					return c
-				}
+			const set = options.getString("set")
+			const card = await (async () => {
+				let name
+				if (set == "augmented")
+					name = randomChoice(setsData[set].pools.art)
+				else if (set == "magic") {
+					const c = await scryfall.randomCard()
+					return { name: c.name, url: c.image_uris.art_crop }
+				} else randomChoice(Object.keys(setsData[set].cards))
+				return await fetchCard(name, set)
 			})()
+
 			// get the card picture
-			const cardPortrait = await Canvas.loadImage(
-				options.getString("set") == "augmented"
-					? `https://github.com/answearingmachine/card-printer/raw/main/art/${card.name.replaceAll(
-							" ",
-							"%20"
-					  )}.png`
-					: `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-							" ",
-							"%20"
-					  )}.png`
-			)
+			const cardPortrait = await Canvas.loadImage(card.url)
 
 			if (options.getString("set") == "augmented") {
 				var bg = await Canvas.loadImage(
-					`https://github.com/answearingmachine/card-printer/raw/main/bg/bg_${
+					`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
 						["Common", "Uncommon", "Side Deck"].includes(card.tier)
 							? "common"
 							: "rare"
@@ -2336,7 +2320,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				)
 				const height = clamp(width, 1, cardPortrait.height)
 
-				const scale = 50
+				const scale = set == "magic" ? 1 : 50
 
 				// get the first crop point
 				const startCropPos = [
@@ -2407,7 +2391,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					height * scale
 				)
 			} else if (options.getSubcommand() === "scramble") {
-				const scale = 50
+				const scale = set == "magic" ? 1 : 50
 				// grab the column
 				const col = parseInt(
 					(options.getString("difficulty")
@@ -2553,7 +2537,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 								await i.update({
 									content: `Your guess (${i.fields.getTextInputValue(
 										"guess"
-									)}) was correct`,
+									)}) was correct. Actual name ${card.name}`,
 									files: [
 										new AttachmentBuilder(
 											await full.encode("png")

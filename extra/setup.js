@@ -117,7 +117,8 @@ const commands = [
 							{ name: "Competitive", value: "competitive" },
 							{ name: "Eternal", value: "eternal" },
 							{ name: "Vanilla", value: "vanilla" },
-							{ name: "Augmented", value: "augmented" }
+							{ name: "Augmented", value: "augmented" },
+							{ name: "Magic the Gathering", value: "magic" }
 						)
 						.setRequired(true)
 				)
@@ -154,7 +155,8 @@ const commands = [
 							{ name: "Competitive", value: "competitive" },
 							{ name: "Eternal", value: "eternal" },
 							{ name: "Vanilla", value: "vanilla" },
-							{ name: "Augmented", value: "augmented" }
+							{ name: "Augmented", value: "augmented" },
+							{ name: "Magic the Gathering", value: "magic" }
 						)
 						.setRequired(true)
 				)
