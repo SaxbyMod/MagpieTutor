@@ -1,7 +1,7 @@
 {
     "ruleset": "Vanilla Card",
-    "cards": [
-        {
+    "cards": {
+        "Adder": {
             "name": "Adder",
             "attack": 1,
             "health": 1,
@@ -13,7 +13,7 @@
             "traits": "Kills Survivors",
             "noArt": true
         },
-        {
+        "Alpha": {
             "name": "Alpha",
             "attack": 1,
             "health": 2,
@@ -24,7 +24,7 @@
             ],
             "noArt": true
         },
-        {
+        "Amalgam": {
             "name": "Amalgam",
             "attack": 3,
             "health": 3,
@@ -32,7 +32,7 @@
             "tribes": "Avian,Canine,Hooved,Reptile,Insect,Squirrel",
             "noArt": true
         },
-        {
+        "Amoeba": {
             "name": "Amoeba",
             "attack": 1,
             "health": 2,
@@ -42,7 +42,7 @@
             ],
             "noArt": true
         },
-        {
+        "Worker Ant": {
             "name": "Worker Ant",
             "attack": 0,
             "health": 2,
@@ -51,7 +51,7 @@
             "traits": "Ant",
             "noArt": true
         },
-        {
+        "Ant Queen": {
             "name": "Ant Queen",
             "attack": 0,
             "health": 3,
@@ -63,7 +63,7 @@
             "traits": "Ant",
             "noArt": true
         },
-        {
+        "Bat": {
             "name": "Bat",
             "attack": 2,
             "health": 1,
@@ -73,7 +73,7 @@
             ],
             "noArt": true
         },
-        {
+        "Beaver": {
             "name": "Beaver",
             "attack": 1,
             "health": 4,
@@ -83,7 +83,7 @@
             ],
             "noArt": true
         },
-        {
+        "Bee": {
             "name": "Bee",
             "attack": 1,
             "health": 1,
@@ -93,7 +93,7 @@
             ],
             "noArt": true
         },
-        {
+        "Beehive": {
             "name": "Beehive",
             "attack": 0,
             "health": 2,
@@ -104,7 +104,7 @@
             ],
             "noArt": true
         },
-        {
+        "Bloodhound": {
             "name": "Bloodhound",
             "attack": 2,
             "health": 3,
@@ -115,7 +115,7 @@
             ],
             "noArt": true
         },
-        {
+        "Bullfrog": {
             "name": "Bullfrog",
             "attack": 1,
             "health": 2,
@@ -126,7 +126,7 @@
             ],
             "noArt": true
         },
-        {
+        "Caged Wolf": {
             "name": "Caged Wolf",
             "attack": 0,
             "health": 6,
@@ -135,7 +135,7 @@
             "traits": "Terrain,No Deathcard",
             "noArt": true
         },
-        {
+        "Cat": {
             "name": "Cat",
             "attack": 0,
             "health": 1,
@@ -145,14 +145,14 @@
             ],
             "noArt": true
         },
-        {
+        "Undead Cat": {
             "name": "Undead Cat",
             "attack": 3,
             "health": 6,
             "blood_cost": 1,
             "noArt": true
         },
-        {
+        "Cockroach": {
             "name": "Cockroach",
             "attack": 1,
             "health": 1,
@@ -163,7 +163,7 @@
             ],
             "noArt": true
         },
-        {
+        "Coyote": {
             "name": "Coyote",
             "attack": 2,
             "health": 1,
@@ -171,7 +171,7 @@
             "tribes": "Canine",
             "noArt": true
         },
-        {
+        "The Daus": {
             "name": "The Daus",
             "attack": 2,
             "health": 2,
@@ -181,13 +181,13 @@
             ],
             "noArt": true
         },
-        {
+        "Tail": {
             "name": "Tail",
             "attack": 0,
             "health": 2,
             "noArt": true
         },
-        {
+        "Elk": {
             "name": "Elk",
             "attack": 2,
             "health": 4,
@@ -198,7 +198,7 @@
             ],
             "noArt": true
         },
-        {
+        "Elk Fawn": {
             "name": "Elk Fawn",
             "attack": 1,
             "health": 1,
@@ -210,7 +210,7 @@
             ],
             "noArt": true
         },
-        {
+        "Field Mice": {
             "name": "Field Mice",
             "attack": 2,
             "health": 2,
@@ -220,14 +220,14 @@
             ],
             "noArt": true
         },
-        {
+        "Geck": {
             "name": "Geck",
             "attack": 1,
             "health": 1,
             "tribes": "Reptile",
             "noArt": true
         },
-        {
+        "Black Goat": {
             "name": "Black Goat",
             "attack": 0,
             "health": 1,
@@ -239,14 +239,14 @@
             "traits": "Goat",
             "noArt": true
         },
-        {
+        "Grizzly": {
             "name": "Grizzly",
             "attack": 4,
             "health": 6,
             "blood_cost": 3,
             "noArt": true
         },
-        {
+        "Child 13": {
             "name": "Child 13",
             "attack": 0,
             "health": 1,
@@ -257,7 +257,7 @@
             ],
             "noArt": true
         },
-        {
+        "Kingfisher": {
             "name": "Kingfisher",
             "attack": 1,
             "health": 1,
@@ -269,7 +269,7 @@
             ],
             "noArt": true
         },
-        {
+        "Corpse Maggots": {
             "name": "Corpse Maggots",
             "attack": 1,
             "health": 2,
@@ -280,7 +280,7 @@
             ],
             "noArt": true
         },
-        {
+        "Magpie": {
             "name": "Magpie",
             "attack": 1,
             "health": 1,
@@ -292,7 +292,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mantis": {
             "name": "Mantis",
             "attack": 1,
             "health": 1,
@@ -303,7 +303,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mantis God": {
             "name": "Mantis God",
             "attack": 1,
             "health": 1,
@@ -314,7 +314,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mole": {
             "name": "Mole",
             "attack": 0,
             "health": 4,
@@ -324,7 +324,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mole Man": {
             "name": "Mole Man",
             "attack": 0,
             "health": 6,
@@ -335,7 +335,7 @@
             ],
             "noArt": true
         },
-        {
+        "Moose Buck": {
             "name": "Moose Buck",
             "attack": 3,
             "health": 7,
@@ -346,7 +346,7 @@
             ],
             "noArt": true
         },
-        {
+        "Strange Larva": {
             "name": "Strange Larva",
             "attack": 0,
             "health": 3,
@@ -357,7 +357,7 @@
             ],
             "noArt": true
         },
-        {
+        "Strange Pupa": {
             "name": "Strange Pupa",
             "attack": 0,
             "health": 3,
@@ -368,7 +368,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mothman": {
             "name": "Mothman",
             "attack": 7,
             "health": 3,
@@ -379,7 +379,7 @@
             ],
             "noArt": true
         },
-        {
+        "Pack Mule": {
             "name": "Pack Mule",
             "attack": 0,
             "health": 5,
@@ -390,14 +390,14 @@
             "traits": "Uncuttable",
             "noArt": true
         },
-        {
+        "Opossum": {
             "name": "Opossum",
             "attack": 1,
             "health": 1,
             "bone_cost": 2,
             "noArt": true
         },
-        {
+        "River Otter": {
             "name": "River Otter",
             "attack": 1,
             "health": 1,
@@ -407,7 +407,7 @@
             ],
             "noArt": true
         },
-        {
+        "Ouroboros": {
             "name": "Ouroboros",
             "attack": 1,
             "health": 1,
@@ -419,7 +419,7 @@
             "traits": "Satisfies Ring Trial",
             "noArt": true
         },
-        {
+        "Pack Rat": {
             "name": "Pack Rat",
             "attack": 2,
             "health": 2,
@@ -429,7 +429,7 @@
             ],
             "noArt": true
         },
-        {
+        "Porcupine": {
             "name": "Porcupine",
             "attack": 1,
             "health": 2,
@@ -439,7 +439,7 @@
             ],
             "noArt": true
         },
-        {
+        "Pronghorn": {
             "name": "Pronghorn",
             "attack": 1,
             "health": 3,
@@ -451,13 +451,13 @@
             ],
             "noArt": true
         },
-        {
+        "Rabbit": {
             "name": "Rabbit",
             "attack": 0,
             "health": 1,
             "noArt": true
         },
-        {
+        "Rat King": {
             "name": "Rat King",
             "attack": 2,
             "health": 1,
@@ -467,7 +467,7 @@
             ],
             "noArt": true
         },
-        {
+        "Rattler": {
             "name": "Rattler",
             "attack": 3,
             "health": 1,
@@ -475,7 +475,7 @@
             "tribes": "Reptile",
             "noArt": true
         },
-        {
+        "Raven": {
             "name": "Raven",
             "attack": 2,
             "health": 3,
@@ -486,7 +486,7 @@
             ],
             "noArt": true
         },
-        {
+        "Raven Egg": {
             "name": "Raven Egg",
             "attack": 0,
             "health": 2,
@@ -497,7 +497,7 @@
             ],
             "noArt": true
         },
-        {
+        "Great White": {
             "name": "Great White",
             "attack": 4,
             "health": 2,
@@ -507,7 +507,7 @@
             ],
             "noArt": true
         },
-        {
+        "Skink": {
             "name": "Skink",
             "attack": 1,
             "health": 2,
@@ -518,14 +518,14 @@
             ],
             "noArt": true
         },
-        {
+        "Wriggling Tail": {
             "name": "Wriggling Tail",
             "attack": 0,
             "health": 2,
             "tribes": "Reptile",
             "noArt": true
         },
-        {
+        "Skunk": {
             "name": "Skunk",
             "attack": 0,
             "health": 3,
@@ -535,7 +535,7 @@
             ],
             "noArt": true
         },
-        {
+        "River Snapper": {
             "name": "River Snapper",
             "attack": 1,
             "health": 6,
@@ -543,7 +543,7 @@
             "tribes": "Reptile",
             "noArt": true
         },
-        {
+        "Long Elk": {
             "name": "Long Elk",
             "attack": 1,
             "health": 2,
@@ -556,7 +556,7 @@
             "traits": "Kills Survivors",
             "noArt": true
         },
-        {
+        "Sparrow": {
             "name": "Sparrow",
             "attack": 1,
             "health": 2,
@@ -567,67 +567,67 @@
             ],
             "noArt": true
         },
-        {
+        "Bell Tentacle": {
             "name": "Bell Tentacle",
             "attack": 0,
             "health": 3,
             "blood_cost": 2,
             "noArt": true
         },
-        {
+        "Card Tentacle": {
             "name": "Card Tentacle",
             "attack": 0,
             "health": 1,
             "blood_cost": 1,
             "noArt": true
         },
-        {
+        "Mirror Tentacle": {
             "name": "Mirror Tentacle",
             "attack": 0,
             "health": 3,
             "blood_cost": 1,
             "noArt": true
         },
-        {
+        "Squirrel": {
             "name": "Squirrel",
             "attack": 0,
             "health": 1,
             "tribes": "Squirrel",
             "noArt": true
         },
-        {
+        "Stoat": {
             "name": "Stoat",
             "attack": 1,
             "health": 3,
             "blood_cost": 1,
             "noArt": true
         },
-        {
+        "Tail Feathers": {
             "name": "Tail Feathers",
             "attack": 0,
             "health": 2,
             "noArt": true
         },
-        {
+        "Furry Tail": {
             "name": "Furry Tail",
             "attack": 0,
             "health": 2,
             "noArt": true
         },
-        {
+        "Wriggling Leg": {
             "name": "Wriggling Leg",
             "attack": 0,
             "health": 2,
             "noArt": true
         },
-        {
+        "Urayuli": {
             "name": "Urayuli",
             "attack": 7,
             "health": 7,
             "blood_cost": 4,
             "noArt": true
         },
-        {
+        "Turkey Vulture": {
             "name": "Turkey Vulture",
             "attack": 3,
             "health": 3,
@@ -638,7 +638,7 @@
             ],
             "noArt": true
         },
-        {
+        "Warren": {
             "name": "Warren",
             "attack": 0,
             "health": 2,
@@ -648,7 +648,7 @@
             ],
             "noArt": true
         },
-        {
+        "Wolf": {
             "name": "Wolf",
             "attack": 3,
             "health": 2,
@@ -657,7 +657,7 @@
             "traits": "Wolf",
             "noArt": true
         },
-        {
+        "Wolf Cub": {
             "name": "Wolf Cub",
             "attack": 1,
             "health": 1,
@@ -669,7 +669,7 @@
             "traits": "Wolf",
             "noArt": true
         },
-        {
+        "Ring Worm": {
             "name": "Ring Worm",
             "attack": 0,
             "health": 1,
@@ -678,7 +678,7 @@
             "traits": "Kills Survivors,Satisfies Ring Trial",
             "noArt": true
         },
-        {
+        "Hrokkall": {
             "name": "Hrokkall",
             "attack": 1,
             "health": 1,
@@ -690,7 +690,7 @@
             ],
             "noArt": true
         },
-        {
+        "Squirrel Ball": {
             "name": "Squirrel Ball",
             "attack": 0,
             "health": 1,
@@ -701,7 +701,7 @@
             ],
             "noArt": true
         },
-        {
+        "Salmon": {
             "name": "Salmon",
             "attack": 2,
             "health": 2,
@@ -713,7 +713,7 @@
             ],
             "noArt": true
         },
-        {
+        "Spore Mice": {
             "name": "Spore Mice",
             "attack": 2,
             "health": 2,
@@ -726,7 +726,7 @@
             "traits": "(Fused Card)",
             "noArt": true
         },
-        {
+        "Bone Heap": {
             "name": "Bone Heap",
             "attack": 0,
             "health": 1,
@@ -736,7 +736,7 @@
             ],
             "noArt": true
         },
-        {
+        "Tomb Robber": {
             "name": "Tomb Robber",
             "attack": 0,
             "health": 2,
@@ -746,7 +746,7 @@
             ],
             "noArt": true
         },
-        {
+        "Necromancer": {
             "name": "Necromancer",
             "attack": 1,
             "health": 2,
@@ -757,7 +757,7 @@
             ],
             "noArt": true
         },
-        {
+        "Drowned Soul": {
             "name": "Drowned Soul",
             "attack": 1,
             "health": 1,
@@ -769,7 +769,7 @@
             ],
             "noArt": true
         },
-        {
+        "Dead Hand": {
             "name": "Dead Hand",
             "attack": 1,
             "health": 1,
@@ -780,7 +780,7 @@
             ],
             "noArt": true
         },
-        {
+        "Headless Horseman": {
             "name": "Headless Horseman",
             "attack": 5,
             "health": 5,
@@ -792,7 +792,7 @@
             ],
             "noArt": true
         },
-        {
+        "Skeleton": {
             "name": "Skeleton",
             "attack": 1,
             "health": 1,
@@ -802,7 +802,7 @@
             ],
             "noArt": true
         },
-        {
+        "Draugr": {
             "name": "Draugr",
             "attack": 0,
             "health": 1,
@@ -813,7 +813,7 @@
             ],
             "noArt": true
         },
-        {
+        "Gravedigger": {
             "name": "Gravedigger",
             "attack": 0,
             "health": 3,
@@ -824,7 +824,7 @@
             ],
             "noArt": true
         },
-        {
+        "Sporedigger": {
             "name": "Sporedigger",
             "attack": 0,
             "health": 3,
@@ -837,7 +837,7 @@
             "traits": "(Fused Card)",
             "noArt": true
         },
-        {
+        "Banshee": {
             "name": "Banshee",
             "attack": 1,
             "health": 1,
@@ -848,7 +848,7 @@
             ],
             "noArt": true
         },
-        {
+        "Skelemagus": {
             "name": "Skelemagus",
             "attack": 4,
             "health": 1,
@@ -860,7 +860,7 @@
             ],
             "noArt": true
         },
-        {
+        "Zombie": {
             "name": "Zombie",
             "attack": 1,
             "health": 1,
@@ -868,7 +868,7 @@
             "tribes": "Grimora",
             "noArt": true
         },
-        {
+        "Bone Lord's Horn": {
             "name": "Bone Lord's Horn",
             "attack": 1,
             "health": 1,
@@ -879,7 +879,7 @@
             ],
             "noArt": true
         },
-        {
+        "Broken Obol (left)": {
             "name": "Broken Obol (left)",
             "attack": 0,
             "health": 2,
@@ -890,7 +890,7 @@
             ],
             "noArt": true
         },
-        {
+        "Broken Obol (right)": {
             "name": "Broken Obol (right)",
             "attack": 0,
             "health": 2,
@@ -901,7 +901,7 @@
             ],
             "noArt": true
         },
-        {
+        "Revenant": {
             "name": "Revenant",
             "attack": 3,
             "health": 1,
@@ -912,7 +912,7 @@
             ],
             "noArt": true
         },
-        {
+        "Ghost Ship": {
             "name": "Ghost Ship",
             "attack": 0,
             "health": 1,
@@ -924,7 +924,7 @@
             ],
             "noArt": true
         },
-        {
+        "Sarcophagus": {
             "name": "Sarcophagus",
             "attack": 0,
             "health": 2,
@@ -935,7 +935,7 @@
             ],
             "noArt": true
         },
-        {
+        "The Walkers": {
             "name": "The Walkers",
             "attack": 1,
             "health": 2,
@@ -946,7 +946,7 @@
             ],
             "noArt": true
         },
-        {
+        "Frank & Stein": {
             "name": "Frank & Stein",
             "attack": 2,
             "health": 2,
@@ -954,7 +954,7 @@
             "tribes": "Grimora",
             "noArt": true
         },
-        {
+        "Pharaoh's Pets": {
             "name": "Pharaoh's Pets",
             "attack": 0,
             "health": 1,
@@ -966,7 +966,7 @@
             ],
             "noArt": true
         },
-        {
+        "Bonehound": {
             "name": "Bonehound",
             "attack": 2,
             "health": 3,
@@ -977,7 +977,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mummy Lord": {
             "name": "Mummy Lord",
             "attack": 3,
             "health": 3,
@@ -985,7 +985,7 @@
             "tribes": "Grimora",
             "noArt": true
         },
-        {
+        "Plasma Jimmy": {
             "name": "Plasma Jimmy",
             "attack": 0,
             "health": 3,
@@ -996,7 +996,7 @@
             ],
             "noArt": true
         },
-        {
+        "Curve Hopper": {
             "name": "Curve Hopper",
             "attack": 2,
             "health": 3,
@@ -1004,7 +1004,7 @@
             "tribes": "P03",
             "noArt": true
         },
-        {
+        "Energy Conduit": {
             "name": "Energy Conduit",
             "attack": 1,
             "health": 2,
@@ -1015,7 +1015,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mox Module": {
             "name": "Mox Module",
             "attack": 0,
             "health": 3,
@@ -1026,7 +1026,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mrs. Bomb": {
             "name": "Mrs. Bomb",
             "attack": 1,
             "health": 2,
@@ -1037,7 +1037,7 @@
             ],
             "noArt": true
         },
-        {
+        "L33pB0t": {
             "name": "L33pB0t",
             "attack": 0,
             "health": 2,
@@ -1048,7 +1048,7 @@
             ],
             "noArt": true
         },
-        {
+        "Sentry Spore": {
             "name": "Sentry Spore",
             "attack": 0,
             "health": 1,
@@ -1061,7 +1061,7 @@
             "traits": "(Fused card)",
             "noArt": true
         },
-        {
+        "M3atB0t": {
             "name": "M3atB0t",
             "attack": 0,
             "health": 1,
@@ -1072,7 +1072,7 @@
             ],
             "noArt": true
         },
-        {
+        "Factory Conduit": {
             "name": "Factory Conduit",
             "attack": 0,
             "health": 2,
@@ -1083,7 +1083,7 @@
             ],
             "noArt": true
         },
-        {
+        "Gamblobot": {
             "name": "Gamblobot",
             "attack": 0,
             "health": 1,
@@ -1094,7 +1094,7 @@
             ],
             "noArt": true
         },
-        {
+        "Steel Mice": {
             "name": "Steel Mice",
             "attack": 1,
             "health": 1,
@@ -1105,7 +1105,7 @@
             ],
             "noArt": true
         },
-        {
+        "Thick Droid": {
             "name": "Thick Droid",
             "attack": 1,
             "health": 3,
@@ -1113,7 +1113,7 @@
             "tribes": "P03",
             "noArt": true
         },
-        {
+        "Steambot": {
             "name": "Steambot",
             "attack": 2,
             "health": 2,
@@ -1121,7 +1121,7 @@
             "tribes": "P03",
             "noArt": true
         },
-        {
+        "Bleene's Mox": {
             "name": "Bleene's Mox",
             "attack": 0,
             "health": 2,
@@ -1133,7 +1133,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Goranj's Mox": {
             "name": "Goranj's Mox",
             "attack": 0,
             "health": 2,
@@ -1145,7 +1145,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Orlu's Mox": {
             "name": "Orlu's Mox",
             "attack": 0,
             "health": 2,
@@ -1157,7 +1157,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Master Bleene": {
             "name": "Master Bleene",
             "attack": 0,
             "health": 4,
@@ -1171,7 +1171,7 @@
             ],
             "noArt": true
         },
-        {
+        "Master Goranj": {
             "name": "Master Goranj",
             "attack": 2,
             "health": 6,
@@ -1185,7 +1185,7 @@
             ],
             "noArt": true
         },
-        {
+        "Master Orlu": {
             "name": "Master Orlu",
             "attack": 1,
             "health": 1,
@@ -1200,7 +1200,7 @@
             ],
             "noArt": true
         },
-        {
+        "Emerald Mox": {
             "name": "Emerald Mox",
             "attack": 0,
             "health": 1,
@@ -1211,7 +1211,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Ruby Mox": {
             "name": "Ruby Mox",
             "attack": 0,
             "health": 1,
@@ -1222,7 +1222,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Sapphire Mox": {
             "name": "Sapphire Mox",
             "attack": 0,
             "health": 1,
@@ -1233,7 +1233,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Mage Pupil": {
             "name": "Mage Pupil",
             "attack": 1,
             "health": 1,
@@ -1243,7 +1243,7 @@
             ],
             "noArt": true
         },
-        {
+        "Gourmage": {
             "name": "Gourmage",
             "attack": 0,
             "health": 2,
@@ -1256,7 +1256,7 @@
             ],
             "noArt": true
         },
-        {
+        "Green Mage": {
             "name": "Green Mage",
             "attack": 0,
             "health": 2,
@@ -1266,7 +1266,7 @@
             "tribes": "Magnificus",
             "noArt": true
         },
-        {
+        "Junior Sage": {
             "name": "Junior Sage",
             "attack": 1,
             "health": 2,
@@ -1276,7 +1276,7 @@
             "tribes": "Magnificus",
             "noArt": true
         },
-        {
+        "Muscle Mage": {
             "name": "Muscle Mage",
             "attack": 1,
             "health": 1,
@@ -1289,7 +1289,7 @@
             ],
             "noArt": true
         },
-        {
+        "Stim Mage": {
             "name": "Stim Mage",
             "attack": 0,
             "health": 2,
@@ -1302,7 +1302,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mage Knight": {
             "name": "Mage Knight",
             "attack": 1,
             "health": 3,
@@ -1315,7 +1315,7 @@
             ],
             "noArt": true
         },
-        {
+        "Orange Mage": {
             "name": "Orange Mage",
             "attack": 0,
             "health": 1,
@@ -1328,7 +1328,7 @@
             ],
             "noArt": true
         },
-        {
+        "Practice Wizard": {
             "name": "Practice Wizard",
             "attack": 0,
             "health": 3,
@@ -1338,7 +1338,7 @@
             "tribes": "Magnificus",
             "noArt": true
         },
-        {
+        "Ruby Golem": {
             "name": "Ruby Golem",
             "attack": 1,
             "health": 1,
@@ -1352,7 +1352,7 @@
             "traits": "Can't be sacrificed.",
             "noArt": true
         },
-        {
+        "Blue Mage": {
             "name": "Blue Mage",
             "attack": 0,
             "health": 1,
@@ -1365,7 +1365,7 @@
             ],
             "noArt": true
         },
-        {
+        "Blue Sporemage": {
             "name": "Blue Sporemage",
             "attack": 0,
             "health": 1,
@@ -1380,7 +1380,7 @@
             "traits": "(Fused card)",
             "noArt": true
         },
-        {
+        "Force Mage": {
             "name": "Force Mage",
             "attack": 0,
             "health": 1,
@@ -1393,7 +1393,7 @@
             ],
             "noArt": true
         },
-        {
+        "Gem Fiend": {
             "name": "Gem Fiend",
             "attack": 2,
             "health": 1,
@@ -1406,7 +1406,7 @@
             ],
             "noArt": true
         },
-        {
+        "Hover Mage": {
             "name": "Hover Mage",
             "attack": 1,
             "health": 1,
@@ -1419,14 +1419,14 @@
             ],
             "noArt": true
         },
-        {
+        "Empty Vessel": {
             "name": "Empty Vessel",
             "attack": 0,
             "health": 2,
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Emerald Vessel": {
             "name": "Emerald Vessel",
             "attack": 0,
             "health": 2,
@@ -1436,7 +1436,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Ruby Vessel": {
             "name": "Ruby Vessel",
             "attack": 0,
             "health": 2,
@@ -1446,7 +1446,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Sapphire Vessel": {
             "name": "Sapphire Vessel",
             "attack": 0,
             "health": 2,
@@ -1456,7 +1456,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Bleene’s Vessel": {
             "name": "Bleene’s Vessel",
             "attack": 0,
             "health": 1,
@@ -1467,7 +1467,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Goranj’s Vessel": {
             "name": "Goranj’s Vessel",
             "attack": 0,
             "health": 1,
@@ -1478,7 +1478,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Orlu’s Vessel": {
             "name": "Orlu’s Vessel",
             "attack": 0,
             "health": 1,
@@ -1489,7 +1489,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Energy Bot": {
             "name": "Energy Bot",
             "attack": 0,
             "health": 1,
@@ -1499,14 +1499,14 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Automaton": {
             "name": "Automaton",
             "attack": 1,
             "health": 1,
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Shieldbot": {
             "name": "Shieldbot",
             "attack": 1,
             "health": 1,
@@ -1516,7 +1516,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "L33pbot": {
             "name": "L33pbot",
             "attack": 0,
             "health": 2,
@@ -1526,7 +1526,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Sniper Bot": {
             "name": "Sniper Bot",
             "attack": 1,
             "health": 1,
@@ -1536,7 +1536,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Double Gunner": {
             "name": "Double Gunner",
             "attack": 2,
             "health": 1,
@@ -1546,7 +1546,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "49er": {
             "name": "49er",
             "attack": 1,
             "health": 1,
@@ -1556,7 +1556,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Insectodrone": {
             "name": "Insectodrone",
             "attack": 1,
             "health": 1,
@@ -1566,7 +1566,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Swapbot": {
             "name": "Swapbot",
             "attack": 1,
             "health": 5,
@@ -1576,7 +1576,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "Alarm Bot": {
             "name": "Alarm Bot",
             "attack": 2,
             "health": 1,
@@ -1586,7 +1586,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Explode Bot": {
             "name": "Explode Bot",
             "attack": 1,
             "health": 1,
@@ -1596,7 +1596,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Sentry Drone": {
             "name": "Sentry Drone",
             "attack": 0,
             "health": 1,
@@ -1606,7 +1606,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Exeskeleton": {
             "name": "Exeskeleton",
             "attack": 2,
             "health": 2,
@@ -1616,7 +1616,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Shield Latcher": {
             "name": "Shield Latcher",
             "attack": 0,
             "health": 1,
@@ -1626,7 +1626,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Bomb Latcher": {
             "name": "Bomb Latcher",
             "attack": 0,
             "health": 1,
@@ -1636,7 +1636,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Skel-E-Latcher": {
             "name": "Skel-E-Latcher",
             "attack": 1,
             "health": 1,
@@ -1646,7 +1646,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Amoebot": {
             "name": "Amoebot",
             "attack": 1,
             "health": 1,
@@ -1656,7 +1656,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Fishbot": {
             "name": "Fishbot",
             "attack": 1,
             "health": 3,
@@ -1666,7 +1666,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Bad Fish": {
             "name": "Bad Fish",
             "attack": 0,
             "health": 1,
@@ -1677,7 +1677,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Good Fish": {
             "name": "Good Fish",
             "attack": 2,
             "health": 2,
@@ -1690,7 +1690,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "More Fish": {
             "name": "More Fish",
             "attack": 0,
             "health": 1,
@@ -1700,7 +1700,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Lonely Wizbot": {
             "name": "Lonely Wizbot",
             "attack": 2,
             "health": 1,
@@ -1710,7 +1710,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Gift Bot": {
             "name": "Gift Bot",
             "attack": 0,
             "health": 2,
@@ -1720,7 +1720,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Gem Detonator": {
             "name": "Gem Detonator",
             "attack": 1,
             "health": 2,
@@ -1730,7 +1730,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Gem Guardian": {
             "name": "Gem Guardian",
             "attack": 1,
             "health": 2,
@@ -1740,14 +1740,14 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Gembound Ripper": {
             "name": "Gembound Ripper",
             "attack": 3,
             "health": 1,
             "energy_cost": 5,
             "noArt": true
         },
-        {
+        "Bolthound": {
             "name": "Bolthound",
             "attack": 2,
             "health": 2,
@@ -1757,7 +1757,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "Son1a": {
             "name": "Son1a",
             "attack": 1,
             "health": 1,
@@ -1767,7 +1767,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Qu177": {
             "name": "Qu177",
             "attack": 2,
             "health": 2,
@@ -1777,7 +1777,7 @@
             "energy_cost": 5,
             "noArt": true
         },
-        {
+        "Gr1zz": {
             "name": "Gr1zz",
             "attack": 0,
             "health": 4,
@@ -1787,7 +1787,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "Null Conduit": {
             "name": "Null Conduit",
             "attack": 0,
             "health": 1,
@@ -1797,7 +1797,7 @@
             "energy_cost": 1,
             "noArt": true
         },
-        {
+        "Buff Conduit": {
             "name": "Buff Conduit",
             "attack": 0,
             "health": 2,
@@ -1807,7 +1807,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Gems Conduit": {
             "name": "Gems Conduit",
             "attack": 0,
             "health": 2,
@@ -1817,7 +1817,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Busted 3D Printer": {
             "name": "Busted 3D Printer",
             "attack": 0,
             "health": 3,
@@ -1827,7 +1827,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Tough Cell": {
             "name": "Tough Cell",
             "attack": 1,
             "health": 2,
@@ -1837,7 +1837,7 @@
             "energy_cost": 3,
             "noArt": true
         },
-        {
+        "Kind Cell": {
             "name": "Kind Cell",
             "attack": 1,
             "health": 1,
@@ -1847,7 +1847,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Splinter Cell": {
             "name": "Splinter Cell",
             "attack": 1,
             "health": 2,
@@ -1857,7 +1857,7 @@
             "energy_cost": 4,
             "noArt": true
         },
-        {
+        "Shutterbug": {
             "name": "Shutterbug",
             "attack": 1,
             "health": 1,
@@ -1868,7 +1868,7 @@
             "energy_cost": 5,
             "noArt": true
         },
-        {
+        "Librarian": {
             "name": "Librarian",
             "attack": 1,
             "health": 2,
@@ -1879,7 +1879,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Ourobot": {
             "name": "Ourobot",
             "attack": 1,
             "health": 1,
@@ -1889,7 +1889,7 @@
             "energy_cost": 6,
             "noArt": true
         },
-        {
+        "Captive File": {
             "name": "Captive File",
             "attack": 4,
             "health": 4,
@@ -1899,7 +1899,7 @@
             "energy_cost": 2,
             "noArt": true
         },
-        {
+        "Broken Bot": {
             "name": "Broken Bot",
             "attack": 0,
             "health": 1,
@@ -1909,7 +1909,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Tombstone": {
             "name": "Tombstone",
             "attack": 0,
             "health": 5,
@@ -1919,7 +1919,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Annoy FM": {
             "name": "Annoy FM",
             "attack": 0,
             "health": 3,
@@ -1929,7 +1929,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Conduit Tower": {
             "name": "Conduit Tower",
             "attack": 0,
             "health": 2,
@@ -1939,14 +1939,14 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Bridge Rails": {
             "name": "Bridge Rails",
             "attack": 0,
             "health": 6,
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Dead Tree": {
             "name": "Dead Tree",
             "attack": 0,
             "health": 1,
@@ -1956,7 +1956,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Ancient Fir": {
             "name": "Ancient Fir",
             "attack": 0,
             "health": 2,
@@ -1966,7 +1966,7 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Snowy Fir": {
             "name": "Snowy Fir",
             "attack": 0,
             "health": 2,
@@ -1976,14 +1976,14 @@
             "energy_cost": 0,
             "noArt": true
         },
-        {
+        "Stoat kmod": {
             "name": "Stoat kmod",
             "attack": 1,
             "health": 2,
             "blood_cost": 1,
             "noArt": true
         },
-        {
+        "Wild Bull": {
             "name": "Wild Bull",
             "attack": 3,
             "health": 2,
@@ -1994,7 +1994,7 @@
             ],
             "noArt": true
         },
-        {
+        "Cuckoo": {
             "name": "Cuckoo",
             "attack": 1,
             "health": 1,
@@ -2006,7 +2006,7 @@
             ],
             "noArt": true
         },
-        {
+        "Ijiraq": {
             "name": "Ijiraq",
             "attack": 4,
             "health": 1,
@@ -2016,7 +2016,7 @@
             "traits": "Ijiraq",
             "noArt": true
         },
-        {
+        "Flying Ant": {
             "name": "Flying Ant",
             "attack": 0,
             "health": 1,
@@ -2028,7 +2028,7 @@
             "traits": "Ant",
             "noArt": true
         },
-        {
+        "Mud Turtle": {
             "name": "Mud Turtle",
             "attack": 2,
             "health": 2,
@@ -2039,7 +2039,7 @@
             ],
             "noArt": true
         },
-        {
+        "Dire Wolf Pup": {
             "name": "Dire Wolf Pup",
             "attack": 1,
             "health": 1,
@@ -2051,7 +2051,7 @@
             ],
             "noArt": true
         },
-        {
+        "Dire Wolf": {
             "name": "Dire Wolf",
             "attack": 2,
             "health": 5,
@@ -2062,7 +2062,7 @@
             ],
             "noArt": true
         },
-        {
+        "Mealworm": {
             "name": "Mealworm",
             "attack": 0,
             "health": 2,
@@ -2073,7 +2073,7 @@
             ],
             "noArt": true
         },
-        {
+        "Wolverine": {
             "name": "Wolverine",
             "attack": 1,
             "health": 3,
@@ -2083,7 +2083,7 @@
             ],
             "noArt": true
         },
-        {
+        "Raccoon": {
             "name": "Raccoon",
             "attack": 1,
             "health": 1,
@@ -2093,7 +2093,7 @@
             ],
             "noArt": true
         },
-        {
+        "Lammergeier": {
             "name": "Lammergeier",
             "attack": 0,
             "health": 4,
@@ -2104,7 +2104,7 @@
             ],
             "noArt": true
         },
-        {
+        "Red Hart": {
             "name": "Red Hart",
             "attack": 0,
             "health": 2,
@@ -2115,7 +2115,7 @@
             ],
             "noArt": true
         },
-        {
+        "Tadpole": {
             "name": "Tadpole",
             "attack": 0,
             "health": 1,
@@ -2126,7 +2126,7 @@
             ],
             "noArt": true
         },
-        {
+        "Pelt Lice": {
             "name": "Pelt Lice",
             "attack": 1,
             "health": 1,
@@ -2138,7 +2138,7 @@
             "traits": "Pelt Lice",
             "noArt": true
         },
-        {
+        "Hodag": {
             "name": "Hodag",
             "attack": 1,
             "health": 5,
@@ -2149,7 +2149,7 @@
             "traits": "Hodag",
             "noArt": true
         },
-        {
+        "Great Kraken": {
             "name": "Great Kraken",
             "attack": 1,
             "health": 1,
@@ -2159,7 +2159,7 @@
             ],
             "noArt": true
         },
-        {
+        "Curious Egg": {
             "name": "Curious Egg",
             "attack": 0,
             "health": 1,
@@ -2170,7 +2170,7 @@
             "traits": "Curious Egg",
             "noArt": true
         },
-        {
+        "Hydra": {
             "name": "Hydra",
             "attack": 1,
             "health": 5,
@@ -2182,7 +2182,7 @@
             ],
             "noArt": true
         },
-        {
+        "Kaminski": {
             "name": "Kaminski",
             "bone_cost": 1,
             "attack": 0,
@@ -2193,7 +2193,7 @@
             ],
             "noArt": true
         }
-    ],
+    },
     "sigils": {
         "Mighty Leap": "This card blocks opposing Airborne creatures",
         "Bifurcated Strike": "This card will strike each opposing space to the left and right of the spaces across it",

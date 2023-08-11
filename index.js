@@ -2771,7 +2771,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				return
 			}
 			try {
-				console.log()
+				setsData.vanilla.cards[
+					JSON.parse(options.getString("card-json")).name
+				] = JSON.parse(options.getString("card-json"))
 				fs.writeFileSync(
 					"./extra/vanilla.json",
 					JSON.stringify(setsData.vanilla)
