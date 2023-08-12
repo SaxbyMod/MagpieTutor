@@ -65,9 +65,10 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
 - Query support for redux
+- A website version??
 
 ## Plan for next update
-- Poll system
-- Ruleset community vote
-- Default set per server
-- Negation
+- Search all set modifier
+- Energy curve for deck analysis
+- Cost ratio for deck analysis
+- Bone counting for deck analysis
