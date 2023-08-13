@@ -52,6 +52,10 @@ const {
 	clamp,
 	sleep,
 	combinations,
+	toPercent,
+	average,
+	getBone,
+	getBlood,
 } = require("./extra/utils")
 
 format.extend(String.prototype, {})
@@ -1292,7 +1296,7 @@ async function messageSearch(message, returnValue = false) {
 	) {
 		replyOption["content"] =
 			(replyOption["content"] ? replyOption["content"] : "") +
-			`\nSearch complete in ${Math.round((end - start) * 10) / 10}ms`
+			`\nSearch complete in ${(end - start).toFixed(1)}ms`
 		if (returnValue) return replyOption
 		await message.reply(replyOption)
 	}
@@ -2060,7 +2064,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						const percentage = (currDup[c] / currDeck.length) * 100
 						tempStr += `${currDup[c]}/${
 							fullDup[c]
-						}) ${c} (${Math.round(percentage)}%)\n`
+						}) ${c} (${percentage.toFixed(1)}%)\n`
 					})
 					if (tempStr === "") {
 						tempStr += "No Card Left"
@@ -2076,10 +2080,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					.setPlaceholder("Select a card to play/remove/discard")
 					.setCustomId("play")
 
-				for (c of new Set(hand)) {
+				for (n of new Set(hand)) {
 					selectionList.addOptions({
-						label: c,
-						value: c,
+						label: n,
+						value: n,
 					})
 				}
 
@@ -2594,7 +2598,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			})
 		} else if (commandName == "test") {
 			await interaction.reply(
-				`<t:${Math.round(Date.now() / 1000)}> ${Date.now() / 1000}`
+				`<t:${(Date.now() / 1000).toFixed(0)}> ${Date.now() / 1000}`
 			)
 		} else if (commandName == "poll") {
 			const pollOption = options.getString("option").split(",")
@@ -2603,7 +2607,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				: options.getString("time").endsWith("s")
 				? parseInt(options.getString("time").slice(0, -1)) * 1000
 				: options.getString("time")
-			const endTime = Math.round((Date.now() + time) / 1000)
+			const endTime = ((Date.now() + time) / 1000).toFixed()
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Purple)
 				.setTitle(`Poll: ${options.getString("question")}`)
@@ -2683,84 +2687,189 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)
 		} else if (commandName == "deck-analysis") {
 			await interaction.reply("Crunching number, this may take a while")
-			let mainDeck = []
-			let sideDeck = []
-			if (options.getSubcommand("file")) {
-				const deckFile = JSON.parse(
-					await (
-						await fetch(options.getAttachment("deck-file").url)
-					).text()
-				)
-				mainDeck = deckFile.cards
+			const set = options.getString("set")
 
-				const set = options.getString("set")
-				if (deckFile.side_deck_cards) {
-					sideDeck = deckFile.side_deck_cards
-				} else if (deckFile.side_deck_cat) {
-					sideDeck = Array(
-						setsData[set].side_decks[deckFile.side_deck].cards[
-							deckFile.side_deck_cat
-						].count
-					).fill(
-						setsData[set].side_decks[deckFile.side_deck].cards[
-							deckFile.side_deck_cat
-						].card
-					)
-				} else {
-					sideDeck = Array(
-						setsData[set].side_decks[deckFile.side_deck].count
-					).fill(setsData[set].side_decks[deckFile.side_deck].card)
-				}
-			} else if (options.getSubcommand("list")) {
-				let temp = options.getString("deck-list").split(";")
-				temp = temp.map((i) => i.split(","))
-				mainDeck = temp[0]
-				sideDeck = temp[1] ? temp[1] : []
+			let mainDeck = []
+			// let sideDeck = []
+
+			const deckFile = JSON.parse(
+				await (
+					await fetch(options.getAttachment("deck-file").url)
+				).text()
+			)
+			for (const name of deckFile.cards) {
+				mainDeck.push(
+					await fetchCard(name.toLowerCase(), set, true, true)
+				)
 			}
+
+			// if (deckFile.side_deck_cards) {
+			// 	sideDeck = deckFile.side_deck_cards
+			// } else if (deckFile.side_deck_cat) {
+			// 	sideDeck = Array(
+			// 		setsData[set].side_decks[deckFile.side_deck].cards[
+			// 			deckFile.side_deck_cat
+			// 		].count
+			// 	).fill(
+			// 		setsData[set].side_decks[deckFile.side_deck].cards[
+			// 			deckFile.side_deck_cat
+			// 		].card
+			// 	)
+			// } else {
+			// 	sideDeck = Array(
+			// 		setsData[set].side_decks[deckFile.side_deck].count
+			// 	).fill(setsData[set].side_decks[deckFile.side_deck].card)
+			// }
+
+			// sideDeck = await sideDeck.map(
+			// 	async (n) => await fetchCard(n.toLowerCase(), set, true, true)
+			// )
 
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Gold)
 				.setTitle("Deck Analysis result")
 				.setDescription("eeeeeeeee")
 
-			const possibleMainHandCombinations = combinations(mainDeck, 3)
-			const deckDup = countDup(mainDeck)
-			embed.addFields({
-				name: "Draw Percentage",
-				value: Object.keys(deckDup)
-					.map(
-						(c) =>
-							`${deckDup[c]}x | ${c} (${Math.round(
-								(deckDup[c] / mainDeck.length) * 100
-							)}%)`
-					)
-					.join("\n"),
-				inline: true,
-			})
-			embed.addFields({
-				name: "Starting hand",
-				value: `**Possible starting hand combination**: ${
-					possibleMainHandCombinations.length
-				}\n**Possible unique starting hand combination**: ${
-					new Set(
-						possibleMainHandCombinations.map((h) => h.join(","))
-					).size
-				}\nMost common starting hands:\n${(() => {
-					const temp = Object.entries(
-						countDup(
-							possibleMainHandCombinations.map((h) => h.join(","))
+			const possibleMainHandCombinations = combinations(
+				mainDeck.map((c) => c.name),
+				3
+			)
+			const deckDup = Object.fromEntries(
+				Object.entries(countDup(mainDeck.map((c) => c.name))).sort(
+					([, a], [, b]) => b - a
+				)
+			)
+
+			embed.addFields(
+				// Deck count
+				{
+					name: "Draw Percentage",
+					value: Object.keys(deckDup)
+						.map(
+							(c) =>
+								`${deckDup[c]}x | ${c} (${toPercent(
+									deckDup[c] / mainDeck.length
+								)}%, ${toPercent(
+									(deckDup[c] / mainDeck.length) *
+										[...Array(3).keys()].reduce(
+											(acc, x) =>
+												acc +
+												[...Array(x).keys()].reduce(
+													(acc, y) =>
+														acc *
+														((mainDeck.length -
+															deckDup[c] -
+															y) /
+															(mainDeck.length -
+																y -
+																1)),
+													1
+												),
+											0
+										)
+								)}%)`
 						)
-					).sort(([, a], [, b]) => b - a)
-					return `1. ${temp[0][0]} (${Math.round(
-						(temp[0][1] / possibleMainHandCombinations.length) * 100
-					)}%)\n2. ${temp[1][0]} (${Math.round(
-						(temp[1][1] / possibleMainHandCombinations.length) * 100
-					)}%)\n3. ${temp[2][0]} (${Math.round(
-						(temp[2][1] / possibleMainHandCombinations.length) * 100
-					)}%)`
-				})(possibleMainHandCombinations)}`,
-				inline: true,
-			})
+						.join("\n"),
+				},
+				// Hand combination
+				{
+					name: "Starting hand",
+					value: `Possible starting hand permutation: ${
+						possibleMainHandCombinations.length
+					}\nPossible unique starting hand combination: ${
+						new Set(
+							possibleMainHandCombinations.map((h) => h.join(","))
+						).size
+					}\n`,
+					inline: true,
+				},
+				// Common hand combination
+				{
+					name: "Common Hand combination",
+					value: `Most common starting hands:\n${(() => {
+						const temp = Object.entries(
+							countDup(
+								possibleMainHandCombinations.map((h) =>
+									h.join(",")
+								)
+							)
+						).sort(([, a], [, b]) => b - a)
+						return `1. ${temp[0][0]} (${toPercent(
+							temp[0][1] / possibleMainHandCombinations.length
+						)}%)\n2. ${temp[1][0]} (${toPercent(
+							temp[1][1] / possibleMainHandCombinations.length
+						)}%)\n3. ${temp[2][0]} (${toPercent(
+							temp[2][1] / possibleMainHandCombinations.length
+						)}%)`
+					})(possibleMainHandCombinations)}`,
+					inline: true,
+				},
+				// Deck composition
+				//TODO clean this up
+				{
+					name: "Deck Composition",
+					value: `Blood card count: ${mainDeck.reduce((acc, c) => {
+						if (c.blood_cost) return acc + 1
+						else return acc
+					}, 0)} (${toPercent(
+						mainDeck.reduce((acc, c) => {
+							if (c.blood_cost) return acc + 1
+							else return acc
+						}, 0) / mainDeck.length
+					)}%)\nBone card count: ${mainDeck.reduce((acc, c) => {
+						if (c.bone_cost) return acc + 1
+						else return acc
+					}, 0)} (${toPercent(
+						mainDeck.reduce((acc, c) => {
+							if (c.bone_cost) return acc + 1
+							else return acc
+						}, 0) / mainDeck.length
+					)}%)\nEnergy card count: ${mainDeck.reduce((acc, c) => {
+						if (c.energy_cost) return acc + 1
+						else return acc
+					}, 0)} (${toPercent(
+						mainDeck.reduce((acc, c) => {
+							if (c.energy_cost) return acc + 1
+							else return acc
+						}, 0) / mainDeck.length
+					)}%)\nMox card count: ${mainDeck.reduce((acc, c) => {
+						if (c.mox_cost) return acc + 1
+						else return acc
+					}, 0)} (${toPercent(
+						mainDeck.reduce((acc, c) => {
+							if (c.mox_cost) return acc + 1
+							else return acc
+						}, 0) / mainDeck.length
+					)}%)`,
+					inline: true,
+				},
+				// Deck stat
+				//TODO clean up
+				{
+					name: "Deck Stat",
+					value: `Total Blood cost: ${mainDeck.reduce(
+						(acc, c) => acc + getBlood(c),
+						0
+					)}\nTotal Bone cost: ${mainDeck.reduce(
+						(acc, c) => acc + getBone(c),
+						0
+					)}\nAverage Energy cost: ${average(
+						...mainDeck
+							.filter((c) => c.energy_cost)
+							.map((c) => c.energy_cost)
+							.flat()
+					).toFixed(1)} (On average it take ${Math.round(
+						average(
+							...mainDeck
+								.filter((c) => c.energy_cost)
+								.map((c) => c.energy_cost)
+								.flat()
+						)
+					)} turns to play a energy card)`,
+					inline: true,
+				}
+			)
+
 			console.log()
 			await interaction.editReply({
 				embeds: [embed],

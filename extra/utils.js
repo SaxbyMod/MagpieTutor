@@ -84,7 +84,6 @@ const sleep = (ms) => {
 }
 
 //stackoverflow.com/questions/67720548/generate-unique-combinations-in-javascript-from-n-objects-with-r-samples
-// Modified to filter out duplicate
 function combinations(a, c) {
 	let index = []
 	let n = a.length
@@ -115,6 +114,47 @@ function combinations(a, c) {
 	return result
 }
 
+function toPercent(num) {
+	return (num * 100).toFixed(1)
+}
+
+function average(...numList) {
+	return numList.reduce((acc, val) => acc + val, 0) / numList.length
+}
+
+function getBone(c) {
+	let out = c.bone_cost ?? 0
+	if (out == 0) return out
+	const sigilModifier = {
+		"Fecundity (Kaycee)": { type: "mul", value: 2 },
+		"Unkillable (Eternal)": { type: "mul", value: 2 },
+		Unkillable: { type: "overload" },
+	}
+	if ((c.sigils ?? []).length < 1) return out
+	for (const sigil of c.sigils) {
+		if (!Object.keys(sigilModifier).includes(sigil)) continue
+		const obj = sigilModifier[sigil]
+		if (obj.type == "overload") return 666
+		let op = ""
+		if (obj.type == "mul") {
+			op = "*"
+		} else if (obj.type == "add") {
+			op = "+"
+		}
+		console.log(`out${op}${obj.value}`)
+		out = eval(`out${op}${obj.value}`)
+	}
+	return out
+}
+
+function getBlood(c) {
+	let notC = JSON.parse(JSON.stringify(c))
+	notC.bone_cost = c.blood_cost ?? 0
+	if ((c.sigils ?? []).includes("Ant Spawner")) notC.bone_cost++
+	let out = getBone(notC)
+	return out
+}
+
 module.exports = {
 	debugLog,
 	infoLog,
@@ -131,4 +171,8 @@ module.exports = {
 	clamp,
 	sleep,
 	combinations,
+	toPercent,
+	average,
+	getBone,
+	getBlood,
 }

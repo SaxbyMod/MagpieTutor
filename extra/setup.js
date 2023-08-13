@@ -260,52 +260,31 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("deck-analysis")
 		.setDescription("Analyze and give useful information about a deck")
-		.addSubcommand((sub) =>
-			sub
-				.setName("file")
-				.setDescription(
-					"Analyze and give useful information about a deck using the deck file"
-				)
-				.addAttachmentOption((option) =>
-					option
-						.setName("deck-file")
-						.setDescription("The deck file you want to test with")
-						.setRequired(true)
-				)
-				.addStringOption((option) =>
-					option
-						.setName("set")
-						.setDescription("Which set this deck file was made in")
-						.addChoices(
-							{
-								name: "Competitive",
-								value: "competitive",
-							},
-							{
-								name: "Eternal",
-								value: "eternal",
-							},
-							{
-								name: "Mr.egg",
-								value: "mr.egg",
-							}
-						)
-						.setRequired(true)
-				)
+		.addAttachmentOption((option) =>
+			option
+				.setName("deck-file")
+				.setDescription("The deck file you want to test with")
+				.setRequired(true)
 		)
-		.addSubcommand((sub) =>
-			sub
-				.setName("list")
-				.setDescription(
-					"Analyze and give useful information about a deck using the deck list"
+		.addStringOption((option) =>
+			option
+				.setName("set")
+				.setDescription("Which set this deck file was made in")
+				.addChoices(
+					{
+						name: "Competitive",
+						value: "competitive",
+					},
+					{
+						name: "Eternal",
+						value: "eternal",
+					},
+					{
+						name: "Mr.egg",
+						value: "mr.egg",
+					}
 				)
-				.addStringOption((option) =>
-					option
-						.setName("deck-list")
-						.setDescription(
-							"The deck list, put comma between card name and semi-colon between side deck"
-						)
-				)
+				.setRequired(true)
 		),
 	new SlashCommandBuilder()
 		.setName("add-vanilla")
