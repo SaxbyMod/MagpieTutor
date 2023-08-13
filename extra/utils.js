@@ -134,14 +134,13 @@ function getBone(c) {
 	for (const sigil of c.sigils) {
 		if (!Object.keys(sigilModifier).includes(sigil)) continue
 		const obj = sigilModifier[sigil]
-		if (obj.type == "overload") return 666
+		if (obj.type == "overload") return Infinity
 		let op = ""
 		if (obj.type == "mul") {
 			op = "*"
 		} else if (obj.type == "add") {
 			op = "+"
 		}
-		console.log(`out${op}${obj.value}`)
 		out = eval(`out${op}${obj.value}`)
 	}
 	return out
