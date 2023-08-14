@@ -58,6 +58,8 @@ const {
 	getBlood,
 } = require("./extra/utils")
 
+const portraitCaches = require("./extra/caches.json")
+
 format.extend(String.prototype, {})
 
 const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
@@ -1091,6 +1093,7 @@ async function messageSearch(message, returnValue = false) {
 		let sigilSearch = false
 		let query = false
 		let json = false
+
 		redo: while (true) {
 			if (selectedSet.type == "special") {
 				if (selectedSet.name == "magic the gathering") {
@@ -1159,7 +1162,7 @@ async function messageSearch(message, returnValue = false) {
 				continue
 			}
 
-			temp = await genSigilEmbed(
+			temp = genSigilEmbed(
 				bestMatch.target,
 				setsData[selectedSet.name].sigils[bestMatch.target]
 			)
@@ -1172,12 +1175,7 @@ async function messageSearch(message, returnValue = false) {
 			).bestMatch
 
 			msg += `\`\`\`json\n${JSON.stringify(
-				await fetchCard(
-					bestMatch.target,
-					selectedSet.name,
-					noAlter,
-					noArt
-				),
+				fetchCard(bestMatch.target, selectedSet.name, true, true),
 				null,
 				2
 			)}\`\`\``
@@ -1253,7 +1251,7 @@ async function messageSearch(message, returnValue = false) {
 					continue
 				}
 			} else {
-				card = await fetchCard(
+				card = fetchCard(
 					bestMatch.target,
 					selectedSet.name,
 					noAlter,
@@ -1265,7 +1263,9 @@ async function messageSearch(message, returnValue = false) {
 		}
 		if (temp.length > 1) {
 			embedList.push(temp[0])
-			if (temp[1] != 1) attachmentList.push(temp[1])
+			if (temp[1] != 1) {
+				attachmentList.push(temp[1])
+			}
 		}
 	}
 
@@ -1298,7 +1298,16 @@ async function messageSearch(message, returnValue = false) {
 			(replyOption["content"] ? replyOption["content"] : "") +
 			`\nSearch complete in ${(end - start).toFixed(1)}ms`
 		if (returnValue) return replyOption
-		await message.reply(replyOption)
+		const replyMsg = await message.reply(replyOption)
+		if (attachmentList.length > 0) {
+			portraitCaches[replyMsg.embeds[0].title] =
+				replyMsg.embeds[0].thumbnail.proxyURL
+
+			fs.writeFileSync(
+				"./extra/caches.json",
+				JSON.stringify(portraitCaches)
+			)
+		}
 	}
 }
 
@@ -1376,7 +1385,7 @@ function genDescription(textFormat, card) {
 }
 
 // fetch the card and its url
-async function fetchCard(name, setName, noAlter = false, noArt = false) {
+function fetchCard(name, setName, noAlter = false, noArt = false) {
 	let card
 
 	let set = setsData[setName]
@@ -1391,6 +1400,11 @@ async function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.url = undefined
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
+	} else if (
+		Object.keys(portraitCaches).includes(`${card.name} (${set.ruleset})`)
+	) {
+		card.fullUrl = portraitCaches[`${card.name} (${set.ruleset})`]
+		card.noArt = true
 	} else {
 		if (card.set == SetList.a.name) {
 			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
@@ -1472,11 +1486,11 @@ async function genCardEmbed(card, compactDisplay = false) {
 		if (card.url) {
 			// get the card pfp
 			let cardPortrait = await Canvas.loadImage(card.url)
-
+			const scale = 5
 			// scale the pfp
 			const portrait = Canvas.createCanvas(
-				cardPortrait.width * 10,
-				cardPortrait.height * 10
+				cardPortrait.width * scale,
+				cardPortrait.height * scale
 			)
 			const context = portrait.getContext("2d")
 			context.imageSmoothingEnabled = false
@@ -1528,6 +1542,9 @@ async function genCardEmbed(card, compactDisplay = false) {
 		embed.setThumbnail(
 			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
 		)
+	else if (card.fullUrl) {
+		embed.setThumbnail(card.fullUrl)
+	}
 
 	const info = genDescription(
 		Object.values(SetList).find((set) => set.name == card.set)[
@@ -1578,7 +1595,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 	return [embed, attachment ? attachment : 1] // if there an attachment (portrait/image) return it if not give exit code 1
 }
 
-async function genSigilEmbed(sigilName, sigilDescription) {
+function genSigilEmbed(sigilName, sigilDescription) {
 	let embed = new EmbedBuilder()
 		.setColor(Colors.Aqua)
 		.setTitle(`${sigilName}`)
@@ -2291,7 +2308,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					const c = await scryfall.randomCard()
 					return { name: c.name, url: c.image_uris.art_crop }
 				} else randomChoice(Object.keys(setsData[set].cards))
-				return await fetchCard(name, set)
+				return fetchCard(name, set)
 			})()
 
 			// get the card picture
@@ -2698,9 +2715,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				).text()
 			)
 			for (const name of deckFile.cards) {
-				mainDeck.push(
-					await fetchCard(name.toLowerCase(), set, true, true)
-				)
+				mainDeck.push(fetchCard(name.toLowerCase(), set, true, true))
 			}
 
 			// if (deckFile.side_deck_cards) {
@@ -2847,10 +2862,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				//TODO clean up
 				{
 					name: "Deck Stat",
-					value: `Total Blood cost: ${mainDeck.reduce(
+					value: `Maximum Blood cost: ${mainDeck.reduce(
 						(acc, c) => acc + getBlood(c),
 						0
-					)}\nTotal Bone cost: ${mainDeck.reduce(
+					)}\Maximum Bone cost: ${mainDeck.reduce(
 						(acc, c) => acc + getBone(c),
 						0
 					)}\nAverage Energy cost: ${average(
