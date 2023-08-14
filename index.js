@@ -1074,6 +1074,7 @@ async function messageSearch(message, returnValue = false) {
 			)} detected searching time ${chalk.magenta("OwO")}`
 		)
 	)
+	let cards = []
 	outer: for (let cardName of message.content
 		.toLowerCase()
 		.matchAll(searchRegex)) {
@@ -1258,7 +1259,7 @@ async function messageSearch(message, returnValue = false) {
 					noArt
 				)
 			}
-
+			cards.push(card)
 			temp = await genCardEmbed(card, compactDisplay)
 		}
 		if (temp.length > 1) {
@@ -1299,15 +1300,15 @@ async function messageSearch(message, returnValue = false) {
 			`\nSearch complete in ${(end - start).toFixed(1)}ms`
 		if (returnValue) return replyOption
 		const replyMsg = await message.reply(replyOption)
-		if (attachmentList.length > 0) {
-			portraitCaches[replyMsg.embeds[0].title] =
-				replyMsg.embeds[0].thumbnail.proxyURL
-
-			fs.writeFileSync(
-				"./extra/caches.json",
-				JSON.stringify(portraitCaches)
-			)
+		for (const [index, embed] of replyMsg.embeds.entries()) {
+			if (cards[index].url && !portraitCaches[cards[index].url]) {
+				portraitCaches[cards[index].url] = embed.thumbnail.proxyURL
+			}
 		}
+		fs.writeFileSync(
+			"./extra/caches.json",
+			JSON.stringify(portraitCaches, null, 4)
+		)
 	}
 }
 
@@ -1400,11 +1401,6 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.url = undefined
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
-	} else if (
-		Object.keys(portraitCaches).includes(`${card.name} (${set.ruleset})`)
-	) {
-		card.fullUrl = portraitCaches[`${card.name} (${set.ruleset})`]
-		card.noArt = true
 	} else {
 		if (card.set == SetList.a.name) {
 			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
@@ -1417,6 +1413,11 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 				"%20"
 			)}.png`
 		}
+	}
+
+	if (Object.keys(portraitCaches).includes(card.url)) {
+		card.fullUrl = portraitCaches[card.url]
+		card.noArt = true
 	}
 
 	let original = JSON.parse(JSON.stringify(card))
@@ -1483,7 +1484,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 	let attachment
 	// try getting the portrait if it doesn't exist render no portrait
 	try {
-		if (card.url) {
+		if (card.url && !card.noArt) {
 			// get the card pfp
 			let cardPortrait = await Canvas.loadImage(card.url)
 			const scale = 5
