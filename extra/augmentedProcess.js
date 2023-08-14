@@ -82,6 +82,9 @@ async function load() {
 			delete cardFormated["sigils"]
 		}
 		cardFormated["art"] = card["Art"]
+		if (card["Art"] == "Not Done") {
+			cardFormated["noArt"] = true
+		}
 
 		imfJson.cards.push(cardFormated)
 	}
