@@ -1302,6 +1302,7 @@ async function messageSearch(message, returnValue = false) {
 		const replyMsg = await message.reply(replyOption)
 		for (const [index, embed] of replyMsg.embeds.entries()) {
 			if (cards[index].url && !portraitCaches[cards[index].url]) {
+				if (!embed.thumbnail) continue
 				portraitCaches[cards[index].url] = embed.thumbnail.proxyURL
 			}
 		}
@@ -1524,7 +1525,13 @@ async function genCardEmbed(card, compactDisplay = false) {
 				name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
 			})
 		}
-	} catch {}
+	} catch {
+		portraitCaches[card.url] = null
+		fs.writeFileSync(
+			"./extra/caches.json",
+			JSON.stringify(portraitCaches, null, 4)
+		)
+	}
 
 	// create template
 	let embed = new EmbedBuilder()
