@@ -59,8 +59,10 @@ async function load() {
 		}
 
 		// parsing health and power
-		cardFormated["health"] = card["Health"]
-		cardFormated["attack"] = card["Power"] == "X" ? 0 : card["Power"]
+		cardFormated["health"] = parseInt(card["Health"])
+		cardFormated["attack"] = parseInt(
+			card["Power"] == "X" ? 0 : card["Power"]
+		)
 		cardFormated["sigils"] = card["Sigils"]
 			? card["Sigils"].split(", ")
 			: []
