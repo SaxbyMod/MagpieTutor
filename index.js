@@ -56,6 +56,7 @@ const {
 	average,
 	getBone,
 	getBlood,
+	deepCopy,
 } = require("./extra/utils")
 
 const portraitCaches = require("./extra/caches.json")
@@ -1270,7 +1271,7 @@ async function messageSearch(message, returnValue = false) {
 		}
 	}
 
-	var replyOption = {
+	let replyOption = {
 		allowedMentions: {
 			repliedUser: false,
 		},
@@ -1279,7 +1280,11 @@ async function messageSearch(message, returnValue = false) {
 				new ButtonBuilder()
 					.setLabel("Retry")
 					.setCustomId("retry")
-					.setStyle(ButtonStyle.Primary)
+					.setStyle(ButtonStyle.Primary),
+				new ButtonBuilder()
+					.setLabel("Remove Cache")
+					.setCustomId("removeCache")
+					.setStyle(ButtonStyle.Danger)
 			),
 		],
 	}
@@ -1392,7 +1397,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 
 	let set = setsData[setName]
 
-	card = set.cards[name]
+	card = deepCopy(set.cards[name])
 	// look for the card in the set
 
 	if (!card) return card
@@ -1421,7 +1426,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 		card.noArt = true
 	}
 
-	let original = JSON.parse(JSON.stringify(card))
+	let original = deepCopy(card)
 
 	if (noAlter) {
 		return card
@@ -1700,7 +1705,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				ephemeral: true,
 			})
 		} else if (commandName == "set-code") {
-			var temp = ""
+			let temp = ""
 			Object.keys(SetList).forEach((key) => {
 				temp += `**${key}**: ${SetList[key].name}${
 					SetList[key].type == "modifier" ? " (Modifier)" : ""
@@ -1773,11 +1778,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				return out
 			})()
 
-			var deck = {
+			let deck = {
 				cards: [],
 				side_deck: "10 Squirrel",
 			}
-			var wildCount = 0
+			let wildCount = 0
 			let flag = false // exit flag
 			let deckUniqueCount = {}
 
@@ -1848,7 +1853,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					.setCustomId("select")
 					.setPlaceholder("Select a card!")
 
-				var description = ""
+				let description = ""
 
 				//generate the pack list
 				for (const card of pack) {
@@ -2050,8 +2055,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				return
 			}
 
-			let currDeck = JSON.parse(JSON.stringify(fullDeck))
-			let currSide = JSON.parse(JSON.stringify(fullSide))
+			let currDeck = deepCopy(fullDeck)
+			let currSide = deepCopy(fullSide)
 
 			const message = await interaction.reply({
 				content: "Doing stuff please wait",
@@ -2323,7 +2328,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			const cardPortrait = await Canvas.loadImage(card.url)
 
 			if (options.getString("set") == "augmented") {
-				var bg = await Canvas.loadImage(
+				let bg = await Canvas.loadImage(
 					`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
 						["Common", "Uncommon", "Side Deck"].includes(card.tier)
 							? "common"
@@ -2613,7 +2618,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			).react(options.getString("emoji"))
 			await interaction.reply({ content: "Reacted", ephemeral: true })
 		} else if (commandName == "query-info") {
-			var temp = ""
+			let temp = ""
 			Object.keys(queryKeywordList).forEach((key) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
@@ -2916,8 +2921,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			}
 		}
 	} else if (interaction.isButton()) {
-		if (interaction.component.customId == "retry") {
-			await interaction.update(
+		if (interaction.customId == "retry") {
+			await interaction.update({
+				files: [],
+			})
+			await interaction.editReply(
 				await messageSearch(
 					await getMessage(
 						interaction.channel,
@@ -2926,9 +2934,72 @@ client.on(Events.InteractionCreate, async (interaction) => {
 					true
 				)
 			)
+		} else if (interaction.customId == "removeCache") {
+			await interaction.showModal(
+				new ModalBuilder()
+					.setTitle("Removing portrait cache")
+					.setCustomId("removeCache")
+					.addComponents(
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setLabel("WARNING")
+								.setValue(
+									'If you don\'t know what this button do press "Cancel"'
+								)
+								.setCustomId("no")
+								.setStyle(TextInputStyle.Short)
+								.setRequired(false)
+						),
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setLabel("Enter card name")
+								.setPlaceholder(
+									"Name is not case sensitive but must be exact"
+								)
+								.setCustomId("name")
+								.setStyle(TextInputStyle.Short)
+								.setRequired(true)
+						),
+						new ActionRowBuilder().addComponents(
+							new TextInputBuilder()
+								.setLabel("Enter internal set name")
+								.setPlaceholder(
+									"Set name is case sensitive and must be exact"
+								)
+								.setCustomId("set")
+								.setStyle(TextInputStyle.Short)
+								.setRequired(true)
+						)
+					)
+			)
+		}
+	} else if (interaction.isModalSubmit()) {
+		if (interaction.customId == "removeCache") {
+			try {
+				const card = fetchCard(
+					interaction.fields.getTextInputValue("name").toLowerCase(),
+					interaction.fields.getTextInputValue("set"),
+					true
+				)
+				if (!card) throw Error("Missing Card")
+				delete portraitCaches[card.url]
+				fs.writeFileSync(
+					"./extra/caches.json",
+					JSON.stringify(portraitCaches, null, 4)
+				)
+				await interaction.reply({
+					content: "Cache removed",
+					ephemeral: true,
+				})
+			} catch {
+				await interaction.reply({
+					content: "Invalid card name or set name",
+					ephemeral: true,
+				})
+			}
 		}
 	} else if (interaction.isStringSelectMenu()) {
-		if (interaction.component.customId == "pollSelect") {
+		if (interaction.customId == "pollSelect") {
 			let fullPollData = require("./extra/poll.json")
 			let pollData = fullPollData[interaction.message.id]
 			if (pollData.alreadyVote.includes(interaction.user.id)) {

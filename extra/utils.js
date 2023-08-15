@@ -154,6 +154,10 @@ function getBlood(c) {
 	return out
 }
 
+function deepCopy(obj) {
+	return JSON.parse(JSON.stringify(obj))
+}
+
 module.exports = {
 	debugLog,
 	infoLog,
@@ -174,4 +178,5 @@ module.exports = {
 	average,
 	getBone,
 	getBlood,
+	deepCopy
 }
