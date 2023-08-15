@@ -24,7 +24,7 @@ async function load() {
 		.then((json) => {
 			sigilRaw = json
 		})
-	for (card of cardsRaw) {
+	for (let card of cardsRaw) {
 		let cardFormated = {}
 		cardFormated["name"] = card["Card Name"]
 		cardFormated["temple"] = card["Temple"]
