@@ -60,7 +60,7 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Use External Emoji: The Bot needs to use external emoji for cost and number emoji
 
 ## Todo List
-- More advance stuff for query (negation, or, etc.)
+- More advance stuff for query (or, etc.)
 - Deck submission that give a id to be recall
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall

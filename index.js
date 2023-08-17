@@ -1449,7 +1449,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 	}
 
 	// change existing card info and custom url
-	if (setName == "competitive") {
+	if (setName != "augmented") {
 		if (card.name == "Fox") {
 			card.url =
 				"https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
@@ -1749,6 +1749,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 							"https://www.youtube.com/watch?v=b7vWLz9iGsk",
 							"I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
 							"Stoat is not dense >:(",
+							"Crazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\n",
 					  ])
 					: "Pong!"
 			)
