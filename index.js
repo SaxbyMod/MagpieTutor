@@ -59,22 +59,11 @@ const {
 	deepCopy,
 } = require("./extra/utils")
 
-fs.writeFileSync(
-	"./extra/caches.json",
-	JSON.stringify(
-		Object.fromEntries(
-			Object.entries(require("./extra/caches.json")).sort()
-		),
-		null,
-		4
-	)
-)
-
 const portraitCaches = require("./extra/caches.json")
 
 format.extend(String.prototype, {})
 
-const searchRegex = /([^\s]*)\[{2}([^\]]+)\]{2}/g
+const searchRegex = /([^\s]*?)(\w{3})?\[{2}([^\]]+)\]{2}/g
 const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g
 const matchPercentage = 0.4
 let scream = false
@@ -343,7 +332,7 @@ const DraftRestriction = {
 // list of all the set and their setting
 const SetList = {
 	//imf set
-	".": {
+	com: {
 		name: "competitive",
 		type: "107",
 		format: SetFormatList.imf,
@@ -353,7 +342,7 @@ const SetList = {
 		draftFormat: SetFormatList.imfDraft,
 		draftRestriction: DraftRestriction.imf,
 	},
-	e: {
+	ete: {
 		name: "eternal",
 		type: "url",
 		url: "https://raw.githubusercontent.com/EternalHours/EternalFormat/main/IMF_Eternal.json",
@@ -364,7 +353,7 @@ const SetList = {
 		draftFormat: SetFormatList.imfDraft,
 		draftRestriction: DraftRestriction.eternal,
 	},
-	g: {
+	egg: {
 		name: "mr.egg",
 		type: "url",
 		url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
@@ -377,7 +366,7 @@ const SetList = {
 	},
 
 	//special load set
-	a: {
+	aug: {
 		name: "augmented",
 		type: "specialLoad",
 		format: SetFormatList.augmented,
@@ -395,7 +384,7 @@ const SetList = {
 		draftFormat: SetFormatList.augmentedDraft,
 		draftRestriction: DraftRestriction.augmented,
 	},
-	r: {
+	red: {
 		name: "redux",
 		type: "specialLoad",
 		format: SetFormatList.redux,
@@ -405,7 +394,7 @@ const SetList = {
 	},
 
 	//file set
-	v: {
+	van: {
 		name: "vanilla",
 		type: "file",
 		file: "./extra/vanilla.json",
@@ -546,7 +535,6 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 			Object.values(SetList).find((i) => i.name == setName).type == "file"
 		)
 			continue
-		infoLog(chalk.yellow(`Loading ${setName} pools`))
 		setsData[setName].pools = {}
 		let temp = {}
 		for (const card of setsData[setName].cards) {
@@ -588,13 +576,13 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 	)
 	for (const [key, value] of Object.entries(process.memoryUsage())) {
 		infoLog(
-			chalk.red(
+			chalk.orange(
 				`Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `
 			)
 		)
 	}
 	infoLog(
-		chalk.red(
+		chalk.orange(
 			`Total memory use: ${(
 				Object.values(process.memoryUsage()).reduce(
 					(acc, c) => acc + c,
@@ -967,6 +955,31 @@ const queryKeywordList = {
 			return `have power ${op}${value}`
 		},
 	},
+	powerhealth: {
+		alias: ["ph"],
+		description:
+			"Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)",
+		callback: (value, set, filterPossibleValue) => {
+			const op = value.includes(">=")
+				? ">="
+				: value.includes("<=")
+				? "<="
+				: value.includes(">")
+				? ">"
+				: value.includes("<")
+				? "<"
+				: "=="
+			value = value
+				.replaceAll("<", "")
+				.replaceAll(">", "")
+				.replaceAll("=", "")
+			filterPossibleValue(([name, info]) =>
+				eval(`${info.attack + info.health}${op}${value}`)
+			)
+
+			return `have power health total ${op}${value}`
+		},
+	},
 	is: {
 		alias: [],
 		description:
@@ -1087,18 +1100,15 @@ async function messageSearch(message, returnValue = false) {
 		)
 	)
 	let cards = []
-	outer: for (let cardName of message.content
+	outer: for (let cardMatch of message.content
 		.toLowerCase()
 		.matchAll(searchRegex)) {
-		cardName[1] =
-			cardName[1][0] || !serverDefaultSet[message.guildId]
-				? cardName[1]
-				: serverDefaultSet[message.guildId]?.addon ?? ""
+		let modifierCode = cardMatch[1]
 		let selectedSet =
-			SetList[cardName[1][0]] ??
+			SetList[cardMatch[2]] ??
 			SetList[serverDefaultSet[message.guildId]?.default] ??
-			SetList["."]
-		let name = cardName[2]
+			SetList["com"]
+		let name = cardMatch[3]
 		let card
 		let noAlter = false
 		let compactDisplay = false
@@ -1107,9 +1117,11 @@ async function messageSearch(message, returnValue = false) {
 		let query = false
 		let json = false
 
-		redo: while (true) {
-			if (selectedSet.type == "special") {
-				if (selectedSet.name == "magic the gathering") {
+		for (const code of modifierCode) {
+			const modifierSet = SetList[code]
+			if (!modifierSet) break
+			if (modifierSet.type == "special") {
+				if (modifierSet.name == "magic the gathering") {
 					const card = await fetchMagicCard(name)
 
 					if (card == -1) {
@@ -1126,30 +1138,23 @@ async function messageSearch(message, returnValue = false) {
 					}
 				}
 				continue outer
-			} else if (selectedSet.type == "modifier") {
-				if (selectedSet.name == "original version") {
+			} else if (modifierSet.type == "modifier") {
+				if (modifierSet.name == "original version") {
 					noAlter = true
-				} else if (selectedSet.name == "compact") {
+				} else if (modifierSet.name == "compact") {
 					compactDisplay = true
-				} else if (selectedSet.name == "no portrait") {
+				} else if (modifierSet.name == "no portrait") {
 					noArt = true
-				} else if (selectedSet.name == "sigil") {
+				} else if (modifierSet.name == "sigil") {
 					sigilSearch = true
-				} else if (selectedSet.name == "no search") {
+				} else if (modifierSet.name == "no search") {
 					continue outer
-				} else if (selectedSet.name == "query") {
+				} else if (modifierSet.name == "query") {
 					query = true
-				} else if (selectedSet.name == "json") {
+				} else if (modifierSet.name == "json") {
 					json = true
 				}
-				cardName[1] = cardName[1].slice(1)
-				selectedSet =
-					SetList[cardName[1][0]] ??
-					SetList[serverDefaultSet[message.guildId]?.default] ??
-					SetList["."]
-				continue redo
 			}
-			break
 		}
 
 		let temp = []
@@ -1419,7 +1424,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
 	} else {
-		if (card.set == SetList.a.name) {
+		if (card.set == SetList.aug.name) {
 			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
 				" ",
 				"%20"
@@ -1514,7 +1519,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			)
 			const context = portrait.getContext("2d")
 			context.imageSmoothingEnabled = false
-			if (card.set == SetList.a.name) {
+			if (card.set == SetList.aug.name) {
 				context.drawImage(
 					await Canvas.loadImage(
 						`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
@@ -1544,6 +1549,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			})
 		}
 	} catch {
+		// cache missing portrait
 		portraitCaches[card.url] = null
 		fs.writeFileSync(
 			"./extra/caches.json",
@@ -2892,12 +2898,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						(acc, c) => acc + getBlood(c),
 						0
 					)}\nAverage Blood cost: ${average(
-						mainDeck.map((c) => getBlood(c))
+						...mainDeck.map((c) => getBlood(c))
 					)}\nMaximum Bone cost: ${mainDeck.reduce(
 						(acc, c) => acc + getBone(c),
 						0
 					)}\nAverage Bone cost: ${average(
-						mainDeck.map((c) => getBone(c))
+						...mainDeck.map((c) => getBone(c))
 					)}\nAverage Energy cost: ${average(
 						...mainDeck
 							.filter((c) => c.energy_cost)
