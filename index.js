@@ -2750,29 +2750,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			for (const name of deckFile.cards) {
 				mainDeck.push(fetchCard(name.toLowerCase(), set, true, true))
 			}
-
-			// if (deckFile.side_deck_cards) {
-			// 	sideDeck = deckFile.side_deck_cards
-			// } else if (deckFile.side_deck_cat) {
-			// 	sideDeck = Array(
-			// 		setsData[set].side_decks[deckFile.side_deck].cards[
-			// 			deckFile.side_deck_cat
-			// 		].count
-			// 	).fill(
-			// 		setsData[set].side_decks[deckFile.side_deck].cards[
-			// 			deckFile.side_deck_cat
-			// 		].card
-			// 	)
-			// } else {
-			// 	sideDeck = Array(
-			// 		setsData[set].side_decks[deckFile.side_deck].count
-			// 	).fill(setsData[set].side_decks[deckFile.side_deck].card)
-			// }
-
-			// sideDeck = await sideDeck.map(
-			// 	async (n) => await fetchCard(n.toLowerCase(), set, true, true)
-			// )
-
 			const embed = new EmbedBuilder()
 				.setColor(Colors.Gold)
 				.setTitle("Deck Analysis result")
@@ -3051,7 +3028,39 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-	messageSearch(message)
+	if (message.content.startsWith("Would you kindly")) {
+		const content = message.content.replace("Would you kindly ", "")
+		if (
+			content.match(
+				/^calculate a card chance to be in a (\d+) cards? starting hand in a (\d+) cards? deck if it have (\d+) (?:copies|copy)$/
+			)
+		) {
+			const match = content.match(
+				/^calculate a card chance to be in a (\d+) cards? starting hand in a (\d+) cards? deck if it have (\d+) (?:copies|copy)$/
+			)
+			await message.reply(
+				`There would be a ${toPercent(
+					(parseInt(match[3]) / parseInt(match[2])) *
+						[...Array(parseInt(match[1])).keys()].reduce(
+							(acc, x) =>
+								acc +
+								[...Array(x).keys()].reduce(
+									(acc, y) =>
+										acc *
+										((parseInt(match[2]) -
+											parseInt(match[3]) -
+											y) /
+											(parseInt(match[2]) - y - 1)),
+									1
+								),
+							0
+						)
+				)}% chance`
+			)
+		}
+	} else {
+		messageSearch(message)
+	}
 })
 
 client.login(token) // login the bot
