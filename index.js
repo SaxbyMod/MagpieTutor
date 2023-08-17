@@ -3028,35 +3028,43 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-	if (message.content.startsWith("Would you kindly")) {
-		const content = message.content.replace("Would you kindly ", "")
-		if (
-			content.match(
-				/^calculate a card chance to be in a (\d+) cards? starting hand in a (\d+) cards? deck if it have (\d+) (?:copies|copy)$/
-			)
-		) {
-			const match = content.match(
-				/^calculate a card chance to be in a (\d+) cards? starting hand in a (\d+) cards? deck if it have (\d+) (?:copies|copy)$/
-			)
-			await message.reply(
-				`There would be a ${toPercent(
-					(parseInt(match[3]) / parseInt(match[2])) *
-						[...Array(parseInt(match[1])).keys()].reduce(
-							(acc, x) =>
-								acc +
-								[...Array(x).keys()].reduce(
-									(acc, y) =>
-										acc *
-										((parseInt(match[2]) -
-											parseInt(match[3]) -
-											y) /
-											(parseInt(match[2]) - y - 1)),
-									1
-								),
-							0
-						)
-				)}% chance`
-			)
+	if (message.content.toLowerCase().startsWith("would you kindly")) {
+		try {
+			const content = message.content
+				.replace("would you kindly ", "")
+				.toLowerCase()
+			if (content.startsWith("calculate hand percentage of ")) {
+				const num = content
+					.replace("calculate hand percentage of ", "")
+					.split(" ")
+					.map((n) => parseInt(n))
+				await message.reply(
+					`There would be a ${toPercent(
+						(num[0] / num[1]) *
+							[...Array(num[2]).keys()].reduce(
+								(acc, x) =>
+									acc +
+									[...Array(x).keys()].reduce(
+										(acc, y) =>
+											acc *
+											((num[1] - num[0] - y) /
+												(num[1] - y - 1)),
+										1
+									),
+								0
+							)
+					)}% chance if there were ${num[0]} copies in a ${
+						num[1]
+					} cards deck and the starting hand is ${num[2]}`
+				)
+			} else if (
+				content.startsWith("eval") &&
+				message.author.id == "601821309881810973"
+			) {
+				await message.reply(`${eval(content.replace("eval", ""))}`)
+			}
+		} catch (error) {
+			console.log(error)
 		}
 	} else {
 		messageSearch(message)
