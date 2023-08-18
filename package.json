@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon -x \"node index.js || copy /b index.js +,,\" --ignore test.js --ignore extra/poll.json --ignore extra/caches.json",
-    "setup": "npm i && node ./extra/setup.js"
+    "setup": "echo Installing package && npm i && echo Creating config file && echo {\"clientI\":\"User id Here\",\"token\":\"Token Here\"} > config.json && cd extra && echo Creating cache file && echo {} > caches.json && echo Creating poll file && echo {} > poll.json && echo Set up complete. Put in bot info in config.json and run \"node ./setup.js\" to set up command"
   },
   "keywords": [],
   "author": "",

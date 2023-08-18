@@ -1195,7 +1195,7 @@ async function messageSearch(message, returnValue = false) {
 			msg += `\`\`\`json\n${JSON.stringify(
 				fetchCard(bestMatch.target, selectedSet.name, true, true),
 				null,
-				2
+				compactDisplay ? 0 : 2
 			)}\`\`\``
 		} else {
 			// get the best match
@@ -3028,11 +3028,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-	if (message.content.toLowerCase().startsWith("would you kindly")) {
+	if (message.content.startsWith("Would you kindly")) {
 		try {
-			const content = message.content
-				.replace("would you kindly ", "")
-				.toLowerCase()
+			const content = message.content.replace("Would you kindly ", "")
+
 			if (content.startsWith("calculate hand percentage of ")) {
 				const num = content
 					.replace("calculate hand percentage of ", "")
@@ -3064,7 +3063,7 @@ client.on(Events.MessageCreate, async (message) => {
 				await message.reply(`${eval(content.replace("eval", ""))}`)
 			}
 		} catch (error) {
-			console.log(error)
+			await message.reply(error.message)
 		}
 	} else {
 		messageSearch(message)

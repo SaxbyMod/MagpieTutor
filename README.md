@@ -65,6 +65,7 @@ If you have any problem ask me on Discord my DM should be open. `mouthless_stoat
 - Ruleset submission that give id to be recall
 - Theme submission that give id to be recall
 - Query support for redux
+- Ranking/elo system
 - A website version??
 
 ## Plan for next update

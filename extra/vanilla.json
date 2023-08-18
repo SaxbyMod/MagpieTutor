@@ -2111,7 +2111,8 @@
             "blood_cost": 2,
             "tribes": "Hooved",
             "sigils": [
-                "Sprinter"
+                "Sprinter",
+                "Spilled Blood"
             ],
             "noArt": true
         },
@@ -2288,7 +2289,8 @@
         "Morsel": "When this card is sacrificed, it transfers its stats onto the card it was sacrificed for",
         "Armored": "The first time a card bearing this sigil would take damage, prevent that damage",
         "Scavenger": "While this card is played, opposing cards also grant Bones upon death",
-        "Finical Hatchling": "This card hatches when drawn if all lights on the egg are lit up. These correspond to the Power, Health, and Tribe of your deck"
+        "Finical Hatchling": "This card hatches when drawn if all lights on the egg are lit up. These correspond to the Power, Health, and Tribe of your deck",
+        "Spilled Blood": "This card power is equal to the amount of sacrifice this turn"
     },
     "pools": {
         "ban": [],
