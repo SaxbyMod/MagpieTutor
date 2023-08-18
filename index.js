@@ -868,7 +868,7 @@ const queryKeywordList = {
 		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => {
 				if (!info.traits) return false
-				return info.traits.includes(value)
+				return info.traits.map((t) => t.toLowerCase()).includes(value)
 			})
 
 			return `have ${value}`
@@ -1322,6 +1322,7 @@ async function messageSearch(message, returnValue = false) {
 		if (returnValue) return replyOption
 		const replyMsg = await message.reply(replyOption)
 		for (const [index, embed] of replyMsg.embeds.entries()) {
+			if (!cards[index]) continue
 			if (cards[index].url && !portraitCaches[cards[index].url]) {
 				if (!embed.thumbnail) continue
 				portraitCaches[cards[index].url] = embed.thumbnail.proxyURL
@@ -1731,7 +1732,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				}\n`
 			})
 			await interaction.reply(
-				`Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`se\` will look up a sigil in the Eternal set`
+				`Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`sete\` will look up a sigil in the Eternal set`
 			)
 		} else if (commandName == "ping") {
 			await interaction.reply(
@@ -2340,15 +2341,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				else if (set == "magic") {
 					const c = await scryfall.randomCard()
 					return { name: c.name, url: c.image_uris.art_crop }
-				} else randomChoice(Object.keys(setsData[set].cards))
+				} else name = randomChoice(Object.keys(setsData[set].cards))
 				return fetchCard(name, set)
 			})()
 
 			// get the card picture
 			const cardPortrait = await Canvas.loadImage(card.url)
 
-			if (options.getString("set") == "augmented") {
-				let bg = await Canvas.loadImage(
+			let bg
+			if (set == "augmented") {
+				bg = await Canvas.loadImage(
 					`https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
 						["Common", "Uncommon", "Side Deck"].includes(card.tier)
 							? "common"
@@ -2643,7 +2645,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
 			})
 			await interaction.reply({
-				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documentation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query#syntax)`,
+				content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documentation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query)`,
 				flags: [MessageFlags.SuppressEmbeds],
 			})
 		} else if (commandName == "test") {
