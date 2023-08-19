@@ -2329,7 +2329,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				})
 				.on("error", async (e) => {
 					await interaction.reply(
-						"Stoat's laptop say tunnel is down, but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
+						"Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
 					)
 				})
 		} else if (commandName == "color-text") {
@@ -3082,7 +3082,7 @@ client.on(Events.MessageCreate, async (message) => {
 					})
 					.on("error", async (e) => {
 						await message.reply(
-							"I can't connect to tunnel but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
+							"I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
 						)
 					})
 			} else if (content.startsWith("roll a d")) {
