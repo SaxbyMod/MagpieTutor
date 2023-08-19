@@ -627,7 +627,7 @@ const queryKeywordList = {
 					  ).bestMatch.rating >= 0.8
 					: false
 			)
-			return `have ${value}`
+			return `{n} have ${value}`
 		},
 	},
 	effect: {
@@ -643,7 +643,7 @@ const queryKeywordList = {
 				})
 				return flag
 			})
-			return `have sigil effect includes "${value}"`
+			return `have sigil effect {n} includes "${value}"`
 		},
 	},
 	description: {
@@ -654,7 +654,7 @@ const queryKeywordList = {
 				if (!info.description) return false
 				return info.description.includes(value)
 			})
-			return `have description includes "${value}"`
+			return `have description {n} includes "${value}"`
 		},
 	},
 	resourcecost: {
@@ -698,7 +698,7 @@ const queryKeywordList = {
 					)
 			)
 
-			return `with rc ${op}${value}`
+			return `with rc {n} ${op}${value}`
 		},
 	},
 	convertedresourcecost: {
@@ -734,7 +734,7 @@ const queryKeywordList = {
 				)
 			)
 
-			return `with crc ${op}${value}`
+			return `with crc {n} ${op}${value}`
 		},
 	},
 	resourcetype: {
@@ -764,7 +764,7 @@ const queryKeywordList = {
 					: ""
 			filterPossibleValue(([name, info]) => info[type])
 
-			return `cost ${
+			return `{n} cost ${
 				value == "b" || value == "blood"
 					? "blood"
 					: value == "o" || value == "bone"
@@ -825,7 +825,7 @@ const queryKeywordList = {
 					: false
 			)
 
-			return `is ${color}`
+			return `is {n} ${color}`
 		},
 	},
 	temple: {
@@ -845,7 +845,7 @@ const queryKeywordList = {
 					: ""
 			filterPossibleValue(([name, info]) => info.temple == temple)
 
-			return `from ${temple} temple`
+			return `{n} from ${temple} temple`
 		},
 	},
 	tribe: {
@@ -859,7 +859,7 @@ const queryKeywordList = {
 				return info.tribes.toLowerCase().includes(value)
 			})
 
-			return `is ${value}`
+			return `is {n} ${value}`
 		},
 	},
 	trait: {
@@ -871,7 +871,7 @@ const queryKeywordList = {
 				return info.traits.map((t) => t.toLowerCase()).includes(value)
 			})
 
-			return `have ${value}`
+			return `{n} have ${value}`
 		},
 	},
 	rarity: {
@@ -903,7 +903,7 @@ const queryKeywordList = {
 					: !info.rare
 			)
 
-			return `is ${rarity}`
+			return `is {n} ${rarity}`
 		},
 	},
 	health: {
@@ -927,7 +927,7 @@ const queryKeywordList = {
 			filterPossibleValue(([name, info]) =>
 				eval(`${info.health}${op}${value}`)
 			)
-			return `have health ${op}${value}`
+			return `have health {n} ${op}${value}`
 		},
 	},
 	power: {
@@ -952,7 +952,7 @@ const queryKeywordList = {
 				eval(`${info.attack}${op}${value}`)
 			)
 
-			return `have power ${op}${value}`
+			return `have power {n} ${op}${value}`
 		},
 	},
 	powerhealth: {
@@ -977,7 +977,7 @@ const queryKeywordList = {
 				eval(`${info.attack + info.health}${op}${value}`)
 			)
 
-			return `have power health total ${op}${value}`
+			return `have power health total {n} ${op}${value}`
 		},
 	},
 	is: {
@@ -1005,10 +1005,16 @@ const queryKeywordList = {
 					]
 					return removalList.includes(name)
 				},
+				banned: ([name, info]) => info.banned,
+				free: ([name, info]) =>
+					!info.blood_cost &&
+					!info.bone_cost &&
+					!info.energy_cost &&
+					!info.mox_cost,
 			}
 			let callback = nicknameList[value]
 			filterPossibleValue(callback ? callback : ([name, info]) => false)
-			return `is ${value}`
+			return `is {n} ${value}`
 		},
 	},
 	name: {
@@ -1019,7 +1025,7 @@ const queryKeywordList = {
 				name.toLowerCase().includes(value.toLowerCase())
 			)
 
-			return `have name includes ${value}`
+			return `have name {n} includes ${value}`
 		},
 	},
 	regex: {
@@ -1028,7 +1034,7 @@ const queryKeywordList = {
 		callback: (value, set, filterPossibleValue) => {
 			filterPossibleValue(([name, info]) => name.match(value))
 
-			return `have name match ${value}`
+			return `have name {n} match ${value}`
 		},
 	},
 }
@@ -1656,7 +1662,9 @@ function queryCard(string, set, compactDisplay = false) {
 		for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
 			if (type == key || keyInfo.alias.includes(type)) {
 				searchExplain.push(
-					keyInfo.callback(value, set, filterPossibleValue)
+					keyInfo
+						.callback(value, set, filterPossibleValue)
+						.replace("{n} ", negation ? "not " : "")
 				)
 			}
 		}
@@ -1671,7 +1679,9 @@ function queryCard(string, set, compactDisplay = false) {
 	)
 	embed.setDescription(
 		compactDisplay
-			? "Result hidden by compact mode"
+			? `**Card that ${searchExplain.join(
+					", "
+			  )}**:\nResult hidden by compact mode`
 			: final.length > 0
 			? result.length > 4096 // checking if it excess the char limit
 				? "Too many result, please be more specific"
@@ -3030,9 +3040,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
-	if (message.content.startsWith("Would you kindly")) {
+	if (message.content.toLowerCase().startsWith("would you kindly")) {
 		try {
-			const content = message.content.replace("Would you kindly ", "")
+			const content = message.content.slice(17)
 
 			if (content.startsWith("calculate hand percentage of ")) {
 				const num = content
@@ -3063,6 +3073,33 @@ client.on(Events.MessageCreate, async (message) => {
 				message.author.id == "601821309881810973"
 			) {
 				await message.reply(`${eval(content.replace("eval", ""))}`)
+			} else if (content.startsWith("check if tunnel is online")) {
+				await http
+					.get("http://localtunnel.me", async (res) => {
+						await message.reply(
+							"Tunnel is up and running. If you have problem connecting, restart the game and try again"
+						)
+					})
+					.on("error", async (e) => {
+						await message.reply(
+							"I can't connect to tunnel but you can check it yourself: https://isitdownorjust.me/localtunnel-me/"
+						)
+					})
+			} else if (content.startsWith("roll a d")) {
+				await message.reply(
+					`You got a ${
+						Math.floor(
+							parseInt(content.replace("roll a d", "")) *
+								Math.random()
+						) + 1
+					}`
+				)
+			} else if (content.startsWith("flip a coin")) {
+				await message.reply(
+					`You got ${
+						Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"
+					}`
+				)
 			}
 		} catch (error) {
 			await message.reply(error.message)
