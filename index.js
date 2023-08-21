@@ -3157,12 +3157,21 @@ client.on(Events.MessageCreate, async (message) => {
 				)
 			} else if (
 				content.startsWith("cal") &&
-				message.guildId == "994573431880286289" &&
-				message.guildId == "1028530290727063604" &&
-				message.guildId == "913238101902630983"
+				(message.guildId == "994573431880286289" ||
+					message.guildId == "1028530290727063604" ||
+					message.guildId == "913238101902630983")
 			) {
+				if (
+					content.replace("cal", "").replaceAll("\n", ";").trim() ==
+					"9 + 10"
+				) {
+					await message.reply("21 duh")
+					return
+				}
 				await message.reply(
-					`${limitedEvaluate(content.replace("cal", ""))}`
+					`${limitedEvaluate(
+						content.replace("cal", "").replaceAll("\n", ";").trim()
+					)}`
 				)
 			}
 		} catch (error) {
