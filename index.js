@@ -68,7 +68,7 @@ const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g
 const matchPercentage = 0.4
 let scream = false
 let log = ""
-
+let doneSetup = false
 // Chalk color
 chalk.orange = chalk.hex("#fb922b")
 chalk.pink = chalk.hex("#ff80a4")
@@ -86,7 +86,7 @@ const client = new Client({
 	partials: [Partials.Message],
 })
 
-//define the ruleset shit
+//ANCHOR define the ruleset shit
 
 //define how card should be render
 const SetFormatList = {
@@ -342,6 +342,16 @@ const SetList = {
 		draftFormat: SetFormatList.imfDraft,
 		draftRestriction: DraftRestriction.imf,
 	},
+	van: {
+		name: "vanilla",
+		type: "107",
+		format: SetFormatList.imf,
+		compactFormat: SetFormatList.imfCompact,
+		pools: ImfPool,
+		packStructure: PackStructure.imf,
+		draftFormat: SetFormatList.imfDraft,
+		draftRestriction: DraftRestriction.imf,
+	},
 	ete: {
 		name: "eternal",
 		type: "url",
@@ -394,8 +404,8 @@ const SetList = {
 	},
 
 	//file set
-	van: {
-		name: "vanilla",
+	bas: {
+		name: "base",
 		type: "file",
 		file: "./extra/vanilla.json",
 		format: SetFormatList.imf,
@@ -433,6 +443,10 @@ const SetList = {
 	},
 	j: {
 		name: "json",
+		type: "modifier",
+	},
+	"?": {
+		name: "lazy",
 		type: "modifier",
 	},
 }
@@ -497,7 +511,9 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 		if (set.type == "107" || set.type == "url")
 			setsData[set.name].sigils = sigilList
 		const cardCount = setsData[set.name]
-			? setsData[set.name].cards.length
+			? typeof setsData[set.name].cards == "object"
+				? Object.keys(setsData[set.name].cards).length
+				: setsData[set.name].cards.length
 			: 0
 		infoLog(
 			chalk.blue(
@@ -592,7 +608,7 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 		)
 	)
 	debugLog("Setup completed")
-
+	doneSetup = true
 	if (!client.isReady()) return
 	console.log(
 		chalk.bgGreen.black(
@@ -1110,18 +1126,21 @@ async function messageSearch(message, returnValue = false) {
 		.toLowerCase()
 		.matchAll(searchRegex)) {
 		let modifierCode = cardMatch[1]
-		let selectedSet =
+		let selectedSet = [
 			SetList[cardMatch[2]] ??
-			SetList[serverDefaultSet[message.guildId]?.default] ??
-			SetList["com"]
+				SetList[serverDefaultSet[message.guildId]?.default] ??
+				SetList["com"],
+		]
 		let name = cardMatch[3]
 		let card
+
 		let noAlter = false
 		let compactDisplay = false
 		let noArt = false
 		let sigilSearch = false
 		let query = false
 		let json = false
+		let lazy = false
 
 		for (const code of modifierCode) {
 			const modifierSet = SetList[code]
@@ -1159,136 +1178,129 @@ async function messageSearch(message, returnValue = false) {
 					query = true
 				} else if (modifierSet.name == "json") {
 					json = true
+				} else if (modifierSet.name == "lazy") {
+					lazy = true
+					selectedSet = Object.keys(setsData).map((name) =>
+						Object.values(SetList).find((s) => s.name == name)
+					)
 				}
 			}
 		}
 
 		let temp = []
+		let lazyList = []
+		let bestRating = 0
 
-		if (sigilSearch) {
-			// get the best match
-			const bestMatch = StringSimilarity.findBestMatch(
-				name,
-				Object.keys(setsData[selectedSet.name].sigils)
-			).bestMatch
+		for (const set of selectedSet) {
+			let bestMatch = { rating: 0 }
+			if (sigilSearch) {
+				if (!setsData[set.name].sigils) continue
+				// get the best match
+				bestMatch = StringSimilarity.findBestMatch(
+					name,
+					Object.keys(setsData[set.name].sigils)
+				).bestMatch
 
-			if (bestMatch.rating <= matchPercentage) {
+				if (bestMatch.rating <= matchPercentage) {
+					if (!lazy) {
+						embedList.push(
+							new EmbedBuilder()
+								.setColor(Colors.Red)
+								.setTitle(`Sigil "${name}" not found`)
+								.setDescription(
+									`No Sigil found in selected set (${
+										setsData[set.name].ruleset
+									}) that have more than 40% similarity with the search term(${name})`
+								)
+						)
+						continue
+					}
+				}
+
+				temp = genSigilEmbed(
+					bestMatch.target,
+					setsData[set.name].sigils[bestMatch.target]
+				)
+			} else if (query) {
+				temp = queryCard(name, set, compactDisplay)
+			} else if (json) {
+				bestMatch = StringSimilarity.findBestMatch(
+					name,
+					Object.keys(setsData[set.name].cards)
+				).bestMatch
+
+				msg += `\`\`\`json\n${JSON.stringify(
+					fetchCard(bestMatch.target, set.name, true),
+					null,
+					compactDisplay ? 0 : 2
+				)}\`\`\``
+			} else {
+				// get the best match
+				bestMatch = StringSimilarity.findBestMatch(
+					name,
+					Object.keys(setsData[set.name].cards)
+				).bestMatch
+
+				// if less than 40% match return error and continue to the next match
+				if (bestMatch.rating <= 0.4) {
+					if (!lazy) {
+						embedList.push(
+							new EmbedBuilder()
+								.setColor(Colors.Red)
+								.setTitle(`Card "${name}" not found`)
+								.setDescription(
+									`No card found in selected set (${
+										setsData[set.name].ruleset
+									}) that have more than 40% similarity with the search term(${name})`
+								)
+						)
+						continue
+					}
+				} else {
+					card = fetchCard(bestMatch.target, set.name, noAlter, noArt)
+				}
+			}
+
+			if (card) {
+				if (!lazy) cards.push(card)
+				if (lazy) {
+					if (bestMatch.rating > bestRating) {
+						lazyList = [card]
+						bestRating = bestMatch.rating
+					} else if (bestMatch.rating == bestRating) {
+						lazyList.push(card)
+					}
+				} else {
+					temp = await genCardEmbed(card, compactDisplay)
+				}
+			}
+			if (temp.length > 1) {
+				embedList.push(temp[0])
+				if (temp[1] != 1) {
+					attachmentList.push(temp[1])
+				}
+			}
+		}
+
+		if (lazy) {
+			if (lazyList.length < 1) {
 				embedList.push(
 					new EmbedBuilder()
 						.setColor(Colors.Red)
-						.setTitle(`Sigil "${name}" not found`)
-						.setDescription(
-							`No Sigil found in selected set (${
-								setsData[selectedSet.name].ruleset
-							}) that have more than 40% similarity with the search term(${name})`
-						)
+						.setTitle("No card found")
+						.setDescription("No card found in all selected set")
 				)
 				continue
 			}
-
-			temp = genSigilEmbed(
-				bestMatch.target,
-				setsData[selectedSet.name].sigils[bestMatch.target]
-			)
-		} else if (query) {
-			temp = queryCard(name, selectedSet, compactDisplay)
-		} else if (json) {
-			const bestMatch = StringSimilarity.findBestMatch(
-				name,
-				Object.keys(setsData[selectedSet.name].cards)
-			).bestMatch
-
-			msg += `\`\`\`json\n${JSON.stringify(
-				fetchCard(bestMatch.target, selectedSet.name, true, true),
-				null,
-				compactDisplay ? 0 : 2
-			)}\`\`\``
-		} else {
-			// get the best match
-			const bestMatch = StringSimilarity.findBestMatch(
-				name,
-				Object.keys(setsData[selectedSet.name].cards)
-			).bestMatch
-
-			// if less than 40% match return error and continue to the next match
-			if (bestMatch.rating <= 0.4) {
-				if (name == "old_data") {
-					card = {
-						name: "Lorem",
-						description: "Lorem ipsum dolor.",
-						sigils: ["Repulsive", "Bone King"],
-						blood_cost: -69,
-						bone_cost: -69,
-						energy_cost: -69,
-						mox_cost: ["Green", "Blue", "Orange"],
-
-						attack: 69,
-						health: 420,
-						atkspecial: "mirror",
-
-						conduit: true,
-						rare: true,
-						nosac: true,
-						nohammer: true,
-						banned: true,
-
-						evolution: "I'm",
-						sheds: "Doing",
-						left_half: "Ur",
-						right_half: "Mom :)",
-
-						url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
-						set: "competitive",
+			cards = cards.concat(lazyList)
+			for (const card of lazyList) {
+				let temp = await genCardEmbed(card, compactDisplay)
+				if (temp.length > 1) {
+					embedList.push(temp[0])
+					if (temp[1] != 1) {
+						attachmentList.push(temp[1])
 					}
-				} else if (name == "deep_data") {
-					card = {
-						name: "Lorem",
-						description: "Lorem ipsum dolor.",
-						sigils: ["Repulsive", "Bone King"],
-						blood: -69,
-						bone: -69,
-						energy: -69,
-						mox: ["emerald", "sapphire", "ruby"],
-						shattered: [
-							"shattered_emerald",
-							"shattered_sapphire",
-							"shattered_ruby",
-						],
-
-						attack: 69,
-						health: 420,
-
-						url: "https://static.wikia.nocookie.net/inscryption/images/4/4e/Glitched_Card.gif/revision/latest?cb=20211103141811",
-						set: "augmented",
-					}
-				} else {
-					embedList.push(
-						new EmbedBuilder()
-							.setColor(Colors.Red)
-							.setTitle(`Card "${name}" not found`)
-							.setDescription(
-								`No card found in selected set (${
-									setsData[selectedSet.name].ruleset
-								}) that have more than 40% similarity with the search term(${name})`
-							)
-					)
-					continue
 				}
-			} else {
-				card = fetchCard(
-					bestMatch.target,
-					selectedSet.name,
-					noAlter,
-					noArt
-				)
-			}
-			cards.push(card)
-			temp = await genCardEmbed(card, compactDisplay)
-		}
-		if (temp.length > 1) {
-			embedList.push(temp[0])
-			if (temp[1] != 1) {
-				attachmentList.push(temp[1])
 			}
 		}
 	}
@@ -1313,7 +1325,11 @@ async function messageSearch(message, returnValue = false) {
 
 	const end = performance.now()
 
-	if (msg != "") replyOption["content"] = msg
+	if (msg != "") {
+		replyOption["content"] = msg
+		if (replyOption["content"].length > 2000)
+			replyOption["content"] = "Message too large"
+	}
 	if (embedList.length > 0) replyOption["embeds"] = embedList
 	if (attachmentList.length > 0) replyOption["files"] = attachmentList
 
@@ -1326,12 +1342,14 @@ async function messageSearch(message, returnValue = false) {
 			(replyOption["content"] ? replyOption["content"] : "") +
 			`\nSearch complete in ${(end - start).toFixed(1)}ms`
 		if (returnValue) return replyOption
+
 		const replyMsg = await message.reply(replyOption)
 		for (const [index, embed] of replyMsg.embeds.entries()) {
 			if (!cards[index]) continue
 			if (cards[index].url && !portraitCaches[cards[index].url]) {
 				if (!embed.thumbnail) continue
 				portraitCaches[cards[index].url] = embed.thumbnail.proxyURL
+				console.log(chalk.green(`${cards[index].name} cache created`))
 			}
 		}
 		fs.writeFileSync(
@@ -1693,11 +1711,22 @@ function queryCard(string, set, compactDisplay = false) {
 
 // on ready call
 client.once(Events.ClientReady, () => {
-	console.log(
-		chalk.bgRed(
-			"Bot connected to Discord's server but wait until set up is complete to use"
+	if (doneSetup) {
+		console.log(
+			chalk.bgGreen.black(
+				"Setup is complete and bot is connected to Discord's sever"
+			)
 		)
-	)
+		const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
+		infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
+		infoLog(chalk.cyan(`Servers: ${chalk.yellow(servers.join(", "))}`))
+	} else {
+		console.log(
+			chalk.bgRed(
+				"Bot connected to Discord's server but wait until set up is complete to use"
+			)
+		)
+	}
 	client.user.setActivity("YOUR MOM")
 	if (scream) {
 		client.channels.cache
@@ -2923,7 +2952,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			try {
 				setsData.vanilla.cards[
 					JSON.parse(options.getString("card-json")).name
-				] = JSON.parse(options.getString("card-json"))
+				] = (() => {
+					const json = JSON.parse(options.getString("card-json"))
+					json.noArt = true
+					return json
+				})()
 				fs.writeFileSync(
 					"./extra/vanilla.json",
 					JSON.stringify(setsData.vanilla)
@@ -2935,7 +2968,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 	} else if (interaction.isButton()) {
 		if (interaction.customId == "retry") {
+			// clear everything that was on the message.
 			await interaction.update({
+				embeds: [],
 				files: [],
 			})
 			await interaction.editReply(

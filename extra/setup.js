@@ -245,7 +245,7 @@ const commands = [
 				.setDescription(
 					"Default set code to use when not present. What set to be the default when call with [[]]."
 				)
-				.setMaxLength(1)
+				.setMaxLength(3)
 				.setRequired(true)
 		)
 		.addStringOption((option) =>

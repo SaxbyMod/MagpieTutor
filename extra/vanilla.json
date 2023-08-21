@@ -2193,6 +2193,17 @@
                 "Sharp Quills"
             ],
             "noArt": true
+        },
+        "Kevin": {
+            "name": "Kevin",
+            "blood_cost": 2,
+            "attack": 1,
+            "health": 6,
+            "sigils": [
+                "Ramgaper",
+                "Loose Tail"
+            ],
+            "noArt": true
         }
     },
     "sigils": {
