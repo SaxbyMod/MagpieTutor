@@ -27,6 +27,35 @@ const scryfall = require("scryfall")
 const chalk = require("chalk")
 const Canvas = require("@napi-rs/canvas")
 const format = require("string-format")
+const { create, all } = require("mathjs")
+
+const mathjs = create(all)
+const mathSafe = create(all)
+const limitedEvaluate = mathSafe.evaluate
+
+mathSafe.import(
+	{
+		import: function () {
+			throw new Error("Function import is disabled")
+		},
+		createUnit: function () {
+			throw new Error("Function createUnit is disabled")
+		},
+		evaluate: function () {
+			throw new Error("Function evaluate is disabled")
+		},
+		parse: function () {
+			throw new Error("Function parse is disabled")
+		},
+		simplify: function () {
+			throw new Error("Function simplify is disabled")
+		},
+		derivative: function () {
+			throw new Error("Function derivative is disabled")
+		},
+	},
+	{ override: true }
+)
 
 // general module (don't need installing)
 const fetch = require("node-fetch")
@@ -57,6 +86,7 @@ const {
 	getBone,
 	getBlood,
 	deepCopy,
+	randStr,
 } = require("./extra/utils")
 
 const portraitCaches = require("./extra/caches.json")
@@ -1449,17 +1479,10 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 	} else if (card.pixport_url) {
 		card.url = card.pixport_url
 	} else {
-		if (card.set == SetList.aug.name) {
-			card.url = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${card.name.replaceAll(
-				" ",
-				"%20"
-			)}.png`
-		} else {
-			card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-				" ",
-				"%20"
-			)}.png`
-		}
+		card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
+			" ",
+			"%20"
+		)}.png`
 	}
 
 	if (Object.keys(portraitCaches).includes(card.url)) {
@@ -1529,7 +1552,7 @@ async function fetchMagicCard(name) {
 }
 
 // generate embed
-async function genCardEmbed(card, compactDisplay = false) {
+async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
 	let attachment
 	// try getting the portrait if it doesn't exist render no portrait
 	try {
@@ -1570,7 +1593,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			)
 
 			attachment = new AttachmentBuilder(await portrait.encode("png"), {
-				name: `${card.name.replaceAll(" ", "").slice(0, 4)}.png`,
+				name: `${id}.png`,
 			})
 		}
 	} catch {
@@ -1595,10 +1618,7 @@ async function genCardEmbed(card, compactDisplay = false) {
 			}${card.banned ? getEmoji("banned") : ""}`
 		)
 
-	if (attachment)
-		embed.setThumbnail(
-			`attachment://${card.name.replaceAll(" ", "").slice(0, 4)}.png`
-		)
+	if (attachment) embed.setThumbnail(`attachment://${id}.png`)
 	else if (card.fullUrl) {
 		embed.setThumbnail(card.fullUrl)
 	}
@@ -3134,6 +3154,15 @@ client.on(Events.MessageCreate, async (message) => {
 					`You got ${
 						Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"
 					}`
+				)
+			} else if (
+				content.startsWith("cal") &&
+				message.guildId == "994573431880286289" &&
+				message.guildId == "1028530290727063604" &&
+				message.guildId == "913238101902630983"
+			) {
+				await message.reply(
+					`${limitedEvaluate(content.replace("cal", ""))}`
 				)
 			}
 		} catch (error) {

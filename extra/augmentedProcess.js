@@ -88,6 +88,13 @@ async function load() {
 			cardFormated["noArt"] = true
 		}
 
+		cardFormated[
+			"pixport_url"
+		] = `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/art/${cardFormated.name.replaceAll(
+			" ",
+			"%20"
+		)}.png`
+
 		imfJson.cards.push(cardFormated)
 	}
 

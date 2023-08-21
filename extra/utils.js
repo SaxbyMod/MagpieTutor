@@ -158,6 +158,9 @@ function deepCopy(obj) {
 	return JSON.parse(JSON.stringify(obj))
 }
 
+function randStr(len = 7) {
+	return (Math.random() + 1).toString(36).slice(2, 2 + len)
+}
 module.exports = {
 	debugLog,
 	infoLog,
@@ -178,5 +181,6 @@ module.exports = {
 	average,
 	getBone,
 	getBlood,
-	deepCopy
+	deepCopy,
+	randStr
 }
