@@ -312,7 +312,8 @@ const SetFormatList = {
 	},
 }
 
-// const for what a imf pool look like
+// Constant so i don;t have to retype stuff
+// imf pool
 const ImfPool = [
 	{ name: "ban", condition: "card.ban" },
 	{ name: "rare", condition: "card.rare" },
