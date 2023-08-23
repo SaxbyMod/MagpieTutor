@@ -263,8 +263,12 @@ const commands = [
 		.addAttachmentOption((option) =>
 			option
 				.setName("deck-file")
-				.setDescription("The deck file you want to test with")
-				.setRequired(true)
+				.setDescription("The deck file you want to analyze")
+		)
+		.addStringOption((option) =>
+			option
+				.setName("deck-json")
+				.setDescription("The deck json you want to analyze")
 		)
 		.addStringOption((option) =>
 			option

@@ -31,6 +31,7 @@ const { create, all } = require("mathjs")
 
 const mathjs = create(all)
 const mathSafe = create(all)
+mathSafe.createUnit("blahaj", "55 cm", { prefixes: "long" })
 const limitedEvaluate = mathSafe.evaluate
 
 mathSafe.import(
@@ -121,70 +122,105 @@ const client = new Client({
 //define how card should be render
 const SetFormatList = {
 	imf: {
-		general: {
-			type: "general",
-			info: [
-				{ text: "*{description}*\n", type: "sub" },
-				{
-					text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
-					type: "sub",
-				},
-				{
-					text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
-					type: "sub",
-				},
-				{
-					text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
-					type: "sub",
-				},
-				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
-				{ text: "\n\n{health}", type: "stat" },
-			],
+		color: {
+			"card.rare": Colors.Green,
 		},
-		sigil: {
-			type: "keyword",
-			name: "== SIGILS ==",
-			var: "sigils",
-		},
-		extra: {
-			type: "extra",
-			name: "== EXTRA INFO ==",
-			info: [
-				{ text: "**Change into**: {evolution}\n", type: "sub" },
-				{ text: "**Shed**: {sheds}\n", type: "sub" },
-				{
-					text: "**This card split into**: {left_half} (Left), {right_half} (Right)\n",
-					type: "sub",
-				},
-			],
+		title: [
+			{ text: "{name}", type: "sub" },
+			{ text: "({set})", type: "set" },
+			{ text: ":conductive:", type: "con", condition: "card.conduit" },
+			{ text: ":rare:", type: "con", condition: "card.rare" },
+			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
+			{
+				text: ":unhammerable:",
+				type: "con",
+				condition: "card.unhammerable",
+			},
+			{ text: ":banned:", type: "con", condition: "card.banned" },
+		],
+		body: {
+			general: {
+				type: "general",
+				info: [
+					{ text: "*{description}*\n", type: "sub" },
+					{
+						text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
+						type: "sub",
+					},
+					{
+						text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+						type: "sub",
+					},
+					{
+						text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+						type: "sub",
+					},
+					{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+					{ text: "\n\n{health}", type: "stat" },
+				],
+			},
+			sigil: {
+				type: "keyword",
+				name: "== SIGILS ==",
+				var: "sigils",
+			},
+			extra: {
+				type: "extra",
+				name: "== EXTRA INFO ==",
+				info: [
+					{ text: "**Change into**: {evolution}\n", type: "sub" },
+					{ text: "**Shed**: {sheds}\n", type: "sub" },
+					{
+						text: "**This card split into**: {left_half} (Left), {right_half} (Right)\n",
+						type: "sub",
+					},
+				],
+			},
 		},
 	},
 	imfCompact: {
-		general: {
-			type: "general",
-			info: [
-				{
-					text: `:{blood_cost}::imfBlood: `,
-					type: "sub",
-				},
-				{
-					text: ":{bone_cost}::imfBone: ",
-					type: "sub",
-				},
-				{
-					text: ":{energy_cost}::imfEnergy: ",
-					type: "sub",
-				},
-				{ text: "{mox_cost}", type: "mox" },
-				{ text: "\n{health}", type: "stat" },
-				{ text: "\n**Sigils**: {sigils}\n", type: "list" },
-				{ text: "**Change into**: {evolution}\n", type: "sub" },
-				{ text: "**Shed**: {sheds}\n", type: "sub" },
-				{
-					text: "**This card split into**: {left_half} (Left), {right_half} (Right)",
-					type: "sub",
-				},
-			],
+		color: {
+			"card.rare": Colors.Green,
+		},
+		title: [
+			{ text: "{name}", type: "sub" },
+			{ text: "({set})", type: "set" },
+			{ text: ":conductive:", type: "con", condition: "card.conduit" },
+			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
+			{
+				text: ":unhammerable:",
+				type: "con",
+				condition: "card.unhammerable",
+			},
+			{ text: ":banned:", type: "con", condition: "card.banned" },
+		],
+		body: {
+			general: {
+				type: "general",
+				info: [
+					{
+						text: `:{blood_cost}::imfBlood: `,
+						type: "sub",
+					},
+					{
+						text: ":{bone_cost}::imfBone: ",
+						type: "sub",
+					},
+					{
+						text: ":{energy_cost}::imfEnergy: ",
+						type: "sub",
+					},
+					{ text: "{mox_cost}", type: "mox" },
+					{ text: "\n{health}", type: "stat" },
+					{ text: "\n**Sigils**: {sigils}\n", type: "list" },
+					{ text: "**Change into**: {evolution}\n", type: "sub" },
+					{ text: "**Shed**: {sheds}\n", type: "sub" },
+					{
+						text: "**This card split into**: {left_half} (Left), {right_half} (Right)",
+						type: "sub",
+					},
+				],
+			},
 		},
 	},
 	imfDraft: [
@@ -205,55 +241,106 @@ const SetFormatList = {
 		{ text: "Sigils: {s}", type: "list", var: "sigils" },
 	],
 	augmented: {
-		general: {
-			type: "general",
-			info: [
-				{ text: "*{description}*\n", type: "sub" },
-				{ text: "**Temple**: {temple}\n", type: "sub" },
-				{ text: "**Tier**: {tier}\n", type: "sub" },
-				{ text: "**Tribes**: {tribes}\n", type: "sub" },
-				{ text: "\n**Blood Cost**: :{blood}::x_::blood:", type: "sub" },
-				{ text: "\n**Bone Cost**: :{bone}::x_::bones:", type: "sub" },
-				{
-					text: "\n**Energy Cost**: :{energy}::x_::energy:",
-					type: "sub",
-				},
-				{ text: "\n**Mox Cost**: {mox}", type: "mox" },
-				{ text: "\n**Shattered Mox Cost**: {shattered}", type: "mox" },
-				{ text: "\n\n{health}", type: "stat" },
-			],
+		color: {
+			'card.temple == "Beast"': Colors.DarkGold,
+			'card.temple == "Undead"': Colors.Green,
+			'card.temple == "Tech"': Colors.Blue,
+			'card.temple == "Magick"': Colors.Fuchsia,
 		},
-		sigil: {
-			type: "keyword",
-			name: "== SIGILS ==",
-			var: "sigils",
-		},
-		trait: { type: "keyword", name: "== TRAITS ==", var: "traits" },
-		extra: {
-			type: "extra",
-			name: "== EXTRA INFO ==",
-			info: [{ text: "**Token**: {token}", type: "sub" }],
+		title: [
+			{ text: "{name}", type: "sub" },
+			{ text: "({set})", type: "set" },
+			{ text: ":conductive:", type: "con", condition: "card.conduit" },
+			{ text: ":rare:", type: "con", condition: "card.rare" },
+			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
+			{
+				text: ":unhammerable:",
+				type: "con",
+				condition: "card.unhammerable",
+			},
+			{ text: ":banned:", type: "con", condition: "card.banned" },
+		],
+		body: {
+			general: {
+				type: "general",
+				info: [
+					{ text: "*{description}*\n", type: "sub" },
+					{ text: "**Temple**: {temple}\n", type: "sub" },
+					{ text: "**Tier**: {tier}\n", type: "sub" },
+					{ text: "**Tribes**: {tribes}\n", type: "sub" },
+					{
+						text: "\n**Blood Cost**: :{blood}::x_::blood:",
+						type: "sub",
+					},
+					{
+						text: "\n**Bone Cost**: :{bone}::x_::bones:",
+						type: "sub",
+					},
+					{
+						text: "\n**Energy Cost**: :{energy}::x_::energy:",
+						type: "sub",
+					},
+					{ text: "\n**Mox Cost**: {mox}", type: "mox" },
+					{
+						text: "\n**Shattered Mox Cost**: {shattered}",
+						type: "mox",
+					},
+					{ text: "\n\n{health}", type: "stat" },
+				],
+			},
+			sigil: {
+				type: "keyword",
+				name: "== SIGILS ==",
+				var: "sigils",
+			},
+			trait: { type: "keyword", name: "== TRAITS ==", var: "traits" },
+			extra: {
+				type: "extra",
+				name: "== EXTRA INFO ==",
+				info: [{ text: "**Token**: {token}", type: "sub" }],
+			},
 		},
 	},
 	augmentedCompact: {
-		general: {
-			type: "general",
-			info: [
-				{ text: "{tribes} {tier}\n", type: "sub" },
+		color: {
+			'card.temple == "Beast"': Colors.DarkGold,
+			'card.temple == "Undead"': Colors.Green,
+			'card.temple == "Tech"': Colors.Blue,
+			'card.temple == "Magick"': Colors.Fuchsia,
+		},
+		title: [
+			{ text: "{name}", type: "sub" },
+			{ text: "({set})", type: "set" },
+			{ text: ":conductive:", type: "con", condition: "card.conduit" },
+			{ text: ":rare:", type: "con", condition: "card.rare" },
+			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
+			{
+				text: ":unhammerable:",
+				type: "con",
+				condition: "card.unhammerable",
+			},
+			{ text: ":banned:", type: "con", condition: "card.banned" },
+		],
+		body: {
+			general: {
+				type: "general",
+				info: [
+					{ text: "{tribes} {tier}\n", type: "sub" },
 
-				{ text: ":{blood}::blood: ", type: "sub" },
-				{ text: ":{bone}::bones:", type: "sub" },
-				{
-					text: ":{energy}::energy: ",
-					type: "sub",
-				},
-				{ text: "{mox} ", type: "mox" },
-				{ text: "{shattered}", type: "mox" },
-				{ text: "\n{health}", type: "stat" },
-				{ text: "\n**Sigils**: {sigils}", type: "list" },
-				{ text: "\n**Traits**: {traits}", type: "list" },
-				{ text: "\n**Token**: {token}", type: "sub" },
-			],
+					{ text: ":{blood}::blood: ", type: "sub" },
+					{ text: ":{bone}::bones:", type: "sub" },
+					{
+						text: ":{energy}::energy: ",
+						type: "sub",
+					},
+					{ text: "{mox} ", type: "mox" },
+					{ text: "{shattered}", type: "mox" },
+					{ text: "\n{health}", type: "stat" },
+					{ text: "\n**Sigils**: {sigils}", type: "list" },
+					{ text: "\n**Traits**: {traits}", type: "list" },
+					{ text: "\n**Token**: {token}", type: "sub" },
+				],
+			},
 		},
 	},
 	augmentedDraft: [
@@ -276,43 +363,65 @@ const SetFormatList = {
 		{ text: "Traits: {s}", type: "list", var: "traits" },
 	],
 	redux: {
-		general: {
-			type: "general",
-			info: [
-				{ text: "*{description}*\n", type: "sub" },
-				{
-					text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
-					type: "sub",
-				},
-				{
-					text: `\n**Sap Cost**: :{sap_cost}::x_::sap:`,
-					type: "sub",
-				},
-				{
-					text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
-					type: "sub",
-				},
-				{
-					text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
-					type: "sub",
-				},
-				{
-					text: "\n**Cell Cost**: :{cell_cost}::x_::cell:",
-					type: "sub",
-				},
-				{
-					text: "\n**Heat Cost**: :{heat_cost}::x_::heat:",
-					type: "sub",
-				},
-				{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
-				{ text: "\n\n{health}", type: "stat" },
-			],
+		color: {
+			"card.rare": Colors.Green,
 		},
-		sigil: { type: "special_keyword", name: "== SIGILS ==", var: "sigils" },
+		title: [
+			{ text: "{name}", type: "sub" },
+			{ text: "({set})", type: "set" },
+			{ text: ":conductive:", type: "con", condition: "card.conduit" },
+			{ text: ":rare:", type: "con", condition: "card.rare" },
+			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
+			{
+				text: ":unhammerable:",
+				type: "con",
+				condition: "card.unhammerable",
+			},
+			{ text: ":banned:", type: "con", condition: "card.banned" },
+		],
+		body: {
+			general: {
+				type: "general",
+				info: [
+					{ text: "*{description}*\n", type: "sub" },
+					{
+						text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
+						type: "sub",
+					},
+					{
+						text: `\n**Sap Cost**: :{sap_cost}::x_::sap:`,
+						type: "sub",
+					},
+					{
+						text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+						type: "sub",
+					},
+					{
+						text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+						type: "sub",
+					},
+					{
+						text: "\n**Cell Cost**: :{cell_cost}::x_::cell:",
+						type: "sub",
+					},
+					{
+						text: "\n**Heat Cost**: :{heat_cost}::x_::heat:",
+						type: "sub",
+					},
+					{ text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+					{ text: "\n\n{health}", type: "stat" },
+				],
+			},
+			sigil: {
+				type: "special_keyword",
+				name: "== SIGILS ==",
+				var: "sigils",
+			},
+		},
 	},
 }
 
-// Constant so i don;t have to retype stuff
+//ANCHOR Constant so i don;t have to retype stuff
 // imf pool
 const ImfPool = [
 	{ name: "ban", condition: "card.ban" },
@@ -1393,7 +1502,7 @@ async function messageSearch(message, returnValue = false) {
 function genDescription(textFormat, card) {
 	let out = {}
 
-	for (const field of Object.values(textFormat)) {
+	for (const field of Object.values(textFormat.body)) {
 		completeInfo = ""
 
 		if (field.type == "keyword") {
@@ -1449,7 +1558,7 @@ function genDescription(textFormat, card) {
 								: ""
 						}`
 					)
-				} else {
+				} else if (info.type == "sub") {
 					completeInfo += info.text.format(card)
 				}
 			}
@@ -1463,6 +1572,54 @@ function genDescription(textFormat, card) {
 	return out
 }
 
+function genTitle(textFormat, card) {
+	let completeInfo = ""
+	for (const info of textFormat.title) {
+		if (info.type == "con") {
+			if (eval(info.condition)) {
+				completeInfo += info.text
+			}
+		} else if (info.type == "set") {
+			completeInfo += info.text.replaceAll(
+				"{set}",
+				setsData[card.set].ruleset
+			)
+		} else if (info.type == "sub") {
+			if (!info.text.match(/{(\w+)}/g)) {
+				completeInfo += info.text
+				continue
+			}
+			let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
+			if (!temp) continue
+			completeInfo += info.text.format(card)
+		}
+	}
+	let alreadyChange = []
+	for (const emoji of completeInfo.matchAll(/:([^\sx:]+):/g)) {
+		if (alreadyChange.includes(emoji[0])) continue
+		try {
+			if (!isNaN(parseInt(emoji[1]))) {
+				completeInfo = completeInfo.replaceAll(
+					emoji[0],
+					numToEmoji(emoji[1])
+				)
+				continue
+			}
+			completeInfo = completeInfo.replaceAll(emoji[0], getEmoji(emoji[1]))
+		} catch {}
+		alreadyChange.push(emoji[0])
+	}
+	return completeInfo
+}
+
+function genColor(textFormat, card) {
+	for (const con of Object.keys(textFormat.color)) {
+		if (eval(con)) {
+			return textFormat.color[con]
+		}
+	}
+	return Colors.Default
+}
 // fetch the card and its url
 function fetchCard(name, setName, noAlter = false, noArt = false) {
 	let card
@@ -1606,30 +1763,20 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
 		)
 	}
 
+	const format = Object.values(SetList).find((set) => set.name == card.set)[
+		compactDisplay ? "compactFormat" : "format"
+	]
 	// create template
 	let embed = new EmbedBuilder()
-		.setColor(card.rare ? Colors.Green : Colors.Greyple)
-		.setTitle(
-			`${card.name} ${
-				card.set ? `(${setsData[card.set].ruleset})` : ""
-			} ${card.conduit ? getEmoji("conductive") : ""}${
-				card.rare ? getEmoji("rare") : ""
-			}${card.nosac ? getEmoji("unsacable") : ""}${
-				card.nohammer ? getEmoji("unhammerable") : ""
-			}${card.banned ? getEmoji("banned") : ""}`
-		)
+		.setColor(genColor(format, card))
+		.setTitle(genTitle(format, card))
 
 	if (attachment) embed.setThumbnail(`attachment://${id}.png`)
 	else if (card.fullUrl) {
 		embed.setThumbnail(card.fullUrl)
 	}
 
-	const info = genDescription(
-		Object.values(SetList).find((set) => set.name == card.set)[
-			compactDisplay ? "compactFormat" : "format"
-		],
-		card
-	)
+	const info = genDescription(format, card)
 
 	// replace emoji shorthand to actual emoji identifier
 	let alreadyChange = []
@@ -1640,13 +1787,13 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
 				if (!isNaN(parseInt(emoji[1]))) {
 					info[field] = info[field].replaceAll(
 						emoji[0],
-						await numToEmoji(emoji[1])
+						numToEmoji(emoji[1])
 					)
 					continue
 				}
 				info[field] = info[field].replaceAll(
 					emoji[0],
-					await getEmoji(emoji[1])
+					getEmoji(emoji[1])
 				)
 			} catch {}
 			alreadyChange.push(emoji[0])
@@ -1682,7 +1829,7 @@ function genSigilEmbed(sigilName, sigilDescription) {
 }
 
 function queryCard(string, set, compactDisplay = false) {
-	let embed = new EmbedBuilder().setColor(Colors.Fuchsia)
+	let embed = new EmbedBuilder().setColor(Colors.Purple)
 	let possibleMatches = setsData[set.name].cards
 	let searchExplain = []
 	for (const tag of string.matchAll(queryRegex)) {
@@ -2938,23 +3085,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						(acc, c) => acc + getBlood(c),
 						0
 					)}\nAverage Blood cost: ${average(
-						...mainDeck.map((c) => getBlood(c))
-					)}\nMaximum Bone cost: ${mainDeck.reduce(
+						...mainDeck
+							.filter((c) => c.bone_cost)
+							.map((c) => getBlood(c))
+					).toFixed(1)}\nMaximum Bone cost: ${mainDeck.reduce(
 						(acc, c) => acc + getBone(c),
 						0
 					)}\nAverage Bone cost: ${average(
-						...mainDeck.map((c) => getBone(c))
-					)}\nAverage Energy cost: ${average(
+						...mainDeck
+							.filter((c) => c.bone_cost)
+							.map((c) => getBone(c))
+					).toFixed(1)}\nAverage Energy cost: ${average(
 						...mainDeck
 							.filter((c) => c.energy_cost)
 							.map((c) => c.energy_cost)
-							.flat()
 					).toFixed(1)} (On average it take ${Math.round(
 						average(
 							...mainDeck
 								.filter((c) => c.energy_cost)
 								.map((c) => c.energy_cost)
-								.flat()
 						)
 					)} turns to play a energy card)`,
 					inline: true,
