@@ -117,7 +117,9 @@ const client = new Client({
 	partials: [Partials.Message],
 })
 
-//ANCHOR define the ruleset shit
+//SECTION - Define set stuff
+
+//ANCHOR - Set config constant
 
 //define how card should be render
 const SetFormatList = {
@@ -127,7 +129,7 @@ const SetFormatList = {
 		},
 		title: [
 			{ text: "{name}", type: "sub" },
-			{ text: "({set})", type: "set" },
+			{ text: " ({set})", type: "set" },
 			{ text: ":conductive:", type: "con", condition: "card.conduit" },
 			{ text: ":rare:", type: "con", condition: "card.rare" },
 			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
@@ -184,7 +186,7 @@ const SetFormatList = {
 		},
 		title: [
 			{ text: "{name}", type: "sub" },
-			{ text: "({set})", type: "set" },
+			{ text: " ({set})", type: "set" },
 			{ text: ":conductive:", type: "con", condition: "card.conduit" },
 			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
 			{
@@ -249,16 +251,7 @@ const SetFormatList = {
 		},
 		title: [
 			{ text: "{name}", type: "sub" },
-			{ text: "({set})", type: "set" },
-			{ text: ":conductive:", type: "con", condition: "card.conduit" },
-			{ text: ":rare:", type: "con", condition: "card.rare" },
-			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
-			{
-				text: ":unhammerable:",
-				type: "con",
-				condition: "card.unhammerable",
-			},
-			{ text: ":banned:", type: "con", condition: "card.banned" },
+			{ text: " ({set})", type: "set" },
 		],
 		body: {
 			general: {
@@ -311,15 +304,6 @@ const SetFormatList = {
 		title: [
 			{ text: "{name}", type: "sub" },
 			{ text: "({set})", type: "set" },
-			{ text: ":conductive:", type: "con", condition: "card.conduit" },
-			{ text: ":rare:", type: "con", condition: "card.rare" },
-			{ text: ":unsacable:", type: "con", condition: "card.unsacable" },
-			{
-				text: ":unhammerable:",
-				type: "con",
-				condition: "card.unhammerable",
-			},
-			{ text: ":banned:", type: "con", condition: "card.banned" },
 		],
 		body: {
 			general: {
@@ -421,7 +405,6 @@ const SetFormatList = {
 	},
 }
 
-//ANCHOR Constant so i don;t have to retype stuff
 // imf pool
 const ImfPool = [
 	{ name: "ban", condition: "card.ban" },
@@ -469,7 +452,7 @@ const DraftRestriction = {
 	},
 }
 
-// list of all the set and their setting
+//ANCHOR - Set config
 const SetList = {
 	//imf set
 	com: {
@@ -591,7 +574,10 @@ const SetList = {
 	},
 }
 
+//!SECTION - define the ruleset shit
+
 const serverDefaultSet = require("./extra/default.json")
+const { info } = require("console")
 
 let setsData = {}
 
@@ -647,9 +633,6 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 				)
 			}
 		}
-		// TODO temporary solution pls fix later
-		if (set.type == "107" || set.type == "url")
-			setsData[set.name].sigils = sigilList
 		const cardCount = setsData[set.name]
 			? typeof setsData[set.name].cards == "object"
 				? Object.keys(setsData[set.name].cards).length
@@ -747,7 +730,10 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 			).toFixed(1)}MB`
 		)
 	)
+
+	info(chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`))
 	debugLog("Setup completed")
+
 	doneSetup = true
 	if (!client.isReady()) return
 	console.log(
@@ -1618,7 +1604,7 @@ function genColor(textFormat, card) {
 			return textFormat.color[con]
 		}
 	}
-	return Colors.Default
+	return Colors.Grey
 }
 // fetch the card and its url
 function fetchCard(name, setName, noAlter = false, noArt = false) {
@@ -2765,72 +2751,79 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				fetchReply: true,
 			})
 
+			let collecting = true
 			const filter = (i) => i.user.id === interaction.user.id
 
-			await message
-				.awaitMessageComponent({ time: 180000, filter })
-				.then(async (inter) => {
-					const modal = new ModalBuilder()
-						.setCustomId("guessModal")
-						.setTitle("Enter your guess below")
+			while (collecting) {
+				await message
+					.awaitMessageComponent({ time: 180000, filter })
+					.then(async (inter) => {
+						const modal = new ModalBuilder()
+							.setCustomId("guessModal")
+							.setTitle("Enter your guess below")
 
-					modal.addComponents(
-						new ActionRowBuilder().addComponents(
-							new TextInputBuilder()
-								.setCustomId("guess")
-								.setLabel("What is the card?")
-								.setPlaceholder("Card name here")
-								.setRequired(true)
-								.setStyle(TextInputStyle.Short)
+						modal.addComponents(
+							new ActionRowBuilder().addComponents(
+								new TextInputBuilder()
+									.setCustomId("guess")
+									.setLabel("What is the card?")
+									.setPlaceholder("Card name here")
+									.setRequired(true)
+									.setStyle(TextInputStyle.Short)
+							)
 						)
-					)
-					await inter.showModal(modal)
+						await inter.showModal(modal)
 
-					await inter
-						.awaitModalSubmit({ time: 120000, filter })
-						.then(async (i) => {
-							if (
-								StringSimilarity.compareTwoStrings(
-									card.name.toLowerCase(),
-									i.fields
-										.getTextInputValue("guess")
-										.toLowerCase()
-								) >= 0.4
-							) {
-								await i.update({
-									content: `Your guess (${i.fields.getTextInputValue(
-										"guess"
-									)}) was correct. Actual name ${card.name}`,
-									files: [
-										new AttachmentBuilder(
-											await full.encode("png")
-										),
-									],
-									components: [],
-								})
-							} else {
-								await i.update({
-									content: `Your guess (${i.fields.getTextInputValue(
-										"guess"
-									)}) was incorrect. The card was ${
-										card.name
-									}`,
-									files: [
-										new AttachmentBuilder(
-											await full.encode("png")
-										),
-									],
-									components: [],
-								})
-							}
-						})
-				})
-				.catch(
-					async (e) =>
+						await inter
+							.awaitModalSubmit({ time: 15000, filter })
+							.then(async (i) => {
+								if (
+									StringSimilarity.compareTwoStrings(
+										card.name.toLowerCase(),
+										i.fields
+											.getTextInputValue("guess")
+											.toLowerCase()
+									) >= 0.4
+								) {
+									await i.update({
+										content: `Your guess (${i.fields.getTextInputValue(
+											"guess"
+										)}) was correct. Actual name ${
+											card.name
+										}`,
+										files: [
+											new AttachmentBuilder(
+												await full.encode("png")
+											),
+										],
+										components: [],
+									})
+								} else {
+									await i.update({
+										content: `Your guess (${i.fields.getTextInputValue(
+											"guess"
+										)}) was incorrect. The card was ${
+											card.name
+										}`,
+										files: [
+											new AttachmentBuilder(
+												await full.encode("png")
+											),
+										],
+										components: [],
+									})
+								}
+
+								collecting = false
+							})
+					})
+					.catch(async (e) => {
 						await interaction.editReply(
 							`Error: ${coloredString(`$$r${e}`)}`
 						)
-				)
+						collecting = false
+					})
+			}
 		} else if (commandName == "retry") {
 			await messageSearch(
 				await interaction.channel.messages.fetch(
@@ -2856,9 +2849,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 				flags: [MessageFlags.SuppressEmbeds],
 			})
 		} else if (commandName == "test") {
-			await interaction.reply(
-				`<t:${(Date.now() / 1000).toFixed(0)}> ${Date.now() / 1000}`
-			)
+			await interaction.reply(`Nothing here`)
 		} else if (commandName == "poll") {
 			const pollOption = options.getString("option").split(",")
 			const time = options.getString("time").endsWith("m")
@@ -3247,10 +3238,10 @@ client.on(Events.MessageCreate, async (message) => {
 	if (message.author.id === clientId) return
 	if (message.content.toLowerCase().startsWith("would you kindly")) {
 		try {
-			const content = message.content.slice(17)
+			const command = message.content.slice(17)
 
-			if (content.startsWith("calculate hand percentage of ")) {
-				const num = content
+			if (command.startsWith("calculate hand percentage of ")) {
+				const num = command
 					.replace("calculate hand percentage of ", "")
 					.split(" ")
 					.map((n) => parseInt(n))
@@ -3274,11 +3265,11 @@ client.on(Events.MessageCreate, async (message) => {
 					} cards deck and the starting hand is ${num[2]}`
 				)
 			} else if (
-				content.startsWith("eval") &&
+				command.startsWith("eval") &&
 				message.author.id == "601821309881810973"
 			) {
-				await message.reply(`${eval(content.replace("eval", ""))}`)
-			} else if (content.startsWith("check if tunnel is online")) {
+				await message.reply(`${eval(command.replace("eval", ""))}`)
+			} else if (command.startsWith("check if tunnel is online")) {
 				await http
 					.get("http://localtunnel.me", async (res) => {
 						await message.reply(
@@ -3290,29 +3281,29 @@ client.on(Events.MessageCreate, async (message) => {
 							"I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
 						)
 					})
-			} else if (content.startsWith("roll a d")) {
+			} else if (command.startsWith("roll a d")) {
 				await message.reply(
 					`You got a ${
 						Math.floor(
-							parseInt(content.replace("roll a d", "")) *
+							parseInt(command.replace("roll a d", "")) *
 								Math.random()
 						) + 1
 					}`
 				)
-			} else if (content.startsWith("flip a coin")) {
+			} else if (command.startsWith("flip a coin")) {
 				await message.reply(
 					`You got ${
 						Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"
 					}`
 				)
 			} else if (
-				content.startsWith("cal") &&
+				command.startsWith("cal") &&
 				(message.guildId == "994573431880286289" ||
 					message.guildId == "1028530290727063604" ||
 					message.guildId == "913238101902630983")
 			) {
 				if (
-					content.replace("cal", "").replaceAll("\n", ";").trim() ==
+					command.replace("cal", "").replaceAll("\n", ";").trim() ==
 					"9 + 10"
 				) {
 					await message.reply("21 duh")
@@ -3320,8 +3311,55 @@ client.on(Events.MessageCreate, async (message) => {
 				}
 				await message.reply(
 					`${limitedEvaluate(
-						content.replace("cal", "").replaceAll("\n", ";").trim()
+						command.replace("cal", "").replaceAll("\n", ";").trim()
 					)}`
+				)
+			} else if (command.startsWith("remind me in")) {
+				const num = command.replace("remind me in", "")
+				const ms = num.endsWith("h")
+					? parseInt(num.replace("h", "")) * 60 * 60 * 1000
+					: num.endsWith("m")
+					? parseInt(num.replace("m", "")) * 60 * 1000
+					: num.endsWith("s")
+					? parseInt(num.replace("s", "")) * 1000
+					: 1000
+				await message.reply(
+					`Reminder will go off <t:${(
+						(Date.now() + ms) /
+						1000
+					).toFixed()}:R>`
+				)
+				await sleep(ms)
+				await message.reply("HEY TIME UP BITCH")
+			} else if (command.startsWith("cipher")) {
+				const cipherType = command.replace("cipher ", "")
+				if (cipherType.startsWith("atbash")) {
+					const alphabet = "abcdefghijklmnopqrstuvwxyz"
+					await message.reply(
+						cipherType
+							.replace("atbash ", "")
+							.split("")
+							.map((c) =>
+								alphabet.indexOf(c) != -1
+									? alphabet.split("").reverse().join("")[
+											alphabet.indexOf(c)
+									  ]
+									: alphabet.toUpperCase().indexOf(c) != -1
+									? alphabet
+											.toUpperCase()
+											.split("")
+											.reverse()
+											.join("")[
+											alphabet.toUpperCase().indexOf(c)
+									  ]
+									: c
+							)
+							.join("")
+					)
+				}
+			} else {
+				await message.reply(
+					randomChoice(["Yes", "Sure", "Maybe", "No", "Never"])
 				)
 			}
 		} catch (error) {
