@@ -2942,11 +2942,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			let mainDeck = []
 			// let sideDeck = []
 
-			const deckFile = JSON.parse(
-				await (
-					await fetch(options.getAttachment("deck-file").url)
-				).text()
-			)
+			const deckFile = options.getAttachment("deck-file")
+				? JSON.parse(
+						await (
+							await fetch(options.getAttachment("deck-file").url)
+						).text()
+				  )
+				: options.getString("deck-json")
+				? JSON.parse(options.getString("deck-json"))
+				: {}
+
 			for (const name of deckFile.cards) {
 				mainDeck.push(fetchCard(name.toLowerCase(), set, true, true))
 			}
@@ -3077,7 +3082,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 						0
 					)}\nAverage Blood cost: ${average(
 						...mainDeck
-							.filter((c) => c.bone_cost)
+							.filter((c) => c.blood_cost)
 							.map((c) => getBlood(c))
 					).toFixed(1)}\nMaximum Bone cost: ${mainDeck.reduce(
 						(acc, c) => acc + getBone(c),

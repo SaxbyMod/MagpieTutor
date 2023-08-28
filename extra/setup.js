@@ -260,16 +260,6 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("deck-analysis")
 		.setDescription("Analyze and give useful information about a deck")
-		.addAttachmentOption((option) =>
-			option
-				.setName("deck-file")
-				.setDescription("The deck file you want to analyze")
-		)
-		.addStringOption((option) =>
-			option
-				.setName("deck-json")
-				.setDescription("The deck json you want to analyze")
-		)
 		.addStringOption((option) =>
 			option
 				.setName("set")
@@ -289,6 +279,16 @@ const commands = [
 					}
 				)
 				.setRequired(true)
+		)
+		.addAttachmentOption((option) =>
+			option
+				.setName("deck-file")
+				.setDescription("The deck file you want to analyze")
+		)
+		.addStringOption((option) =>
+			option
+				.setName("deck-json")
+				.setDescription("The deck json you want to analyze")
 		),
 	new SlashCommandBuilder()
 		.setName("add-vanilla")
