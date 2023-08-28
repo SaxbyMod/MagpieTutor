@@ -1894,11 +1894,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.isChatInputCommand()) {
 		const { commandName, options } = interaction
 		if (commandName == "echo") {
-			//if (interaction.user.id != 601821309881810973) return
+			if (!isPerm(interaction)) return
 			const message = options.getString("text")
 			console.log(`${interaction.user.username} say ${message}`)
 			const channel =
-				(await options.getChannel("channel")) != undefined
+				options.getChannel("channel") != undefined
 					? options.getChannel("channel")
 					: interaction.channel
 
@@ -2832,7 +2832,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			)
 			await interaction.reply({ content: "Retried", ephemeral: true })
 		} else if (commandName == "react") {
-			;(
+			if (!isPerm(interaction)) return(
 				await getMessage(
 					interaction.channel,
 					options.getString("message")
