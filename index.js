@@ -612,7 +612,7 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
 				.then((json) => {
 					setsData[set.name] = json
 				})
-		} else if (set.type == "file") {git
+		} else if (set.type == "file") {
 			setsData[set.name] = require(set.file)
 		} else if (set.type == "specialLoad") {
 			setsData[set.name] = await require(set.file).load()
