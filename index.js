@@ -31,7 +31,10 @@ const { create, all } = require("mathjs")
 
 const mathjs = create(all)
 const mathSafe = create(all)
+
 mathSafe.createUnit("blahaj", "55 cm", { prefixes: "long" })
+mathSafe.createUnit("longhaj", "1 m", { prefixes: "long" })
+
 const limitedEvaluate = mathSafe.evaluate
 
 mathSafe.import(
