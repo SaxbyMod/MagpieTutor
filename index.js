@@ -19,56 +19,56 @@ const {
     ButtonBuilder,
     MessageAttachment,
     Attachment,
-} = require("discord.js")
+} = require("discord.js");
 
 // installed module
-const StringSimilarity = require("string-similarity")
-const scryfall = require("scryfall")
-const chalk = require("chalk")
-const Canvas = require("@napi-rs/canvas")
-const format = require("string-format")
-const { create, all } = require("mathjs")
+const StringSimilarity = require("string-similarity");
+const scryfall = require("scryfall");
+const chalk = require("chalk");
+const Canvas = require("@napi-rs/canvas");
+const format = require("string-format");
+const { create, all } = require("mathjs");
 
-const mathjs = create(all)
-const mathSafe = create(all)
+const mathjs = create(all);
+const mathSafe = create(all);
 
-mathSafe.createUnit("blahaj", "55 cm", { prefixes: "long" })
-mathSafe.createUnit("longhaj", "1 m", { prefixes: "long" })
+mathSafe.createUnit("blahaj", "55 cm", { prefixes: "long" });
+mathSafe.createUnit("longhaj", "1 m", { prefixes: "long" });
 
-const limitedEvaluate = mathSafe.evaluate
+const limitedEvaluate = mathSafe.evaluate;
 
 mathSafe.import(
     {
         import: function() {
-            throw new Error("Function import is disabled")
+            throw new Error("Function import is disabled");
         },
         createUnit: function() {
-            throw new Error("Function createUnit is disabled")
+            throw new Error("Function createUnit is disabled");
         },
         evaluate: function() {
-            throw new Error("Function evaluate is disabled")
+            throw new Error("Function evaluate is disabled");
         },
         parse: function() {
-            throw new Error("Function parse is disabled")
+            throw new Error("Function parse is disabled");
         },
         simplify: function() {
-            throw new Error("Function simplify is disabled")
+            throw new Error("Function simplify is disabled");
         },
         derivative: function() {
-            throw new Error("Function derivative is disabled")
+            throw new Error("Function derivative is disabled");
         },
     },
-    { override: true }
-)
+    { override: true },
+);
 
 // general module (don't need installing)
-const fetch = require("node-fetch")
-const http = require("http")
-const fs = require("fs")
+const fetch = require("node-fetch");
+const http = require("http");
+const fs = require("fs");
 
 // my module
-const { token, clientId } = require("./config.json")
-const sigilList = require("./extra/sigilList.json")
+const { token, clientId } = require("./config.json");
+const sigilList = require("./extra/sigilList.json");
 const {
     debugLog,
     infoLog,
@@ -91,24 +91,33 @@ const {
     getBlood,
     deepCopy,
     randStr,
-} = require("./extra/utils")
+} = require("./extra/utils");
 
-const portraitCaches = require("./extra/caches.json")
+const portraitCaches = require("./extra/caches.json");
 
-format.extend(String.prototype, {})
+format.extend(String.prototype, {});
 
-const searchRegex = /([^\s]*?)(\w{3})?\[{2}([^\]]+)\]{2}/g
-const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g
+const searchRegex = /([^\s]*?)(\w{3})?\[{2}([^\]]+)\]{2}/g;
+const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g;
 
-const matchPercentage = 0.4
-let scream = false
-let log = ""
-let doneSetup = false
+const matchPercentage = 0.4;
+let scream = false;
+let log = "";
+let doneSetup = false;
 // Chalk color
-chalk.orange = chalk.hex("#fb922b")
-chalk.pink = chalk.hex("#ff80a4")
+chalk.orange = chalk.hex("#fb922b");
+chalk.pink = chalk.hex("#ff80a4");
 
-const colorList = ["blue", "cyan", "green", "yellow", "orange", "red", "pink", "magenta"]
+const colorList = [
+    "blue",
+    "cyan",
+    "green",
+    "yellow",
+    "orange",
+    "red",
+    "pink",
+    "magenta",
+];
 
 //set up the bot client
 const client = new Client({
@@ -121,7 +130,7 @@ const client = new Client({
         GatewayIntentBits.DirectMessages,
     ],
     partials: [Partials.Message],
-})
+});
 
 //SECTION - Define set stuff
 
@@ -409,7 +418,7 @@ const SetFormatList = {
             },
         },
     },
-}
+};
 
 // imf pool
 const ImfPool = [
@@ -423,7 +432,7 @@ const ImfPool = [
         condition: "card.mox_cost || specialMagick.includes(card.name)",
     },
     { name: "common", condition: "!card.rare" },
-]
+];
 
 //structure of a pack for drafting
 const PackStructure = {
@@ -438,7 +447,7 @@ const PackStructure = {
         { type: "uncommon", amount: 2 },
         { type: "common", amount: 5 },
     ],
-}
+};
 
 //deck restriction when drafting
 const DraftRestriction = {
@@ -456,7 +465,7 @@ const DraftRestriction = {
         rare: { copyPerDeck: 1, uniquePerDeck: 3 },
         talk: { copyPerDeck: 1, uniquePerDeck: 1 },
     },
-}
+};
 
 //ANCHOR - Set config
 const SetList = {
@@ -578,13 +587,13 @@ const SetList = {
         name: "lazy",
         type: "modifier",
     },
-}
+};
 
 //!SECTION - define the ruleset shit
 
-const serverDefaultSet = require("./extra/default.json")
+const serverDefaultSet = require("./extra/default.json");
 
-let setsData = {}
+let setsData = {};
 
 const specialMagick = [
     "Mox Module",
@@ -596,134 +605,159 @@ const specialMagick = [
     "Gem Detonator",
     "Gem Guardian",
     "Horse Mage",
-] // these card will be consider magick no matter what
+]; // these card will be consider magick no matter what
 
 //downloading all the set and fetch important shit
-infoLog(chalk.magenta.underline.bold("Setup please wait"))
-    ; (async () => {
-        const startSetup = performance.now()
-        infoLog(chalk.magenta.underline.bold("Loading set data..."))
-        let i = 0
-        //fetch all the set json
-        for (const set of Object.values(SetList)) {
-            const start = performance.now()
-            if (set.type === "107") {
-                await fetch(
-                    `https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
-                )
+infoLog(chalk.magenta.underline.bold("Setup please wait"));
+(async () => {
+    const startSetup = performance.now();
+    infoLog(chalk.magenta.underline.bold("Loading set data..."));
+    let i = 0;
+    //fetch all the set json
+    for (const set of Object.values(SetList)) {
+        const start = performance.now();
+        if (set.type === "107") {
+            await fetch(
+                `https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`,
+            )
+                .then((res) => res.json())
+                .then((json) => {
+                    setsData[set.name] = json;
+                });
+        } else if (set.type == "file") {
+            setsData[set.name] = require(set.file);
+        } else if (set.type == "specialLoad") {
+            setsData[set.name] = await require(set.file).load();
+        } else if (set.type == "url") {
+            try {
+                await fetch(set.url)
                     .then((res) => res.json())
                     .then((json) => {
-                        setsData[set.name] = json
-                    })
-            } else if (set.type == "file") {
-                setsData[set.name] = require(set.file)
-            } else if (set.type == "specialLoad") {
-                setsData[set.name] = await require(set.file).load()
-            } else if (set.type == "url") {
-                try {
-                    await fetch(set.url)
-                        .then((res) => res.json())
-                        .then((json) => {
-                            setsData[set.name] = json
-                        })
-                } catch (err) {
-                    infoLog(
-                        chalk.bgRed(
-                            `Set ${set.name} have a json error loading competitive data instead!`
-                        )
-                    )
-                    if (set.name != "eternal") continue
-                    console.log(err)
-                    scream = true
-                    log = err
-                    setsData[set.name] = JSON.parse(JSON.stringify(setsData["competitive"]))
-                }
+                        setsData[set.name] = json;
+                    });
+            } catch (err) {
+                infoLog(
+                    chalk.bgRed(
+                        `Set ${set.name} have a json error loading competitive data instead!`,
+                    ),
+                );
+                if (set.name != "eternal") continue;
+                console.log(err);
+                scream = true;
+                log = err;
+                setsData[set.name] = JSON.parse(
+                    JSON.stringify(setsData["competitive"]),
+                );
             }
-            const cardCount = setsData[set.name]
-                ? typeof setsData[set.name].cards == "object"
-                    ? Object.keys(setsData[set.name].cards).length
-                    : setsData[set.name].cards.length
-                : 0
-
-            // Prettier make it look weird
-            // Set [set name] loaded with [set code] and [card count] cards (load times: [time]ms)
-
-            infoLog(
-                chalk.blue(
-                    `Set ${chalk[colorList[i % colorList.length]].inverse(
-                        set.name
-                    )} loaded with set code "${chalk.orange.bold(
-                        Object.keys(SetList).find((key) => SetList[key] === set)
-                    )}"${setsData[set.name]
-                        ? ` and ${chalk[
-                            cardCount > 300 ? "red" : cardCount > 100 ? "yellow" : "green"
-                        ](cardCount)} cards`
-                        : ""
-                    } (${chalk.red(`load times: ${(performance.now() - start).toFixed(1)} ms`)})`
-                )
-            )
-            i++
         }
-        infoLog(chalk.red(`Loading set data took: ${(performance.now() - startSetup).toFixed(1)}ms`))
-        // loading all the card pool
-        infoLog(chalk.magenta.underline.bold("Loading card pools..."))
-        for (const setName of Object.keys(setsData)) {
-            const start = performance.now()
-            if (Object.values(SetList).find((i) => i.name == setName).type == "file") continue
-            setsData[setName].pools = {}
-            let temp = {}
-            for (const card of setsData[setName].cards) {
-                const name = card.name.toLowerCase()
-                temp[name] = card
+        const cardCount = setsData[set.name]
+            ? typeof setsData[set.name].cards == "object"
+                ? Object.keys(setsData[set.name].cards).length
+                : setsData[set.name].cards.length
+            : 0;
 
-                for (const poolType of Object.values(SetList).find((i) => i.name == setName).pools) {
-                    if (!setsData[setName].pools[poolType.name])
-                        setsData[setName].pools[poolType.name] = []
-                    if (eval(poolType.condition)) setsData[setName].pools[poolType.name].push(name)
-                }
+        // Prettier make it look weird
+        // Set [set name] loaded with [set code] and [card count] cards (load times: [time]ms)
+
+        infoLog(
+            chalk.blue(
+                `Set ${chalk[colorList[i % colorList.length]].inverse(
+                    set.name,
+                )} loaded with set code "${chalk.orange.bold(
+                    Object.keys(SetList).find((key) => SetList[key] === set),
+                )}"${setsData[set.name]
+                    ? ` and ${chalk[
+                        cardCount > 300 ? "red" : cardCount > 100 ? "yellow" : "green"
+                    ](cardCount)} cards`
+                    : ""
+                } (${chalk.red(
+                    `load times: ${(performance.now() - start).toFixed(1)} ms`,
+                )})`,
+            ),
+        );
+        i++;
+    }
+    infoLog(
+        chalk.red(
+            `Loading set data took: ${(performance.now() - startSetup).toFixed(1)}ms`,
+        ),
+    );
+    // loading all the card pool
+    infoLog(chalk.magenta.underline.bold("Loading card pools..."));
+    for (const setName of Object.keys(setsData)) {
+        const start = performance.now();
+        if (Object.values(SetList).find((i) => i.name == setName).type == "file")
+            continue;
+        setsData[setName].pools = {};
+        let temp = {};
+        for (const card of setsData[setName].cards) {
+            const name = card.name.toLowerCase();
+            temp[name] = card;
+
+            for (const poolType of Object.values(SetList).find(
+                (i) => i.name == setName,
+            ).pools) {
+                if (!setsData[setName].pools[poolType.name])
+                    setsData[setName].pools[poolType.name] = [];
+                if (eval(poolType.condition))
+                    setsData[setName].pools[poolType.name].push(name);
             }
-            setsData[setName].cards = temp
-            // Finish loading [set name] pools. Loaded [all pool amount] cards. Pool names: [pool]
-            infoLog(
-                chalk.green(
-                    `${setName} loaded with ${chalk.blue(
-                        Object.keys(setsData[setName].pools).length
-                    )} pools with ${Object.values(setsData[setName].pools)
-                        .map((p, i) => chalk[colorList[i]](p.length))
-                        .join(", ")} cards. Pool names: ${Object.keys(setsData[setName].pools)
-                            .map((p, i) => chalk[colorList[i]](p))
-                            .join(", ")} (${chalk.red(`load times: ${(performance.now() - start).toFixed(1)}ms`)})`
-                )
-            )
         }
-        infoLog(chalk.red(`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`))
-        for (const [key, value] of Object.entries(process.memoryUsage())) {
-            infoLog(chalk.orange(`Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `))
-        }
+        setsData[setName].cards = temp;
+        // Finish loading [set name] pools. Loaded [all pool amount] cards. Pool names: [pool]
+        infoLog(
+            chalk.green(
+                `${setName} loaded with ${chalk.blue(
+                    Object.keys(setsData[setName].pools).length,
+                )} pools with ${Object.values(setsData[setName].pools)
+                    .map((p, i) => chalk[colorList[i]](p.length))
+                    .join(", ")} cards. Pool names: ${Object.keys(setsData[setName].pools)
+                        .map((p, i) => chalk[colorList[i]](p))
+                        .join(", ")} (${chalk.red(
+                            `load times: ${(performance.now() - start).toFixed(1)}ms`,
+                        )})`,
+            ),
+        );
+    }
+    infoLog(
+        chalk.red(`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`),
+    );
+    for (const [key, value] of Object.entries(process.memoryUsage())) {
         infoLog(
             chalk.orange(
-                `Total memory use: ${(
-                    Object.values(process.memoryUsage()).reduce((acc, c) => acc + c, 0) / 1000000
-                ).toFixed(1)}MB`
-            )
-        )
+                `Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `,
+            ),
+        );
+    }
+    infoLog(
+        chalk.orange(
+            `Total memory use: ${(
+                Object.values(process.memoryUsage()).reduce((acc, c) => acc + c, 0) /
+                1000000
+            ).toFixed(1)}MB`,
+        ),
+    );
 
-        infoLog(chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`))
-        debugLog("Setup completed")
+    infoLog(chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`));
+    debugLog("Setup completed");
 
-        doneSetup = true
-        if (!client.isReady()) return
-        console.log(chalk.bgGreen.black("Setup is complete and bot is connected to Discord's sever"))
-        const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
-        infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
-        infoLog(
-            chalk.cyan(
-                `Servers: ${servers
-                    .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                    .join(", ")}`
-            )
-        )
-    })()
+    doneSetup = true;
+    if (!client.isReady()) return;
+    console.log(
+        chalk.bgGreen.black(
+            "Setup is complete and bot is connected to Discord's sever",
+        ),
+    );
+    const servers = Array.from(client.guilds.cache).map((s) => s[1].name);
+    infoLog(chalk.cyan(`Bot is in ${servers.length} server`));
+    infoLog(
+        chalk.cyan(
+            `Servers: ${servers
+                .map((s, i) => chalk[colorList[i % colorList.length]](s))
+                .join(", ")}`,
+        ),
+    );
+})();
 
 const specialAttackDescription = {
     green_mox:
@@ -733,7 +767,7 @@ const specialAttackDescription = {
     ant: "This card's power is number of ant you control.",
     bell: "This card's power is how close it is to the bell",
     hand: "This card's power is the number of the cards in your hand",
-}
+};
 
 const queryKeywordList = {
     sigil: {
@@ -744,11 +778,11 @@ const queryKeywordList = {
                 info.sigils
                     ? StringSimilarity.findBestMatch(
                         value,
-                        info.sigils.map((s) => s.toLowerCase())
+                        info.sigils.map((s) => s.toLowerCase()),
                     ).bestMatch.rating >= 0.8
-                    : false
-            )
-            return `{n} have ${value}`
+                    : false,
+            );
+            return `{n} have ${value}`;
         },
     },
     effect: {
@@ -756,14 +790,14 @@ const queryKeywordList = {
         description: "Filter for a sigil effect",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
-                if (!info.sigils) return false
-                let flag = false
+                if (!info.sigils) return false;
+                let flag = false;
                 info.sigils.forEach((sigil) => {
-                    if (setsData[set.name].sigils[sigil].includes(value)) flag = true
-                })
-                return flag
-            })
-            return `have sigil effect {n} includes "${value}"`
+                    if (setsData[set.name].sigils[sigil].includes(value)) flag = true;
+                });
+                return flag;
+            });
+            return `have sigil effect {n} includes "${value}"`;
         },
     },
     description: {
@@ -771,10 +805,10 @@ const queryKeywordList = {
         description: "Filter for a description",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
-                if (!info.description) return false
-                return info.description.includes(value)
-            })
-            return `have description {n} includes "${value}"`
+                if (!info.description) return false;
+                return info.description.includes(value);
+            });
+            return `have description {n} includes "${value}"`;
         },
     },
     resourcecost: {
@@ -790,8 +824,8 @@ const queryKeywordList = {
                         ? ">"
                         : value.includes("<")
                             ? "<"
-                            : "=="
-            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
+                            : "==";
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "");
             filterPossibleValue(
                 ([name, info]) =>
                     eval(`${info.blood_cost}${op}${value}`) ||
@@ -801,12 +835,15 @@ const queryKeywordList = {
                         `${info.mox_cost || info.mox
                             ? info[set.name == "augmeted" ? "mox" : "mox_cost"].length
                             : undefined
-                        }${op}${value}`
+                        }${op}${value}`,
                     ) ||
-                    eval(`${info.shattered ? info.shattered.length : undefined}${op}${value}`)
-            )
+                    eval(
+                        `${info.shattered ? info.shattered.length : undefined
+                        }${op}${value}`,
+                    ),
+            );
 
-            return `with rc {n} ${op}${value}`
+            return `with rc {n} ${op}${value}`;
         },
     },
     convertedresourcecost: {
@@ -822,8 +859,8 @@ const queryKeywordList = {
                         ? ">"
                         : value.includes("<")
                             ? "<"
-                            : "=="
-            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
+                            : "==";
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "");
             filterPossibleValue(([name, info]) =>
                 eval(
                     `${(info.blood_cost ? info.blood_cost : 0) +
@@ -833,11 +870,11 @@ const queryKeywordList = {
                         ? info[set.name == "augmeted" ? "mox" : "mox_cost"].length
                         : 0) +
                     (info.shattered ? info.shattered.length : 0)
-                    }${op}${value}`
-                )
-            )
+                    }${op}${value}`,
+                ),
+            );
 
-            return `with crc {n} ${op}${value}`
+            return `with crc {n} ${op}${value}`;
         },
     },
     resourcetype: {
@@ -864,8 +901,8 @@ const queryKeywordList = {
                                     : "mox_cost"
                                 : value == "s" || value == "shattered"
                                     ? "shattered"
-                                    : ""
-            filterPossibleValue(([name, info]) => info[type])
+                                    : "";
+            filterPossibleValue(([name, info]) => info[type]);
 
             return `{n} cost ${value == "b" || value == "blood"
                 ? "blood"
@@ -878,7 +915,7 @@ const queryKeywordList = {
                             : value == "s" || value == "shattered"
                                 ? "shattered"
                                 : ""
-                }`
+                }`;
         },
     },
     color: {
@@ -895,13 +932,19 @@ const queryKeywordList = {
                         ? set.name == "augmented"
                             ? "ruby"
                             : "Orange"
-                        : value == "b" || value == "blue" || value == "s" || value == "sapphire"
+                        : value == "b" ||
+                            value == "blue" ||
+                            value == "s" ||
+                            value == "sapphire"
                             ? set.name == "augmented"
                                 ? "sapphire"
                                 : "Blue"
-                            : value == "c" || value == "colorless" || value == "p" || value == "prism"
+                            : value == "c" ||
+                                value == "colorless" ||
+                                value == "p" ||
+                                value == "prism"
                                 ? "prism"
-                                : ""
+                                : "";
 
             // if mox cost exist check for color then if shattered exist also check for color
             // or between mox and shattered
@@ -910,10 +953,10 @@ const queryKeywordList = {
                     ? info[set.name == "augmented" ? "mox" : "mox_cost"].includes(color)
                     : false || info.shattered
                         ? info.shattered.includes(`shattered_${color}`)
-                        : false
-            )
+                        : false,
+            );
 
-            return `is {n} ${color}`
+            return `is {n} ${color}`;
         },
     },
     temple: {
@@ -930,10 +973,10 @@ const queryKeywordList = {
                             ? "Tech"
                             : value == "m" || value == "magick"
                                 ? "Magick"
-                                : ""
-            filterPossibleValue(([name, info]) => info.temple == temple)
+                                : "";
+            filterPossibleValue(([name, info]) => info.temple == temple);
 
-            return `{n} from ${temple} temple`
+            return `{n} from ${temple} temple`;
         },
     },
     tribe: {
@@ -941,12 +984,12 @@ const queryKeywordList = {
         description: "Filter for tribe.",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
-                if (!info.tribes) return false
-                if (Array.isArray(info.tribes)) info.tribes = info.tribes.join(" ")
-                return info.tribes.toLowerCase().includes(value)
-            })
+                if (!info.tribes) return false;
+                if (Array.isArray(info.tribes)) info.tribes = info.tribes.join(" ");
+                return info.tribes.toLowerCase().includes(value);
+            });
 
-            return `is {n} ${value}`
+            return `is {n} ${value}`;
         },
     },
     trait: {
@@ -954,11 +997,11 @@ const queryKeywordList = {
         description: "Filter for trait.",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
-                if (!info.traits) return false
-                return info.traits.map((t) => t.toLowerCase()).includes(value)
-            })
+                if (!info.traits) return false;
+                return info.traits.map((t) => t.toLowerCase()).includes(value);
+            });
 
-            return `{n} have ${value}`
+            return `{n} have ${value}`;
         },
     },
     rarity: {
@@ -981,17 +1024,22 @@ const queryKeywordList = {
                                 ? "Talking"
                                 : value == "s" || value == "side"
                                     ? "Side Deck"
-                                    : ""
+                                    : "";
             filterPossibleValue(([name, info]) =>
-                set.name == "augmented" ? info.tier == rarity : rarity ? info.rare : !info.rare
-            )
+                set.name == "augmented"
+                    ? info.tier == rarity
+                    : rarity
+                        ? info.rare
+                        : !info.rare,
+            );
 
-            return `is {n} ${rarity}`
+            return `is {n} ${rarity}`;
         },
     },
     health: {
         alias: ["h"],
-        description: "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
+        description:
+            "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -1001,15 +1049,18 @@ const queryKeywordList = {
                         ? ">"
                         : value.includes("<")
                             ? "<"
-                            : "=="
-            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.health}${op}${value}`))
-            return `have health {n} ${op}${value}`
+                            : "==";
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "");
+            filterPossibleValue(([name, info]) =>
+                eval(`${info.health}${op}${value}`),
+            );
+            return `have health {n} ${op}${value}`;
         },
     },
     power: {
         alias: ["p"],
-        description: "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
+        description:
+            "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -1019,11 +1070,13 @@ const queryKeywordList = {
                         ? ">"
                         : value.includes("<")
                             ? "<"
-                            : "=="
-            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.attack}${op}${value}`))
+                            : "==";
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "");
+            filterPossibleValue(([name, info]) =>
+                eval(`${info.attack}${op}${value}`),
+            );
 
-            return `have power {n} ${op}${value}`
+            return `have power {n} ${op}${value}`;
         },
     },
     powerhealth: {
@@ -1039,11 +1092,13 @@ const queryKeywordList = {
                         ? ">"
                         : value.includes("<")
                             ? "<"
-                            : "=="
-            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.attack + info.health}${op}${value}`))
+                            : "==";
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "");
+            filterPossibleValue(([name, info]) =>
+                eval(`${info.attack + info.health}${op}${value}`),
+            );
 
-            return `have power health total {n} ${op}${value}`
+            return `have power health total {n} ${op}${value}`;
         },
     },
     is: {
@@ -1068,51 +1123,57 @@ const queryKeywordList = {
                         "shutterbug",
                         "drowned soul",
                         "long elk",
-                    ]
-                    return removalList.includes(name)
+                    ];
+                    return removalList.includes(name);
                 },
                 banned: ([name, info]) => info.banned,
                 free: ([name, info]) =>
-                    !info.blood_cost && !info.bone_cost && !info.energy_cost && !info.mox_cost,
-            }
-            let callback = nicknameList[value]
-            filterPossibleValue(callback ? callback : ([name, info]) => false)
-            return `is {n} ${value}`
+                    !info.blood_cost &&
+                    !info.bone_cost &&
+                    !info.energy_cost &&
+                    !info.mox_cost,
+            };
+            let callback = nicknameList[value];
+            filterPossibleValue(callback ? callback : ([name, info]) => false);
+            return `is {n} ${value}`;
         },
     },
     name: {
         alias: "n",
         description: "Filter for name",
         callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => name.toLowerCase().includes(value.toLowerCase()))
+            filterPossibleValue(([name, info]) =>
+                name.toLowerCase().includes(value.toLowerCase()),
+            );
 
-            return `have name {n} includes ${value}`
+            return `have name {n} includes ${value}`;
         },
     },
     regex: {
         alias: ["rx"],
         description: "Filter for regex match in name",
         callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => name.match(value))
+            filterPossibleValue(([name, info]) => name.match(value));
 
-            return `have name {n} match ${value}`
+            return `have name {n} match ${value}`;
         },
     },
-}
+};
 
 // function hell
 function getEmoji(name) {
-    return `<:${client.emojis.cache.find((emoji) => emoji.name === name).identifier}>`
+    return `<:${client.emojis.cache.find((emoji) => emoji.name === name).identifier
+        }>`;
 }
 
 function numToEmoji(num) {
-    let out = ""
+    let out = "";
     for (const digit of num + []) {
         if (digit === "-") {
-            out += getEmoji("negative")
-        } else out += getEmoji(`${digit}_`)
+            out += getEmoji("negative");
+        } else out += getEmoji(`${digit}_`);
     }
-    return out
+    return out;
 }
 
 function coloredString(str, raw) {
@@ -1139,108 +1200,108 @@ function coloredString(str, raw) {
         $$u: "\u001b[4m",
 
         $$0: "\u001b[0m",
-    }
+    };
 
     for (const code of Object.keys(codeList)) {
-        str = str.replaceAll(code, codeList[code])
+        str = str.replaceAll(code, codeList[code]);
     }
-    return raw ? str : `\`\`\`ansi\n${str}\`\`\``
+    return raw ? str : `\`\`\`ansi\n${str}\`\`\``;
 }
 
 async function messageSearch(message, returnValue = false) {
-    const start = performance.now()
-    let embedList = []
-    let attachmentList = []
-    let msg = ""
+    const start = performance.now();
+    let embedList = [];
+    let attachmentList = [];
+    let msg = "";
     if (!message.content.toLowerCase().match(searchRegex)) {
-        return
+        return;
     }
     console.log(
         chalk.blue(
-            `Message with content: "${chalk.green(message.content)}" in ${chalk.red.bold(
-                message.guild ? message.guild.name : "DM"
-            )} detected searching time ${chalk.magenta("OwO")}`
-        )
-    )
-    let cards = []
-    outer: for (let cardMatch of message.content.toLowerCase().matchAll(searchRegex)) {
-        let modifierCode = cardMatch[1]
+            `Message with content: "${chalk.green(
+                message.content,
+            )}" in ${chalk.red.bold(
+                message.guild ? message.guild.name : "DM",
+            )} detected searching time ${chalk.magenta("OwO")}`,
+        ),
+    );
+    let cards = [];
+    outer: for (let cardMatch of message.content
+        .toLowerCase()
+        .matchAll(searchRegex)) {
+        let modifierCode = cardMatch[1];
         let selectedSet = [
             SetList[cardMatch[2]] ??
             SetList[serverDefaultSet[message.guildId]?.default] ??
             SetList["com"],
-        ]
-        let name = cardMatch[3]
-        let card
+        ];
+        let name = cardMatch[3];
+        let card;
 
-        let noAlter = false
-        let compactDisplay = false
-        let noArt = false
-        let sigilSearch = false
-        let query = false
-        let json = false
-        let lazy = false
+        let noAlter = false;
+        let compactDisplay = false;
+        let noArt = false;
+        let sigilSearch = false;
+        let query = false;
+        let json = false;
+        let lazy = false;
 
         for (const code of modifierCode) {
-            const modifierSet = SetList[code]
-            if (!modifierSet) break
+            const modifierSet = SetList[code];
+            if (!modifierSet) break;
             if (modifierSet.type == "special") {
                 if (modifierSet.name == "magic the gathering") {
-                    const card = await fetchMagicCard(name)
+                    const card = await fetchMagicCard(name);
 
                     if (card == -1) {
                         embedList.push(
                             new EmbedBuilder()
                                 .setColor(Colors.Red)
                                 .setTitle(`Card "${name}" not found`)
-                                .setDescription(`Magic card ${name} not found\n`)
-                        )
+                                .setDescription(`Magic card ${name} not found\n`),
+                        );
                     } else {
-                        if (json) {
-                            msg += `\`\`\`\n${JSON.stringify(card)}\`\`\``
-                            continue outer
-                        }
-                        attachmentList.push(card.image_uris.normal)
+                        attachmentList.push(card.image_uris.normal);
                     }
                 }
-                continue outer
+                continue outer;
             } else if (modifierSet.type == "modifier") {
                 if (modifierSet.name == "original version") {
-                    noAlter = true
+                    noAlter = true;
                 } else if (modifierSet.name == "compact") {
-                    compactDisplay = true
+                    compactDisplay = true;
                 } else if (modifierSet.name == "no portrait") {
-                    noArt = true
+                    noArt = true;
                 } else if (modifierSet.name == "sigil") {
-                    sigilSearch = true
+                    sigilSearch = true;
                 } else if (modifierSet.name == "no search") {
-                    continue outer
+                    continue outer;
                 } else if (modifierSet.name == "query") {
-                    query = true
+                    query = true;
                 } else if (modifierSet.name == "json") {
-                    json = true
+                    json = true;
                 } else if (modifierSet.name == "lazy") {
-                    lazy = true
+                    lazy = true;
                     selectedSet = Object.keys(setsData).map((name) =>
-                        Object.values(SetList).find((s) => s.name == name)
-                    )
+                        Object.values(SetList).find((s) => s.name == name),
+                    );
                 }
             }
         }
 
-        let temp = []
-        let lazyList = []
-        let bestRating = 0
+        let temp = [];
+        let lazyList = [];
+        let bestRating = 0;
 
         for (const set of selectedSet) {
-            let bestMatch = { rating: 0 }
+            let bestMatch = { rating: 0 };
             if (sigilSearch) {
-                if (!setsData[set.name].sigils) continue
+                if (!setsData[set.name].sigils) continue;
                 // get the best match
                 bestMatch = StringSimilarity.findBestMatch(
                     name,
-                    Object.keys(setsData[set.name].sigils)
-                ).bestMatch
+                    Object.keys(setsData[set.name].sigils),
+                ).bestMatch;
 
                 if (bestMatch.rating <= matchPercentage) {
                     if (!lazy) {
@@ -1250,33 +1311,36 @@ async function messageSearch(message, returnValue = false) {
                                 .setTitle(`Sigil "${name}" not found`)
                                 .setDescription(
                                     `No Sigil found in selected set (${setsData[set.name].ruleset
-                                    }) that have more than 40% similarity with the search term(${name})`
-                                )
-                        )
-                        continue
+                                    }) that have more than 40% similarity with the search term(${name})`,
+                                ),
+                        );
+                        continue;
                     }
                 }
 
-                temp = genSigilEmbed(bestMatch.target, setsData[set.name].sigils[bestMatch.target])
+                temp = genSigilEmbed(
+                    bestMatch.target,
+                    setsData[set.name].sigils[bestMatch.target],
+                );
             } else if (query) {
-                temp = queryCard(name, set, compactDisplay)
+                temp = queryCard(name, set, compactDisplay);
             } else if (json) {
                 bestMatch = StringSimilarity.findBestMatch(
                     name,
-                    Object.keys(setsData[set.name].cards)
-                ).bestMatch
+                    Object.keys(setsData[set.name].cards),
+                ).bestMatch;
 
                 msg += `\`\`\`json\n${JSON.stringify(
                     fetchCard(bestMatch.target, set.name, true),
                     null,
-                    compactDisplay ? 0 : 2
-                )}\`\`\``
+                    compactDisplay ? 0 : 2,
+                )}\`\`\``;
             } else {
                 // get the best match
                 bestMatch = StringSimilarity.findBestMatch(
                     name,
-                    Object.keys(setsData[set.name].cards)
-                ).bestMatch
+                    Object.keys(setsData[set.name].cards),
+                ).bestMatch;
 
                 // if less than 40% match return error and continue to the next match
                 if (bestMatch.rating <= 0.4) {
@@ -1287,33 +1351,33 @@ async function messageSearch(message, returnValue = false) {
                                 .setTitle(`Card "${name}" not found`)
                                 .setDescription(
                                     `No card found in selected set (${setsData[set.name].ruleset
-                                    }) that have more than 40% similarity with the search term(${name})`
-                                )
-                        )
-                        continue
+                                    }) that have more than 40% similarity with the search term(${name})`,
+                                ),
+                        );
+                        continue;
                     }
                 } else {
-                    card = fetchCard(bestMatch.target, set.name, noAlter, noArt)
+                    card = fetchCard(bestMatch.target, set.name, noAlter, noArt);
                 }
             }
 
             if (card) {
-                if (!lazy) cards.push(card)
+                if (!lazy) cards.push(card);
                 if (lazy) {
                     if (bestMatch.rating > bestRating) {
-                        lazyList = [card]
-                        bestRating = bestMatch.rating
+                        lazyList = [card];
+                        bestRating = bestMatch.rating;
                     } else if (bestMatch.rating == bestRating) {
-                        lazyList.push(card)
+                        lazyList.push(card);
                     }
                 } else {
-                    temp = await genCardEmbed(card, compactDisplay)
+                    temp = await genCardEmbed(card, compactDisplay);
                 }
             }
             if (temp.length > 1) {
-                embedList.push(temp[0])
+                embedList.push(temp[0]);
                 if (temp[1] != 1) {
-                    attachmentList.push(temp[1])
+                    attachmentList.push(temp[1]);
                 }
             }
         }
@@ -1324,17 +1388,17 @@ async function messageSearch(message, returnValue = false) {
                     new EmbedBuilder()
                         .setColor(Colors.Red)
                         .setTitle("No card found")
-                        .setDescription("No card found in all selected set")
-                )
-                continue
+                        .setDescription("No card found in all selected set"),
+                );
+                continue;
             }
-            cards = cards.concat(lazyList)
+            cards = cards.concat(lazyList);
             for (const card of lazyList) {
-                let temp = await genCardEmbed(card, compactDisplay)
+                let temp = await genCardEmbed(card, compactDisplay);
                 if (temp.length > 1) {
-                    embedList.push(temp[0])
+                    embedList.push(temp[0]);
                     if (temp[1] != 1) {
-                        attachmentList.push(temp[1])
+                        attachmentList.push(temp[1]);
                     }
                 }
             }
@@ -1354,432 +1418,458 @@ async function messageSearch(message, returnValue = false) {
                 new ButtonBuilder()
                     .setLabel("Remove Cache")
                     .setCustomId("removeCache")
-                    .setStyle(ButtonStyle.Danger)
+                    .setStyle(ButtonStyle.Danger),
             ),
         ],
-    }
+    };
 
-    const end = performance.now()
+    const end = performance.now();
 
     if (msg != "") {
-        replyOption["content"] = msg
-        if (replyOption["content"].length > 2000) replyOption["content"] = "Message too large"
+        replyOption["content"] = msg;
+        if (replyOption["content"].length > 2000)
+            replyOption["content"] = "Message too large";
     }
-    if (embedList.length > 0) replyOption["embeds"] = embedList
-    if (attachmentList.length > 0) replyOption["files"] = attachmentList
+    if (embedList.length > 0) replyOption["embeds"] = embedList;
+    if (attachmentList.length > 0) replyOption["files"] = attachmentList;
 
     if (replyOption["content"] || replyOption["embeds"] || replyOption["files"]) {
         replyOption["content"] =
             (replyOption["content"] ? replyOption["content"] : "") +
-            `\nSearch complete in ${(end - start).toFixed(1)}ms`
-        if (returnValue) return replyOption
+            `\nSearch complete in ${(end - start).toFixed(1)}ms`;
+        if (returnValue) return replyOption;
 
-        const replyMsg = await message.reply(replyOption)
+        const replyMsg = await message.reply(replyOption);
         for (const [index, embed] of replyMsg.embeds.entries()) {
-            if (!cards[index]) continue
+            if (!cards[index]) continue;
             if (cards[index].url && !portraitCaches[cards[index].url]) {
-                if (!embed.thumbnail) continue
-                portraitCaches[cards[index].url] = embed.thumbnail.proxyURL
-                console.log(chalk.green(`${cards[index].name} cache created`))
+                if (!embed.thumbnail) continue;
+                portraitCaches[cards[index].url] = embed.thumbnail.proxyURL;
+                console.log(chalk.green(`${cards[index].name} cache created`));
             }
         }
-        fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
+        fs.writeFileSync(
+            "./extra/caches.json",
+            JSON.stringify(portraitCaches, null, 4),
+        );
     }
 }
 
 function genDescription(textFormat, card) {
-    let out = {}
+    let out = {};
 
     for (const field of Object.values(textFormat.body)) {
-        completeInfo = ""
+        completeInfo = "";
 
         if (field.type == "keyword") {
             if (card[field.var]) {
                 card[field.var].forEach((keyword) => {
-                    completeInfo += `**${keyword}**: ${setsData[card.set].sigils[keyword]}\n`
-                })
+                    completeInfo += `**${keyword}**: ${setsData[card.set].sigils[keyword]
+                        }\n`;
+                });
             }
         } else if (field.type == "special_keyword") {
             if (card[field.var]) {
                 card[field.var].forEach((keyword) => {
-                    completeInfo += `**${keyword.name}**: ${keyword.description}`
-                })
+                    completeInfo += `**${keyword.name}**: ${keyword.description}`;
+                });
             }
         } else {
             for (const info of Object.values(field.info)) {
                 if (!info.text.match(/{(\w+)}/g)) {
-                    completeInfo += info.text
-                    continue
+                    completeInfo += info.text;
+                    continue;
                 }
-                let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
-                if (!temp) continue
+                let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)];
+                if (!temp) continue;
                 if (info.type == "mox") {
-                    if (temp.length < 1) continue
+                    if (temp.length < 1) continue;
                     // idk what this do anymore i was very high
-                    temp = {} // make a dict to put them in so .format can use it as key
-                    temp[info.text.match(/{(\w+)}/g)[0].slice(1, -1)] /* field name = var name */ =
-                        card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
-                            .map((a) => `:${a}:`.toLowerCase())
-                            .join("") // put the mox in : to make it emoji
-                    completeInfo += info.text.format(temp)
+                    temp = {}; // make a dict to put them in so .format can use it as key
+                    temp[
+                        info.text.match(/{(\w+)}/g)[0].slice(1, -1)
+                    ] /* field name = var name */ = card[
+                        info.text.match(/{(\w+)}/g)[0].slice(1, -1)
+                    ]
+                        .map((a) => `:${a}:`.toLowerCase())
+                        .join(""); // put the mox in : to make it emoji
+                    completeInfo += info.text.format(temp);
                 } else if (info.type == "list") {
-                    completeInfo += info.text.format(card)
+                    completeInfo += info.text.format(card);
                 } else if (info.type == "stat") {
                     completeInfo += info.text.replace(
                         "{health}",
-                        `**Stat**: ${card.atkspecial ? `:${card.atkspecial}:` : card.attack} / ${card.health
-                        } ${card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
-                        }`
-                    )
+                        `**Stat**: ${card.atkspecial ? `:${card.atkspecial}:` : card.attack
+                        } / ${card.health} ${card.atkspecial
+                            ? `(${specialAttackDescription[card.atkspecial]})`
+                            : ""
+                        }`,
+                    );
                 } else if (info.type == "sub") {
-                    completeInfo += info.text.format(card)
+                    completeInfo += info.text.format(card);
                 }
             }
         }
         if (field.type == "general") {
-            out["general"] = completeInfo
+            out["general"] = completeInfo;
         } else {
-            out[field.name] = completeInfo
+            out[field.name] = completeInfo;
         }
     }
-    return out
+    return out;
 }
 
 function genTitle(textFormat, card) {
-    let completeInfo = ""
+    let completeInfo = "";
     for (const info of textFormat.title) {
         if (info.type == "con") {
             if (eval(info.condition)) {
-                completeInfo += info.text
+                completeInfo += info.text;
             }
         } else if (info.type == "set") {
-            completeInfo += info.text.replaceAll("{set}", setsData[card.set].ruleset)
+            completeInfo += info.text.replaceAll("{set}", setsData[card.set].ruleset);
         } else if (info.type == "sub") {
             if (!info.text.match(/{(\w+)}/g)) {
-                completeInfo += info.text
-                continue
+                completeInfo += info.text;
+                continue;
             }
-            let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
-            if (!temp) continue
-            completeInfo += info.text.format(card)
+            let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)];
+            if (!temp) continue;
+            completeInfo += info.text.format(card);
         }
     }
-    let alreadyChange = []
+    let alreadyChange = [];
     // replace :emoji-name: with emoji
     for (const emoji of completeInfo.matchAll(/:([^\sx:]+):/g)) {
-        if (alreadyChange.includes(emoji[0])) continue
+        if (alreadyChange.includes(emoji[0])) continue;
         try {
             if (!isNaN(parseInt(emoji[1]))) {
-                completeInfo = completeInfo.replaceAll(emoji[0], numToEmoji(emoji[1]))
-                continue
+                completeInfo = completeInfo.replaceAll(emoji[0], numToEmoji(emoji[1]));
+                continue;
             }
-            completeInfo = completeInfo.replaceAll(emoji[0], getEmoji(emoji[1]))
+            completeInfo = completeInfo.replaceAll(emoji[0], getEmoji(emoji[1]));
         } catch { }
-        alreadyChange.push(emoji[0])
+        alreadyChange.push(emoji[0]);
     }
-    return completeInfo
+    return completeInfo;
 }
 
 function genColor(textFormat, card) {
     for (const con of Object.keys(textFormat.color)) {
         if (eval(con)) {
-            return textFormat.color[con]
+            return textFormat.color[con];
         }
     }
-    return Colors.Grey
+    return Colors.Grey;
 }
 // fetch the card and its url
 function fetchCard(name, setName, noAlter = false, noArt = false) {
-    let card
+    let card;
 
-    let set = setsData[setName]
+    let set = setsData[setName];
 
-    card = deepCopy(set.cards[name])
+    card = deepCopy(set.cards[name]);
     // look for the card in the set
 
-    if (!card) return card
+    if (!card) return card;
 
-    card.set = setName
+    card.set = setName;
     if (card.noArt || noArt) {
-        card.url = undefined
+        card.url = undefined;
     } else if (card.pixport_url) {
-        card.url = card.pixport_url
+        card.url = card.pixport_url;
     } else {
         card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
             " ",
-            "%20"
-        )}.png`
+            "%20",
+        )}.png`;
     }
 
     if (Object.keys(portraitCaches).includes(card.url)) {
-        card.fullUrl = portraitCaches[card.url]
-        card.noArt = true
+        card.fullUrl = portraitCaches[card.url];
+        card.noArt = true;
     }
 
-    let original = deepCopy(card)
+    let original = deepCopy(card);
 
     if (noAlter) {
-        return card
+        return card;
     }
 
     // change existing card info and custom url
     if (setName != "augmented") {
         if (card.name == "Fox") {
             card.url =
-                "https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
+                "https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png";
         } else if (card.name == "Geck") {
-            card.sigils = ["Omni Strike"]
+            card.sigils = ["Omni Strike"];
         } else if (card.name == "Bell Tentacle") {
-            card.atkspecial = "bell"
+            card.atkspecial = "bell";
         } else if (card.name == "Hand Tentacle") {
-            card.atkspecial = "hand"
+            card.atkspecial = "hand";
         } else if (card.name == "Ruby Dragon") {
             card.url =
-                "https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
+                "https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png";
 
-            card.name = "GAY DRAGON"
-            card.description = "Modified portrait by ener"
+            card.name = "GAY DRAGON";
+            card.description = "Modified portrait by ener";
         } else if (card.name == "Horse Mage") {
-            card.description = `Not make by ener :trolled:`
+            card.description = `Not make by ener :trolled:`;
         } else if (card.name == "The Moon") {
-            card.sigils = ["Omni Strike", "Tidal Lock", "Made of Stone", "Mighty Leap"]
+            card.sigils = [
+                "Omni Strike",
+                "Tidal Lock",
+                "Made of Stone",
+                "Mighty Leap",
+            ];
         } else if (card.name == "Adder") {
-            card.name = "peak"
-            card.description = "peak"
-            card.sigils = Array(6).fill("Handy")
+            card.name = "peak";
+            card.description = "peak";
+            card.sigils = Array(6).fill("Handy");
         } else if (card.name == "Ouroboros") {
-            card.description = "Ouroboros is the source of all evil - 107"
+            card.description = "Ouroboros is the source of all evil - 107";
         } else if (card.name == "Blue Mage") {
             card.url =
-                "https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
+                "https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg";
         }
     }
 
     if (JSON.stringify(original) != JSON.stringify(card)) {
         card.footnote =
-            'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]'
+            'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]';
     }
 
-    return card
+    return card;
 }
 
 // fetch the mtg card and its url
 async function fetchMagicCard(name) {
     out = await scryfall.getCardByName(name, true).catch(async (err) => {
-        return -1
-    })
+        return -1;
+    });
 
-    return out
+    return out;
 }
 
 // generate embed
 async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
-    let attachment
+    let attachment;
     // try getting the portrait if it doesn't exist render no portrait
     try {
         if (card.url && !card.noArt) {
             // get the card pfp
-            let cardPortrait = await Canvas.loadImage(card.url)
-            const scale = 5
+            let cardPortrait = await Canvas.loadImage(card.url);
+            const scale = 5;
             // scale the pfp
             const portrait = Canvas.createCanvas(
                 cardPortrait.width * scale,
-                cardPortrait.height * scale
-            )
-            const context = portrait.getContext("2d")
-            context.imageSmoothingEnabled = false
+                cardPortrait.height * scale,
+            );
+            const context = portrait.getContext("2d");
+            context.imageSmoothingEnabled = false;
             if (card.set == SetList.aug.name) {
                 context.drawImage(
                     await Canvas.loadImage(
                         `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${["Common", "Uncommon", "Side Deck"].includes(card.tier)
                             ? "common"
                             : "rare"
-                        }_${card.temple.toLowerCase()}.png`
+                        }_${card.temple.toLowerCase()}.png`,
                     ),
                     0,
                     0,
                     portrait.width,
-                    portrait.height
-                )
+                    portrait.height,
+                );
             }
-            context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
+            context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height);
 
             attachment = new AttachmentBuilder(await portrait.encode("png"), {
                 name: `${id}.png`,
-            })
+            });
         }
     } catch {
         // cache missing portrait
-        portraitCaches[card.url] = null
-        fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
+        portraitCaches[card.url] = null;
+        fs.writeFileSync(
+            "./extra/caches.json",
+            JSON.stringify(portraitCaches, null, 4),
+        );
     }
 
     const format = Object.values(SetList).find((set) => set.name == card.set)[
         compactDisplay ? "compactFormat" : "format"
-    ]
+    ];
     // create template
-    let embed = new EmbedBuilder().setColor(genColor(format, card)).setTitle(genTitle(format, card))
+    let embed = new EmbedBuilder()
+        .setColor(genColor(format, card))
+        .setTitle(genTitle(format, card));
 
-    if (attachment) embed.setThumbnail(`attachment://${id}.png`)
+    if (attachment) embed.setThumbnail(`attachment://${id}.png`);
     else if (card.fullUrl) {
-        embed.setThumbnail(card.fullUrl)
+        embed.setThumbnail(card.fullUrl);
     }
 
-    const info = genDescription(format, card)
+    const info = genDescription(format, card);
 
     // replace emoji shorthand to actual emoji identifier
-    let alreadyChange = []
+    let alreadyChange = [];
     for (let field of Object.keys(info)) {
         for (const emoji of info[field].matchAll(/:([^\sx:]+):/g)) {
-            if (alreadyChange.includes(emoji[0])) continue
+            if (alreadyChange.includes(emoji[0])) continue;
             try {
                 if (!isNaN(parseInt(emoji[1]))) {
-                    info[field] = info[field].replaceAll(emoji[0], numToEmoji(emoji[1]))
-                    continue
+                    info[field] = info[field].replaceAll(emoji[0], numToEmoji(emoji[1]));
+                    continue;
                 }
-                info[field] = info[field].replaceAll(emoji[0], getEmoji(emoji[1]))
+                info[field] = info[field].replaceAll(emoji[0], getEmoji(emoji[1]));
             } catch { }
-            alreadyChange.push(emoji[0])
+            alreadyChange.push(emoji[0]);
         }
     }
 
-    info.general = info.general.replaceAll(":x_:", getEmoji("x_"))
+    info.general = info.general.replaceAll(":x_:", getEmoji("x_"));
 
     for (const fieldName of Object.keys(info)) {
         if (fieldName == "general") {
-            embed.setDescription(info[fieldName])
+            embed.setDescription(info[fieldName]);
         } else {
             if (info[fieldName])
                 embed.addFields({
                     name: fieldName,
                     value: info[fieldName],
-                })
+                });
         }
     }
 
     if (card.footnote) {
-        embed.setFooter({ text: card.footnote })
+        embed.setFooter({ text: card.footnote });
     }
-    return [embed, attachment ? attachment : 1] // if there an attachment (portrait/image) return it if not give exit code 1
+    return [embed, attachment ? attachment : 1]; // if there an attachment (portrait/image) return it if not give exit code 1
 }
 
 function genSigilEmbed(sigilName, sigilDescription) {
     let embed = new EmbedBuilder()
         .setColor(Colors.Aqua)
         .setTitle(`${sigilName}`)
-        .setDescription(sigilDescription)
-    return [embed, 1]
+        .setDescription(sigilDescription);
+    return [embed, 1];
 }
 
 function queryCard(string, set, compactDisplay = false) {
-    let embed = new EmbedBuilder().setColor(Colors.Purple)
-    let possibleMatches = setsData[set.name].cards
-    let searchExplain = []
+    let embed = new EmbedBuilder().setColor(Colors.Purple);
+    let possibleMatches = setsData[set.name].cards;
+    let searchExplain = [];
     for (const tag of string.matchAll(queryRegex)) {
         let type = tag[2],
-            value = tag[3].replaceAll('"', "")
-        let negation = !!tag[1]
+            value = tag[3].replaceAll('"', "");
+        let negation = !!tag[1];
 
         const filterPossibleValue = (callback) => {
             possibleMatches = Object.fromEntries(
                 Object.entries(possibleMatches).filter((c) =>
-                    negation ? !callback(c) : callback(c)
-                )
-            )
-        }
+                    negation ? !callback(c) : callback(c),
+                ),
+            );
+        };
 
         for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
             if (type == key || keyInfo.alias.includes(type)) {
                 searchExplain.push(
                     keyInfo
                         .callback(value, set, filterPossibleValue)
-                        .replace("{n} ", negation ? "not " : "")
-                )
+                        .replace("{n} ", negation ? "not " : ""),
+                );
             }
         }
     }
-    const final = Object.keys(possibleMatches)
+    const final = Object.keys(possibleMatches);
     const result = `**Card that ${searchExplain.join(", ")}**:\n${final
         .join(", ")
-        .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
+        .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`;
 
-    embed.setTitle(`Result: ${final.length} cards found in ${setsData[set.name].ruleset}`)
+    embed.setTitle(
+        `Result: ${final.length} cards found in ${setsData[set.name].ruleset}`,
+    );
     embed.setDescription(
         compactDisplay
-            ? `**Card that ${searchExplain.join(", ")}**:\nResult hidden by compact mode`
+            ? `**Card that ${searchExplain.join(
+                ", ",
+            )}**:\nResult hidden by compact mode`
             : final.length > 0
                 ? result.length > 4096 // checking if it excess the char limit
                     ? "Too many result, please be more specific"
                     : result
-                : "No card found"
-    )
-    return [embed, 1]
+                : "No card found",
+    );
+    return [embed, 1];
 }
 
 // on ready call
 client.once(Events.ClientReady, () => {
     if (doneSetup) {
         console.log(
-            chalk.bgGreen.black("Setup is complete and bot is connected to Discord's sever")
-        )
-        const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
-        infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
+            chalk.bgGreen.black(
+                "Setup is complete and bot is connected to Discord's sever",
+            ),
+        );
+        const servers = Array.from(client.guilds.cache).map((s) => s[1].name);
+        infoLog(chalk.cyan(`Bot is in ${servers.length} server`));
         infoLog(
             chalk.cyan(
                 `Servers: ${servers
                     .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                    .join(", ")}`
-            )
-        )
+                    .join(", ")}`,
+            ),
+        );
     } else {
         console.log(
             chalk.bgRed(
-                "Bot connected to Discord's server but wait until set up is complete to use"
-            )
-        )
+                "Bot connected to Discord's server but wait until set up is complete to use",
+            ),
+        );
     }
-    client.user.setActivity("YOUR MOM")
+    client.user.setActivity("YOUR MOM");
     if (scream) {
         client.channels.cache
             .find((c) => c.id == "1095885953958158426")
-            .send(`Hey you mess up the Json again.\n\`\`\`${log}\`\`\``)
+            .send(`Hey you mess up the Json again.\n\`\`\`${log}\`\`\``);
     }
-})
+});
 
 // on commands call
 client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isChatInputCommand()) {
-        const { commandName, options } = interaction
+        const { commandName, options } = interaction;
         if (commandName == "echo") {
-            if (!isPerm(interaction)) return
-            const message = options.getString("text")
-            console.log(`${interaction.user.username} say ${message}`)
+            if (!isPerm(interaction)) return;
+            const message = options.getString("text");
+            console.log(`${interaction.user.username} say ${message}`);
             const channel =
                 options.getChannel("channel") != undefined
                     ? options.getChannel("channel")
-                    : interaction.channel
+                    : interaction.channel;
 
             if (options.getString("message")) {
-                ; (await getMessage(interaction.channel, options.getString("message"))).reply(
-                    message
-                )
+                (
+                    await getMessage(interaction.channel, options.getString("message"))
+                ).reply(message);
             } else {
-                channel.send(message)
+                channel.send(message);
             }
 
             await interaction.reply({
                 content: "Sent",
                 ephemeral: true,
-            })
+            });
         } else if (commandName == "set-code") {
-            let temp = ""
+            let temp = "";
             Object.keys(SetList).forEach((key) => {
                 temp += `**${key}**: ${SetList[key].name}${SetList[key].type == "modifier" ? " (Modifier)" : ""
-                    }\n`
-            })
+                    }\n`;
+            });
             await interaction.reply(
-                `Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`sete\` will look up a sigil in the Eternal set`
-            )
+                `Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`sete\` will look up a sigil in the Eternal set`,
+            );
         } else if (commandName == "ping") {
             await interaction.reply(
                 randInt(1, 4) == 4
@@ -1798,8 +1888,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         "Stoat is not dense >:(",
                         "Crazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\n",
                     ])
-                    : "Pong!"
-            )
+                    : "Pong!",
+            );
         } else if (commandName == "restart") {
             if (isPerm(interaction)) {
                 await interaction.reply(
@@ -1807,93 +1897,96 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         "Restarting...",
                         "AAAAAAAAAAAAAAAAAAAAAAAA",
                         "No father don't kill me",
-                    ])
-                )
-                throw new Error("death")
-            } else await interaction.reply("no")
+                    ]),
+                );
+                throw new Error("death");
+            } else await interaction.reply("no");
         } else if (commandName == "draft") {
             // grab the important shit
-            const setName = options.getString("set") // get the set name
-            const set = Object.values(SetList).find((v) => v.name == setName)
+            const setName = options.getString("set"); // get the set name
+            const set = Object.values(SetList).find((v) => v.name == setName);
             const deckSize = options.getInteger("size") // get deck size
                 ? options.getInteger("size")
-                : 20
+                : 20;
 
             const message = await interaction.reply({
                 content: "Loading...",
                 fetchReply: true,
-            })
+            });
 
             //get the set pack structure
-            const packStructure = set.packStructure
+            const packStructure = set.packStructure;
 
             //fetch only the require card from the pack structure
             const pool = (() => {
-                let out = {}
+                let out = {};
                 for (const type of packStructure) {
                     if (type.amount == 0) {
                         Object.keys(out).forEach((k) => {
-                            out[k] = listDiff(out[k], setsData[setName].pools[type.type])
-                        })
-                        continue
+                            out[k] = listDiff(out[k], setsData[setName].pools[type.type]);
+                        });
+                        continue;
                     }
-                    out[type.type] = setsData[setName].pools[type.type]
+                    out[type.type] = setsData[setName].pools[type.type];
                 }
-                return out
-            })()
+                return out;
+            })();
 
             let deck = {
                 cards: [],
                 side_deck: "10 Squirrel",
-            }
-            let wildCount = 0
-            let flag = false // exit flag
-            let deckUniqueCount = {}
+            };
+            let wildCount = 0;
+            let flag = false; // exit flag
+            let deckUniqueCount = {};
 
             // repeat for deck size
             for (let cycle = 0; cycle < deckSize; cycle++) {
                 // putting card name into the pack
-                let temp = []
+                let temp = [];
 
                 for (let type of packStructure) {
                     // if exclude type skip or pool too small and move on
-                    if (type.amount == 0) continue
-                    let amount = type.amount
+                    if (type.amount == 0) continue;
+                    let amount = type.amount;
                     //if the pool have 0 card and have a replacement use the replacement
                     outer: while (true) {
                         if (pool[type.type].length < 1)
                             if (type.replacement) {
-                                type = packStructure.find((t) => t.type == type.replacement)
-                                continue outer
-                            } else continue
+                                type = packStructure.find((t) => t.type == type.replacement);
+                                continue outer;
+                            } else continue;
                         else {
-                            break
+                            break;
                         }
                     }
 
-                    if (!temp[type.type]) temp[type.type] = []
+                    if (!temp[type.type]) temp[type.type] = [];
 
-                    temp[type.type] = temp[type.type].concat(randomChoices(pool[type.type], amount))
+                    temp[type.type] = temp[type.type].concat(
+                        randomChoices(pool[type.type], amount),
+                    );
                 }
                 //put card data in the pack using
-                let pack = []
+                let pack = [];
                 for (const type of Object.keys(temp)) {
                     for (const name of temp[type]) {
-                        let card = setsData[setName].cards[name]
-                        card.type = type
-                        pack.push(card)
+                        let card = setsData[setName].cards[name];
+                        card.type = type;
+                        pack.push(card);
                     }
                 }
 
                 // if the pack is missing cards push in wild card
                 if (
-                    pack.length < packStructure.reduce((partialSum, a) => partialSum + a.amount, 0)
+                    pack.length <
+                    packStructure.reduce((partialSum, a) => partialSum + a.amount, 0)
                 ) {
                     pack.push({
                         name: "WILD CARD",
                         attack: 100,
                         health: 100,
-                    })
+                    });
                 }
 
                 // generating embed and selection
@@ -1901,59 +1994,61 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     .setColor(Colors.Blue)
                     .setTitle(
                         `Pack Left: ${deckSize - cycle}\nCard in deck: ${deck.cards.length
-                        }\nWild Count: ${wildCount}`
-                    )
+                        }\nWild Count: ${wildCount}`,
+                    );
 
                 const selectionList = new StringSelectMenuBuilder()
                     .setCustomId("select")
-                    .setPlaceholder("Select a card!")
+                    .setPlaceholder("Select a card!");
 
-                let description = ""
+                let description = "";
 
                 //generate the pack list
                 for (const card of pack) {
                     for (let line of set.draftFormat) {
                         if (line.type == "sub") {
-                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
-                            description += line.text.format(card)
+                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue;
+                            description += line.text.format(card);
                         } else if (line.type == "normal") {
-                            description += line.text
+                            description += line.text;
                         } else if (line.type == "con") {
-                            if (eval(line.con)) description += line.text
+                            if (eval(line.con)) description += line.text;
                         } else if (line.type == "mox") {
-                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
-                            description += line.text.format(card)
+                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue;
+                            description += line.text.format(card);
                         } else if (line.type == "stat") {
                             description += line.text.replace(
                                 "{s}",
-                                `${card.atkspecial ? `:${card.atkspecial}:` : card[line.attackVar]
-                                } / ${card[line.healthVar]}`
-                            )
+                                `${card.atkspecial
+                                    ? `:${card.atkspecial}:`
+                                    : card[line.attackVar]
+                                } / ${card[line.healthVar]}`,
+                            );
                         } else if (line.type == "list") {
-                            if (!card[line.var]) continue
-                            description += line.text.replace("{s}", card[line.var])
+                            if (!card[line.var]) continue;
+                            description += line.text.replace("{s}", card[line.var]);
                         }
                     }
-                    description += "\n\n"
+                    description += "\n\n";
 
                     // add the card to selection
                     selectionList.addOptions({
                         label: card.name,
                         value: card.name,
-                    })
+                    });
                 }
 
                 // load the deck dup to check for restriction later
-                let deckStr = ""
+                let deckStr = "";
                 let deckDup = countDup(
                     deck.cards.sort((a, b) =>
-                        a.startsWith("*") ? -1 : b.startsWith("*") ? 1 : a.localeCompare(b)
-                    )
-                )
+                        a.startsWith("*") ? -1 : b.startsWith("*") ? 1 : a.localeCompare(b),
+                    ),
+                );
 
                 // generate the deck preview
                 for (const card of Object.keys(deckDup)) {
-                    deckStr += `${deckDup[card]}x | ${card}\n`
+                    deckStr += `${deckDup[card]}x | ${card}\n`;
                 }
 
                 // add pack and preview into embed
@@ -1967,20 +2062,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         name: `======= DECK =======`,
                         value: deck.cards.length < 1 ? "Blank" : deckStr,
                         inline: true,
-                    }
-                )
+                    },
+                );
 
                 // send embed and selection
                 await interaction.editReply({
                     content: "",
                     components: [new ActionRowBuilder().addComponents(selectionList)],
                     embeds: [embed],
-                })
+                });
 
-                const filter = (i) => i.user.id === interaction.user.id
+                const filter = (i) => i.user.id === interaction.user.id;
 
                 // process the selection
-                let error = ""
+                let error = "";
                 await message
                     .awaitMessageComponent({
                         componentType: ComponentType.StringSelect,
@@ -1988,156 +2083,159 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         filter,
                     })
                     .then(async (i) => {
-                        const card = pack.find((c) => c.name == i.values[0])
+                        const card = pack.find((c) => c.name == i.values[0]);
                         if (card.name == "WILD CARD") {
-                            wildCount++
+                            wildCount++;
                         } else {
-                            deck.cards.push(card.name)
-                            if (!deckUniqueCount[card.type]) deckUniqueCount[card.type] = 0
-                            deckUniqueCount[card.type]++
+                            deck.cards.push(card.name);
+                            if (!deckUniqueCount[card.type]) deckUniqueCount[card.type] = 0;
+                            deckUniqueCount[card.type]++;
                             if (
-                                countDup(deck.card) >= set.draftRestriction[card.type].copyPerDeck
+                                countDup(deck.card) >=
+                                set.draftRestriction[card.type].copyPerDeck
                             ) {
                                 // if more than or equal to the allowed same name copy per deck remove this card from pool
                                 pool[card.type].splice(
                                     pool[card.type].indexOf(card.name.toLowerCase()),
-                                    1
-                                )
+                                    1,
+                                );
                             }
                             if (
                                 deckUniqueCount[card.type] >=
                                 set.draftRestriction[card.type].uniquePerDeck
                             ) {
                                 //if more than or equal to the amount of unique copy remove this pool completely
-                                pool[card.type] = []
+                                pool[card.type] = [];
                             }
                         }
-                        await i.update("added")
+                        await i.update("added");
                     })
                     .catch((err) => {
-                        flag = true
-                        error = err
-                    })
+                        flag = true;
+                        error = err;
+                    });
 
                 if (flag) {
                     await interaction.editReply({
                         content: `Error: ${coloredString(
-                            `$$r${error}`
+                            `$$r${error}`,
                         )}\nCurrent deck: ${deck.cards.join(
-                            ", "
+                            ", ",
                         )}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
                         embeds: [],
                         components: [],
-                    })
-                    break
+                    });
+                    break;
                 }
             }
 
-            if (flag) return
+            if (flag) return;
 
             await interaction.editReply({
                 content: `${wildCount > 0
                     ? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
                     : ""
-                    }Completed Deck: ${deck.cards.join(", ")}\n\nDeck Json: \`${JSON.stringify(
-                        deck
-                    )}\``,
+                    }Completed Deck: ${deck.cards.join(
+                        ", ",
+                    )}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
                 embeds: [],
                 components: [],
-            })
+            });
         } else if (commandName == "deck-sim") {
-            let fullDeck = []
-            let fullSide = []
+            let fullDeck = [];
+            let fullSide = [];
             if (options.getAttachment("deck-file")) {
                 const deckFile = JSON.parse(
-                    await (await fetch(options.getAttachment("deck-file").url)).text()
-                )
-                fullDeck = deckFile.cards
+                    await (await fetch(options.getAttachment("deck-file").url)).text(),
+                );
+                fullDeck = deckFile.cards;
                 if (deckFile.side_deck_cards) {
-                    fullSide = deckFile.side_deck_cards
+                    fullSide = deckFile.side_deck_cards;
                 } else if (deckFile.side_deck_cat) {
                     fullSide = Array(
                         setsData.competitive.side_decks[deckFile.side_deck].cards[
                             deckFile.side_deck_cat
-                        ].count
+                        ].count,
                     ).fill(
                         setsData.competitive.side_decks[deckFile.side_deck].cards[
                             deckFile.side_deck_cat
-                        ].card
-                    )
+                        ].card,
+                    );
                 } else {
                     fullSide = Array(
-                        setsData.competitive.side_decks[deckFile.side_deck].count
-                    ).fill(setsData.competitive.side_decks[deckFile.side_deck].card)
+                        setsData.competitive.side_decks[deckFile.side_deck].count,
+                    ).fill(setsData.competitive.side_decks[deckFile.side_deck].card);
                 }
             } else if (options.getString("deck-list")) {
-                let temp = options.getString("deck-list").split(";")
-                temp = temp.map((i) => i.split(","))
-                fullDeck = temp[0]
-                fullSide = temp[1] ? temp[1] : []
+                let temp = options.getString("deck-list").split(";");
+                temp = temp.map((i) => i.split(","));
+                fullDeck = temp[0];
+                fullSide = temp[1] ? temp[1] : [];
             } else {
-                await interaction.reply("Deck missing")
-                return
+                await interaction.reply("Deck missing");
+                return;
             }
 
-            let currDeck = deepCopy(fullDeck)
-            let currSide = deepCopy(fullSide)
+            let currDeck = deepCopy(fullDeck);
+            let currSide = deepCopy(fullSide);
 
             const message = await interaction.reply({
                 content: "Doing stuff please wait",
                 fetchReply: true,
-            })
-            let stillRunning = true
-            const detailMode = options.getBoolean("detail")
+            });
+            let stillRunning = true;
+            const detailMode = options.getBoolean("detail");
 
-            let hand = drawList(currDeck, 3)
+            let hand = drawList(currDeck, 3);
 
             while (stillRunning) {
-                let tempStr = ""
-                let currDup = countDup(hand)
+                let tempStr = "";
+                let currDup = countDup(hand);
                 Object.keys(currDup).forEach((c) => {
-                    tempStr += `${currDup[c]}x ${c}\n`
-                })
+                    tempStr += `${currDup[c]}x ${c}\n`;
+                });
 
                 let embed = new EmbedBuilder()
                     .setColor(Colors.Orange)
                     .setTitle("Thingy")
                     .setDescription(
-                        `Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`
+                        `Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`,
                     )
                     .addFields({
                         name: "====== HAND ======",
                         value: tempStr,
                         inline: true,
-                    })
+                    });
 
                 if (detailMode) {
-                    tempStr = ""
-                    let currDup = countDup(currDeck)
-                    let fullDup = countDup(fullDeck)
+                    tempStr = "";
+                    let currDup = countDup(currDeck);
+                    let fullDup = countDup(fullDeck);
                     Object.keys(currDup).forEach((c) => {
-                        const percentage = (currDup[c] / currDeck.length) * 100
-                        tempStr += `${currDup[c]}/${fullDup[c]}) ${c} (${percentage.toFixed(1)}%)\n`
-                    })
+                        const percentage = (currDup[c] / currDeck.length) * 100;
+                        tempStr += `${currDup[c]}/${fullDup[c]}) ${c} (${percentage.toFixed(
+                            1,
+                        )}%)\n`;
+                    });
                     if (tempStr === "") {
-                        tempStr += "No Card Left"
+                        tempStr += "No Card Left";
                     }
                     embed.addFields({
                         name: "====== DRAW PERCENTAGE ======",
                         value: tempStr,
                         inline: true,
-                    })
+                    });
                 }
 
                 let selectionList = new StringSelectMenuBuilder()
                     .setPlaceholder("Select a card to play/remove/discard")
-                    .setCustomId("play")
+                    .setCustomId("play");
 
                 for (n of new Set(hand)) {
                     selectionList.addOptions({
                         label: n,
                         value: n,
-                    })
+                    });
                 }
 
                 await interaction.editReply({
@@ -2164,12 +2262,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             new ButtonBuilder()
                                 .setLabel("End")
                                 .setStyle(ButtonStyle.Danger)
-                                .setCustomId("end")
+                                .setCustomId("end"),
                         ),
                     ],
-                })
+                });
 
-                const filter = (i) => i.user.id === interaction.user.id
+                const filter = (i) => i.user.id === interaction.user.id;
 
                 await message
                     .awaitMessageComponent({
@@ -2178,29 +2276,29 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     })
                     .then(async (inter) => {
                         if (inter.customId === "main") {
-                            currDup = drawList(currDeck, 1)[0]
+                            currDup = drawList(currDeck, 1)[0];
                             if (currDup) {
-                                hand.push(currDup)
-                                await inter.update(`You've drawn ${currDup}`)
+                                hand.push(currDup);
+                                await inter.update(`You've drawn ${currDup}`);
                             } else {
-                                await inter.update(`Main is Empty`)
+                                await inter.update(`Main is Empty`);
                             }
                         } else if (inter.customId === "side") {
-                            currDup = drawList(currSide, 1)[0]
+                            currDup = drawList(currSide, 1)[0];
                             if (currDup) {
-                                hand.push(currDup)
-                                await inter.update(`You've drawn ${currDup}`)
+                                hand.push(currDup);
+                                await inter.update(`You've drawn ${currDup}`);
                             } else {
-                                await inter.update(`Side is Empty`)
+                                await inter.update(`Side is Empty`);
                             }
                         } else if (inter.customId === "play") {
-                            hand.splice(hand.indexOf(inter.values[0]), 1)
-                            await inter.update(`Played ${inter.values[0]}`)
+                            hand.splice(hand.indexOf(inter.values[0]), 1);
+                            await inter.update(`Played ${inter.values[0]}`);
                         } else if (inter.customId === "create") {
                             // Create the modal
                             const modal = new ModalBuilder()
                                 .setCustomId("create")
-                                .setTitle("Create Card")
+                                .setTitle("Create Card");
 
                             // Add components to modal
                             modal.addComponents(
@@ -2209,25 +2307,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                         .setLabel("What card do you want to create")
                                         .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
-                                        .setCustomId("card")
-                                )
-                            )
+                                        .setCustomId("card"),
+                                ),
+                            );
 
                             // Show the modal to the user
-                            await inter.showModal(modal)
+                            await inter.showModal(modal);
 
                             await inter
                                 .awaitModalSubmit({ time: 10000, filter })
                                 .then(async (i) => {
-                                    hand.push(i.fields.getTextInputValue("card"))
-                                    await i.update(`Created ${i.fields.getTextInputValue("card")}`)
+                                    hand.push(i.fields.getTextInputValue("card"));
+                                    await i.update(
+                                        `Created ${i.fields.getTextInputValue("card")}`,
+                                    );
                                 })
-                                .catch((e) => inter.update())
+                                .catch((e) => inter.update());
                         } else if (inter.customId === "fetch") {
                             // Create the modal
                             const modal = new ModalBuilder()
                                 .setCustomId("fetch")
-                                .setTitle("Fetch Card")
+                                .setTitle("Fetch Card");
 
                             // Add components to modal
                             modal.addComponents(
@@ -2237,7 +2337,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                         .setValue([...new Set(currDeck)].join("\n"))
                                         .setStyle(TextInputStyle.Paragraph)
                                         .setCustomId("eeeee")
-                                        .setRequired(false)
+                                        .setRequired(false),
                                 ),
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
@@ -2245,12 +2345,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                         .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
                                         .setCustomId("card")
-                                        .setRequired(true)
-                                )
-                            )
+                                        .setRequired(true),
+                                ),
+                            );
 
                             // Show the modal to the user
-                            await inter.showModal(modal)
+                            await inter.showModal(modal);
 
                             await inter
                                 .awaitModalSubmit({ time: 10000, filter })
@@ -2258,25 +2358,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                     if (currDeck.length > 1) {
                                         const bestMatch = StringSimilarity.findBestMatch(
                                             i.fields.getTextInputValue("card").toLowerCase(),
-                                            currDeck
-                                        )
-                                        hand.push(currDeck[bestMatch.bestMatchIndex])
-                                        currDeck.splice(bestMatch.bestMatchIndex, 1)
+                                            currDeck,
+                                        );
+                                        hand.push(currDeck[bestMatch.bestMatchIndex]);
+                                        currDeck.splice(bestMatch.bestMatchIndex, 1);
 
-                                        await i.update(`Fetched ${bestMatch.bestMatch.target}`)
+                                        await i.update(`Fetched ${bestMatch.bestMatch.target}`);
                                     } else {
-                                        await i.update("")
+                                        await i.update("");
                                     }
-                                })
+                                });
                         } else if (inter.customId === "end") {
-                            stillRunning = false
-                            await inter.update("")
+                            stillRunning = false;
+                            await inter.update("");
                         }
                     })
                     .catch((err) => {
-                        console.log(err)
-                        stillRunning = false
-                    })
+                        console.log(err);
+                        stillRunning = false;
+                    });
             }
 
             await interaction.editReply({
@@ -2287,83 +2387,85 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         .setDescription("The simulation Ended"),
                 ],
                 components: [],
-            })
+            });
         } else if (commandName == "tunnel-status") {
             await http
                 .get("http://localtunnel.me", async (res) => {
                     await interaction.reply(
-                        "Tunnel is up and running. If you have problem connecting, restart the game and try again"
-                    )
+                        "Tunnel is up and running. If you have problem connecting, restart the game and try again",
+                    );
                 })
                 .on("error", async (e) => {
                     await interaction.reply(
-                        "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
-                    )
-                })
+                        "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)",
+                    );
+                });
         } else if (commandName == "color-text") {
             await interaction.reply({
                 content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
                     options.getString("string"),
-                    true
+                    true,
                 )}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
-                    options.getString("string")
+                    options.getString("string"),
                 )}`,
                 ephemeral: true,
-            })
+            });
         } else if (commandName == "guess-the-card") {
-            const set = options.getString("set")
+            const set = options.getString("set");
             const card = await (async () => {
-                let name
-                if (set == "augmented") name = randomChoice(setsData[set].pools.art)
+                let name;
+                if (set == "augmented") name = randomChoice(setsData[set].pools.art);
                 else if (set == "magic") {
-                    const c = await scryfall.randomCard()
-                    return { name: c.name, url: c.image_uris.art_crop }
-                } else name = randomChoice(Object.keys(setsData[set].cards))
-                return fetchCard(name, set)
-            })()
+                    const c = await scryfall.randomCard();
+                    return { name: c.name, url: c.image_uris.art_crop };
+                } else name = randomChoice(Object.keys(setsData[set].cards));
+                return fetchCard(name, set);
+            })();
 
             // get the card picture
-            const cardPortrait = await Canvas.loadImage(card.url)
+            const cardPortrait = await Canvas.loadImage(card.url);
 
-            let bg
+            let bg;
             if (set == "augmented") {
                 bg = await Canvas.loadImage(
-                    `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${["Common", "Uncommon", "Side Deck"].includes(card.tier) ? "common" : "rare"
-                    }_${card.temple.toLowerCase()}.png`
-                )
+                    `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${["Common", "Uncommon", "Side Deck"].includes(card.tier)
+                        ? "common"
+                        : "rare"
+                    }_${card.temple.toLowerCase()}.png`,
+                );
             }
 
-            let portrait
-            let full
+            let portrait;
+            let full;
 
             if (options.getSubcommand() === "normal") {
                 const percentage = options.getInteger("difficulty")
                     ? options.getInteger("difficulty")
                     : options.getInteger("size")
                         ? options.getInteger("size")
-                        : 35
+                        : 35;
 
                 const width = clamp(
                     Math.floor((cardPortrait.width * percentage) / 100),
                     1,
-                    cardPortrait.width
-                )
-                const height = clamp(width, 1, cardPortrait.height)
+                    cardPortrait.width,
+                );
+                const height = clamp(width, 1, cardPortrait.height);
 
-                const scale = set == "magic" ? 1 : 50
+                const scale = set == "magic" ? 1 : 50;
 
                 // get the first crop point
                 const startCropPos = [
                     randInt(0, cardPortrait.width - width),
                     randInt(0, cardPortrait.height - height),
-                ]
+                ];
 
                 // make the canvas
-                portrait = Canvas.createCanvas(width * scale, height * scale)
+                portrait = Canvas.createCanvas(width * scale, height * scale);
 
-                let context = portrait.getContext("2d")
+                let context = portrait.getContext("2d");
 
-                context.imageSmoothingEnabled = false
+                context.imageSmoothingEnabled = false;
                 if (bg)
                     context.drawImage(
                         bg,
@@ -2374,8 +2476,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         0,
                         0,
                         portrait.width,
-                        portrait.height
-                    )
+                        portrait.height,
+                    );
                 context.drawImage(
                     cardPortrait,
                     // source region
@@ -2392,33 +2494,36 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
                     // size of the final
                     portrait.width,
-                    portrait.height
-                )
+                    portrait.height,
+                );
 
                 // create full version canvas
-                full = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
+                full = Canvas.createCanvas(
+                    cardPortrait.width * scale,
+                    cardPortrait.height * scale,
+                );
 
-                context = full.getContext("2d")
+                context = full.getContext("2d");
 
-                context.imageSmoothingEnabled = false
+                context.imageSmoothingEnabled = false;
 
                 // draw the portrait
-                if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
-                context.drawImage(cardPortrait, 0, 0, full.width, full.height)
+                if (bg) context.drawImage(bg, 0, 0, full.width, full.height);
+                context.drawImage(cardPortrait, 0, 0, full.width, full.height);
 
                 // set the color and size of the box
-                context.strokeStyle = "#f00524"
-                context.lineWidth = full.width * (0.5 / 100)
+                context.strokeStyle = "#f00524";
+                context.lineWidth = full.width * (0.5 / 100);
 
                 // draw the box
                 context.strokeRect(
                     startCropPos[0] * scale,
                     startCropPos[1] * scale,
                     width * scale,
-                    height * scale
-                )
+                    height * scale,
+                );
             } else if (options.getSubcommand() === "scramble") {
-                const scale = set == "magic" ? 1 : 50
+                const scale = set == "magic" ? 1 : 50;
                 // grab the column
                 const col = parseInt(
                     (options.getString("difficulty")
@@ -2426,8 +2531,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         : options.getString("size")
                             ? options.getString("size")
                             : "5,3"
-                    ).split(",")[0]
-                )
+                    ).split(",")[0],
+                );
 
                 //grab the row
                 const row = parseInt(
@@ -2436,37 +2541,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         : options.getString("size")
                             ? options.getString("size")
                             : "5,3"
-                    ).split(",")[1]
-                )
+                    ).split(",")[1],
+                );
 
                 // get each piece height and width
-                const pieceWidth = cardPortrait.width / col
-                const pieceHeight = cardPortrait.height / row
+                const pieceWidth = cardPortrait.width / col;
+                const pieceHeight = cardPortrait.height / row;
 
                 // make the canvas
                 portrait = Canvas.createCanvas(
                     cardPortrait.width * scale,
-                    cardPortrait.height * scale
-                )
+                    cardPortrait.height * scale,
+                );
 
-                let context = portrait.getContext("2d")
+                let context = portrait.getContext("2d");
 
-                context.imageSmoothingEnabled = false
+                context.imageSmoothingEnabled = false;
 
-                let i = 0
+                let i = 0;
                 // make an array with all the position to grab piece from
 
                 // list comprehension and shuffle it
                 // [[i, j] for i in range(row) for j in range(col)]
                 let lst = shuffleList(
                     (() => {
-                        let out = []
-                            ;[...Array(row).keys()].forEach((i) =>
-                                [...Array(col).keys()].forEach((j) => out.push([i, j]))
-                            )
-                        return out
-                    })()
-                )
+                        let out = [];
+                        [...Array(row).keys()].forEach((i) =>
+                            [...Array(col).keys()].forEach((j) => out.push([i, j])),
+                        );
+                        return out;
+                    })(),
+                );
 
                 // for all the piece
                 for (let x = 0; x < col; x++) {
@@ -2481,8 +2586,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 pieceWidth * scale * x,
                                 pieceHeight * scale * y,
                                 pieceWidth * scale,
-                                pieceHeight * scale
-                            )
+                                pieceHeight * scale,
+                            );
                         }
                         context.drawImage(
                             cardPortrait,
@@ -2493,20 +2598,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             pieceWidth * scale * x,
                             pieceHeight * scale * y,
                             pieceWidth * scale,
-                            pieceHeight * scale
-                        )
+                            pieceHeight * scale,
+                        );
 
-                        i++
+                        i++;
                     }
                 }
 
-                full = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
+                full = Canvas.createCanvas(
+                    cardPortrait.width * scale,
+                    cardPortrait.height * scale,
+                );
 
-                context = full.getContext("2d")
+                context = full.getContext("2d");
 
-                context.imageSmoothingEnabled = false
-                if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
-                context.drawImage(cardPortrait, 0, 0, full.width, full.height)
+                context.imageSmoothingEnabled = false;
+                if (bg) context.drawImage(bg, 0, 0, full.width, full.height);
+                context.drawImage(cardPortrait, 0, 0, full.width, full.height);
             }
 
             const message = await interaction.reply({
@@ -2518,14 +2626,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ButtonBuilder()
                             .setCustomId("guess")
                             .setLabel("Guess")
-                            .setStyle(ButtonStyle.Primary)
+                            .setStyle(ButtonStyle.Primary),
                     ),
                 ],
                 fetchReply: true,
-            })
+            });
 
-            let collecting = true
-            const filter = (i) => i.user.id === interaction.user.id
+            let collecting = true;
+            const filter = (i) => i.user.id === interaction.user.id;
 
             while (collecting) {
                 await message
@@ -2533,7 +2641,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     .then(async (inter) => {
                         const modal = new ModalBuilder()
                             .setCustomId("guessModal")
-                            .setTitle("Enter your guess below")
+                            .setTitle("Enter your guess below");
 
                         modal.addComponents(
                             new ActionRowBuilder().addComponents(
@@ -2542,109 +2650,113 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                     .setLabel("What is the card?")
                                     .setPlaceholder("Card name here")
                                     .setRequired(true)
-                                    .setStyle(TextInputStyle.Short)
-                            )
-                        )
-                        await inter.showModal(modal)
+                                    .setStyle(TextInputStyle.Short),
+                            ),
+                        );
+                        await inter.showModal(modal);
 
-                        await inter.awaitModalSubmit({ time: 15000, filter }).then(async (i) => {
-                            if (
-                                StringSimilarity.compareTwoStrings(
-                                    card.name.toLowerCase(),
-                                    i.fields.getTextInputValue("guess").toLowerCase()
-                                ) >= 0.4
-                            ) {
-                                await i.update({
-                                    content: `Your guess (${i.fields.getTextInputValue(
-                                        "guess"
-                                    )}) was correct. Actual name ${card.name}`,
-                                    files: [new AttachmentBuilder(await full.encode("png"))],
-                                    components: [],
-                                })
-                            } else {
-                                await i.update({
-                                    content: `Your guess (${i.fields.getTextInputValue(
-                                        "guess"
-                                    )}) was incorrect. The card was ${card.name}`,
-                                    files: [new AttachmentBuilder(await full.encode("png"))],
-                                    components: [],
-                                })
-                            }
+                        await inter
+                            .awaitModalSubmit({ time: 15000, filter })
+                            .then(async (i) => {
+                                if (
+                                    StringSimilarity.compareTwoStrings(
+                                        card.name.toLowerCase(),
+                                        i.fields.getTextInputValue("guess").toLowerCase(),
+                                    ) >= 0.4
+                                ) {
+                                    await i.update({
+                                        content: `Your guess (${i.fields.getTextInputValue(
+                                            "guess",
+                                        )}) was correct. Actual name ${card.name}`,
+                                        files: [new AttachmentBuilder(await full.encode("png"))],
+                                        components: [],
+                                    });
+                                } else {
+                                    await i.update({
+                                        content: `Your guess (${i.fields.getTextInputValue(
+                                            "guess",
+                                        )}) was incorrect. The card was ${card.name}`,
+                                        files: [new AttachmentBuilder(await full.encode("png"))],
+                                        components: [],
+                                    });
+                                }
 
-                            collecting = false
-                        })
+                                collecting = false;
+                            });
                     })
                     .catch(async (e) => {
-                        await interaction.editReply(`Error: ${coloredString(`$$r${e}`)}`)
-                        collecting = false
-                    })
+                        await interaction.editReply(`Error: ${coloredString(`$$r${e}`)}`);
+                        collecting = false;
+                    });
             }
         } else if (commandName == "retry") {
             await messageSearch(
-                await interaction.channel.messages.fetch(options.getString("message"))
-            )
-            await interaction.reply({ content: "Retried", ephemeral: true })
+                await interaction.channel.messages.fetch(options.getString("message")),
+            );
+            await interaction.reply({ content: "Retried", ephemeral: true });
         } else if (commandName == "react") {
             if (!isPerm(interaction))
-                return (await getMessage(interaction.channel, options.getString("message"))).react(
-                    options.getString("emoji")
-                )
-            await interaction.reply({ content: "Reacted", ephemeral: true })
+                return (
+                    await getMessage(interaction.channel, options.getString("message"))
+                ).react(options.getString("emoji"));
+            await interaction.reply({ content: "Reacted", ephemeral: true });
         } else if (commandName == "query-info") {
-            let temp = ""
+            let temp = "";
             Object.keys(queryKeywordList).forEach((key) => {
-                temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
-            })
+                temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`;
+            });
             await interaction.reply({
                 content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documentation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query)`,
                 flags: [MessageFlags.SuppressEmbeds],
-            })
+            });
         } else if (commandName == "test") {
-            await interaction.reply(`Nothing here`)
+            await interaction.reply(`Nothing here`);
         } else if (commandName == "poll") {
-            const pollOption = options.getString("option").split(",")
+            const pollOption = options.getString("option").split(",");
             const time = options.getString("time").endsWith("m")
                 ? parseInt(options.getString("time").slice(0, -1)) * 60000
                 : options.getString("time").endsWith("s")
                     ? parseInt(options.getString("time").slice(0, -1)) * 1000
-                    : options.getString("time")
-            const endTime = ((Date.now() + time) / 1000).toFixed()
+                    : options.getString("time");
+            const endTime = ((Date.now() + time) / 1000).toFixed();
             const embed = new EmbedBuilder()
                 .setColor(Colors.Purple)
                 .setTitle(`Poll: ${options.getString("question")}`)
                 .setDescription(
                     `Poll end <t:${endTime}:R>\n` +
-                    pollOption.map((o) => `${pollOption.indexOf(o) + 1}: ${o}`).join("\n")
-                )
+                    pollOption
+                        .map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
+                        .join("\n"),
+                );
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId("pollSelect")
-                .setPlaceholder("Choose a option")
+                .setPlaceholder("Choose a option");
             for (const [index, option] of pollOption.entries()) {
                 selectMenu.addOptions({
                     label: option,
                     value: index.toString(),
-                })
+                });
             }
             const message = await interaction.reply({
                 embeds: [embed],
                 components: [new ActionRowBuilder().addComponents(selectMenu)],
                 fetchReply: true,
-            })
+            });
 
-            let pollData = require("./extra/poll.json")
+            let pollData = require("./extra/poll.json");
             pollData[message.id] = {
                 endTime: endTime,
                 question: options.getString("question"),
                 optionResult: pollOption.map((value) => {
-                    return { option: value, amount: 0 }
+                    return { option: value, amount: 0 };
                 }),
                 alreadyVote: [],
-            }
-            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8")
+            };
+            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8");
 
-            await sleep(time)
+            await sleep(time);
 
-            pollData = require("./extra/poll.json")
+            pollData = require("./extra/poll.json");
             await message.edit({
                 content: "Poll ended",
                 embeds: [
@@ -2652,54 +2764,61 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         .setTitle(pollData[message.id].question)
                         .setDescription(
                             `Winner: ${pollData[message.id].optionResult.sort(
-                                (a, b) => b.amount - a.amount
+                                (a, b) => b.amount - a.amount,
                             )[0].option
-                            }`
+                            }`,
                         ),
                 ],
                 components: [],
-            })
-            delete pollData[message.id]
+            });
+            delete pollData[message.id];
 
-            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8")
+            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8");
         } else if (commandName == "default-code") {
             serverDefaultSet[interaction.guildId] = {
                 default: options.getString("default-set-code"),
                 addon: options.getString("addon-set-code"),
-            }
+            };
             await interaction.reply({
                 content: "Default added",
                 ephemeral: true,
-            })
-            fs.writeFileSync("./extra/default.json", JSON.stringify(serverDefaultSet))
+            });
+            fs.writeFileSync(
+                "./extra/default.json",
+                JSON.stringify(serverDefaultSet),
+            );
         } else if (commandName == "deck-analysis") {
-            await interaction.reply("Crunching number, this may take a while")
-            const set = options.getString("set")
+            await interaction.reply("Crunching number, this may take a while");
+            const set = options.getString("set");
 
-            let mainDeck = []
+            let mainDeck = [];
             // let sideDeck = []
 
             const deckFile = options.getAttachment("deck-file")
-                ? JSON.parse(await (await fetch(options.getAttachment("deck-file").url)).text())
+                ? JSON.parse(
+                    await (await fetch(options.getAttachment("deck-file").url)).text(),
+                )
                 : options.getString("deck-json")
                     ? JSON.parse(options.getString("deck-json"))
-                    : {}
+                    : {};
 
             for (const name of deckFile.cards) {
-                mainDeck.push(fetchCard(name.toLowerCase(), set, true, true))
+                mainDeck.push(fetchCard(name.toLowerCase(), set, true, true));
             }
             const embed = new EmbedBuilder()
                 .setColor(Colors.Gold)
                 .setTitle("Deck Analysis result")
-                .setDescription("eeeeeeeee")
+                .setDescription("eeeeeeeee");
 
             const possibleMainHandCombinations = combinations(
                 mainDeck.map((c) => c.name),
-                3
-            )
+                3,
+            );
             const deckDup = Object.fromEntries(
-                Object.entries(countDup(mainDeck.map((c) => c.name))).sort(([, a], [, b]) => b - a)
-            )
+                Object.entries(countDup(mainDeck.map((c) => c.name))).sort(
+                    ([, a], [, b]) => b - a,
+                ),
+            );
 
             embed.addFields(
                 // Deck count
@@ -2709,7 +2828,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         .map(
                             (c) =>
                                 `${deckDup[c]}x | ${c} (${toPercent(
-                                    deckDup[c] / mainDeck.length
+                                    deckDup[c] / mainDeck.length,
                                 )}%, ${toPercent(
                                     (deckDup[c] / mainDeck.length) *
                                     [...Array(3).keys()].reduce(
@@ -2720,11 +2839,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                                     acc *
                                                     ((mainDeck.length - deckDup[c] - y) /
                                                         (mainDeck.length - y - 1)),
-                                                1
+                                                1,
                                             ),
-                                        0
-                                    )
-                                )}%)`
+                                        0,
+                                    ),
+                                )}%)`,
                         )
                         .join("\n"),
                 },
@@ -2741,15 +2860,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     name: "Common Hand combination",
                     value: `Most common starting hands:\n${(() => {
                         const temp = Object.entries(
-                            countDup(possibleMainHandCombinations.map((h) => h.join(",")))
-                        ).sort(([, a], [, b]) => b - a)
+                            countDup(possibleMainHandCombinations.map((h) => h.join(","))),
+                        ).sort(([, a], [, b]) => b - a);
                         return `1. ${temp[0][0]} (${toPercent(
-                            temp[0][1] / possibleMainHandCombinations.length
+                            temp[0][1] / possibleMainHandCombinations.length,
                         )}%)\n2. ${temp[1][0]} (${toPercent(
-                            temp[1][1] / possibleMainHandCombinations.length
+                            temp[1][1] / possibleMainHandCombinations.length,
                         )}%)\n3. ${temp[2][0]} (${toPercent(
-                            temp[2][1] / possibleMainHandCombinations.length
-                        )}%)`
+                            temp[2][1] / possibleMainHandCombinations.length,
+                        )}%)`;
                     })(possibleMainHandCombinations)}`,
                     inline: true,
                 },
@@ -2758,37 +2877,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 {
                     name: "Deck Composition",
                     value: `Blood card count: ${mainDeck.reduce((acc, c) => {
-                        if (c.blood_cost) return acc + 1
-                        else return acc
+                        if (c.blood_cost) return acc + 1;
+                        else return acc;
                     }, 0)} (${toPercent(
                         mainDeck.reduce((acc, c) => {
-                            if (c.blood_cost) return acc + 1
-                            else return acc
-                        }, 0) / mainDeck.length
+                            if (c.blood_cost) return acc + 1;
+                            else return acc;
+                        }, 0) / mainDeck.length,
                     )}%)\nBone card count: ${mainDeck.reduce((acc, c) => {
-                        if (c.bone_cost) return acc + 1
-                        else return acc
+                        if (c.bone_cost) return acc + 1;
+                        else return acc;
                     }, 0)} (${toPercent(
                         mainDeck.reduce((acc, c) => {
-                            if (c.bone_cost) return acc + 1
-                            else return acc
-                        }, 0) / mainDeck.length
+                            if (c.bone_cost) return acc + 1;
+                            else return acc;
+                        }, 0) / mainDeck.length,
                     )}%)\nEnergy card count: ${mainDeck.reduce((acc, c) => {
-                        if (c.energy_cost) return acc + 1
-                        else return acc
+                        if (c.energy_cost) return acc + 1;
+                        else return acc;
                     }, 0)} (${toPercent(
                         mainDeck.reduce((acc, c) => {
-                            if (c.energy_cost) return acc + 1
-                            else return acc
-                        }, 0) / mainDeck.length
+                            if (c.energy_cost) return acc + 1;
+                            else return acc;
+                        }, 0) / mainDeck.length,
                     )}%)\nMox card count: ${mainDeck.reduce((acc, c) => {
-                        if (c.mox_cost) return acc + 1
-                        else return acc
+                        if (c.mox_cost) return acc + 1;
+                        else return acc;
                     }, 0)} (${toPercent(
                         mainDeck.reduce((acc, c) => {
-                            if (c.mox_cost) return acc + 1
-                            else return acc
-                        }, 0) / mainDeck.length
+                            if (c.mox_cost) return acc + 1;
+                            else return acc;
+                        }, 0) / mainDeck.length,
                     )}%)`,
                     inline: true,
                 },
@@ -2798,42 +2917,51 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     name: "Deck Stat",
                     value: `Maximum Blood cost: ${mainDeck.reduce(
                         (acc, c) => acc + getBlood(c),
-                        0
+                        0,
                     )}\nAverage Blood cost: ${average(
-                        ...mainDeck.filter((c) => c.blood_cost).map((c) => getBlood(c))
+                        ...mainDeck.filter((c) => c.blood_cost).map((c) => getBlood(c)),
                     ).toFixed(1)}\nMaximum Bone cost: ${mainDeck.reduce(
                         (acc, c) => acc + getBone(c),
-                        0
+                        0,
                     )}\nAverage Bone cost: ${average(
-                        ...mainDeck.filter((c) => c.bone_cost).map((c) => getBone(c))
+                        ...mainDeck.filter((c) => c.bone_cost).map((c) => getBone(c)),
                     ).toFixed(1)}\nAverage Energy cost: ${average(
-                        ...mainDeck.filter((c) => c.energy_cost).map((c) => c.energy_cost)
+                        ...mainDeck.filter((c) => c.energy_cost).map((c) => c.energy_cost),
                     ).toFixed(1)} (On average it take ${Math.round(
-                        average(...mainDeck.filter((c) => c.energy_cost).map((c) => c.energy_cost))
+                        average(
+                            ...mainDeck
+                                .filter((c) => c.energy_cost)
+                                .map((c) => c.energy_cost),
+                        ),
                     )} turns to play a energy card)`,
                     inline: true,
-                }
-            )
+                },
+            );
 
-            console.log()
+            console.log();
             await interaction.editReply({
                 embeds: [embed],
-            })
+            });
         } else if (commandName == "add-vanilla") {
             if (!isPerm(interaction)) {
-                await interaction.reply("no")
-                return
+                await interaction.reply("no");
+                return;
             }
             try {
-                setsData.vanilla.cards[JSON.parse(options.getString("card-json")).name] = (() => {
-                    const json = JSON.parse(options.getString("card-json"))
-                    json.noArt = true
-                    return json
-                })()
-                fs.writeFileSync("./extra/vanilla.json", JSON.stringify(setsData.vanilla))
-                await interaction.reply("Card added")
+                setsData.vanilla.cards[
+                    JSON.parse(options.getString("card-json")).name
+                ] = (() => {
+                    const json = JSON.parse(options.getString("card-json"));
+                    json.noArt = true;
+                    return json;
+                })();
+                fs.writeFileSync(
+                    "./extra/vanilla.json",
+                    JSON.stringify(setsData.vanilla),
+                );
+                await interaction.reply("Card added");
             } catch (err) {
-                await interaction.reply(`\`\`\`\n${err}\`\`\``)
+                await interaction.reply(`\`\`\`\n${err}\`\`\``);
             }
         }
     } else if (interaction.isButton()) {
@@ -2842,13 +2970,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await interaction.update({
                 embeds: [],
                 files: [],
-            })
+            });
             await interaction.editReply(
                 await messageSearch(
-                    await getMessage(interaction.channel, interaction.message.reference.messageId),
-                    true
-                )
-            )
+                    await getMessage(
+                        interaction.channel,
+                        interaction.message.reference.messageId,
+                    ),
+                    true,
+                ),
+            );
         } else if (interaction.customId == "removeCache") {
             await interaction.showModal(
                 new ModalBuilder()
@@ -2858,10 +2989,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
                                 .setLabel("WARNING")
-                                .setValue('If you don\'t know what this button do press "Cancel"')
+                                .setValue(
+                                    'If you don\'t know what this button do press "Cancel"',
+                                )
                                 .setCustomId("no")
                                 .setStyle(TextInputStyle.Short)
-                                .setRequired(false)
+                                .setRequired(false),
                         ),
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
@@ -2869,7 +3002,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 .setPlaceholder("Name is not case sensitive but must be exact")
                                 .setCustomId("name")
                                 .setStyle(TextInputStyle.Short)
-                                .setRequired(true)
+                                .setRequired(true),
                         ),
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
@@ -2877,10 +3010,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 .setPlaceholder("Set name is case sensitive and must be exact")
                                 .setCustomId("set")
                                 .setStyle(TextInputStyle.Short)
-                                .setRequired(true)
-                        )
-                    )
-            )
+                                .setRequired(true),
+                        ),
+                    ),
+            );
         }
     } else if (interaction.isModalSubmit()) {
         if (interaction.customId == "removeCache") {
@@ -2888,56 +3021,63 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 const card = fetchCard(
                     interaction.fields.getTextInputValue("name").toLowerCase(),
                     interaction.fields.getTextInputValue("set"),
-                    true
-                )
-                if (!card) throw Error("Missing Card")
-                delete portraitCaches[card.url]
-                fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
+                    true,
+                );
+                if (!card) throw Error("Missing Card");
+                delete portraitCaches[card.url];
+                fs.writeFileSync(
+                    "./extra/caches.json",
+                    JSON.stringify(portraitCaches, null, 4),
+                );
                 await interaction.reply({
                     content: "Cache removed",
                     ephemeral: true,
-                })
+                });
             } catch {
                 await interaction.reply({
                     content: "Invalid card name or set name",
                     ephemeral: true,
-                })
+                });
             }
         }
     } else if (interaction.isStringSelectMenu()) {
         if (interaction.customId == "pollSelect") {
-            let fullPollData = require("./extra/poll.json")
-            let pollData = fullPollData[interaction.message.id]
+            let fullPollData = require("./extra/poll.json");
+            let pollData = fullPollData[interaction.message.id];
             if (pollData.alreadyVote.includes(interaction.user.id)) {
                 await interaction.reply({
                     content: "You already voted",
                     ephemeral: true,
-                })
+                });
             } else {
-                pollData.optionResult[interaction.values[0]].amount++
-                pollData.alreadyVote.push(interaction.user.id)
+                pollData.optionResult[interaction.values[0]].amount++;
+                pollData.alreadyVote.push(interaction.user.id);
                 await interaction.reply({
                     content: "Vote Success",
                     ephemeral: true,
-                })
+                });
             }
-            fs.writeFileSync("./extra/poll.json", JSON.stringify(fullPollData), "utf8")
+            fs.writeFileSync(
+                "./extra/poll.json",
+                JSON.stringify(fullPollData),
+                "utf8",
+            );
         }
     }
-})
+});
 
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
-    if (message.author.id === clientId) return
+    if (message.author.id === clientId) return;
     if (message.content.toLowerCase().startsWith("would you kindly")) {
         try {
-            const command = message.content.slice(17)
+            const command = message.content.slice(17);
 
             if (command.startsWith("calculate hand percentage of ")) {
                 const num = command
                     .replace("calculate hand percentage of ", "")
                     .split(" ")
-                    .map((n) => parseInt(n))
+                    .map((n) => parseInt(n));
                 await message.reply(
                     `There would be a ${toPercent(
                         (num[0] / num[1]) *
@@ -2947,67 +3087,76 @@ client.on(Events.MessageCreate, async (message) => {
                                 [...Array(x).keys()].reduce(
                                     (acc, y) =>
                                         acc * ((num[1] - num[0] - y) / (num[1] - y - 1)),
-                                    1
+                                    1,
                                 ),
-                            0
-                        )
+                            0,
+                        ),
                     )}% chance if there were ${num[0]} copies in a ${num[1]
-                    } cards deck and the starting hand is ${num[2]}`
-                )
-            } else if (command.startsWith("eval") && message.author.id == "601821309881810973") {
-                await message.reply(`${eval(command.replace("eval", ""))}`)
+                    } cards deck and the starting hand is ${num[2]}`,
+                );
+            } else if (
+                command.startsWith("eval") &&
+                message.author.id == "601821309881810973"
+            ) {
+                await message.reply(`${eval(command.replace("eval", ""))}`);
             } else if (command.startsWith("check if tunnel is online")) {
                 await http
                     .get("http://localtunnel.me", async (res) => {
                         await message.reply(
-                            "Tunnel is up and running. If you have problem connecting, restart the game and try again"
-                        )
+                            "Tunnel is up and running. If you have problem connecting, restart the game and try again",
+                        );
                     })
                     .on("error", async (e) => {
                         await message.reply(
-                            "I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
-                        )
-                    })
+                            "I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)",
+                        );
+                    });
             } else if (command.startsWith("roll a d")) {
                 await message.reply(
-                    `You got a ${Math.floor(parseInt(command.replace("roll a d", "")) * Math.random()) + 1
-                    }`
-                )
+                    `You got a ${Math.floor(
+                        parseInt(command.replace("roll a d", "")) * Math.random(),
+                    ) + 1
+                    }`,
+                );
             } else if (command.startsWith("flip a coin")) {
                 await message.reply(
-                    `You got ${Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"}`
-                )
+                    `You got ${Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"}`,
+                );
             } else if (
                 command.startsWith("cal") &&
                 (message.guildId == "994573431880286289" ||
                     message.guildId == "1028530290727063604" ||
                     message.guildId == "913238101902630983")
             ) {
-                if (command.replace("cal", "").replaceAll("\n", ";").trim() == "9 + 10") {
-                    await message.reply("21 duh")
-                    return
+                if (
+                    command.replace("cal", "").replaceAll("\n", ";").trim() == "9 + 10"
+                ) {
+                    await message.reply("21 duh");
+                    return;
                 }
                 await message.reply(
-                    `${limitedEvaluate(command.replace("cal", "").replaceAll("\n", ";").trim())}`
-                )
+                    `${limitedEvaluate(
+                        command.replace("cal", "").replaceAll("\n", ";").trim(),
+                    )}`,
+                );
             } else if (command.startsWith("remind me in")) {
-                const num = command.replace("remind me in", "")
+                const num = command.replace("remind me in", "");
                 const ms = num.endsWith("h")
                     ? parseInt(num.replace("h", "")) * 60 * 60 * 1000
                     : num.endsWith("m")
                         ? parseInt(num.replace("m", "")) * 60 * 1000
                         : num.endsWith("s")
                             ? parseInt(num.replace("s", "")) * 1000
-                            : 1000
+                            : 1000;
                 await message.reply(
-                    `Reminder will go off <t:${((Date.now() + ms) / 1000).toFixed()}:R>`
-                )
-                await sleep(ms)
-                await message.reply("HEY TIME UP BITCH")
+                    `Reminder will go off <t:${((Date.now() + ms) / 1000).toFixed()}:R>`,
+                );
+                await sleep(ms);
+                await message.reply("HEY TIME UP BITCH");
             } else if (command.startsWith("cipher")) {
-                const cipherType = command.replace("cipher ", "")
+                const cipherType = command.replace("cipher ", "");
                 if (cipherType.startsWith("atbash")) {
-                    const alphabet = "abcdefghijklmnopqrstuvwxyz"
+                    const alphabet = "abcdefghijklmnopqrstuvwxyz";
                     await message.reply(
                         cipherType
                             .replace("atbash ", "")
@@ -3019,20 +3168,22 @@ client.on(Events.MessageCreate, async (message) => {
                                         ? alphabet.toUpperCase().split("").reverse().join("")[
                                         alphabet.toUpperCase().indexOf(c)
                                         ]
-                                        : c
+                                        : c,
                             )
-                            .join("")
-                    )
+                            .join(""),
+                    );
                 }
             } else {
-                await message.reply(randomChoice(["Yes", "Sure", "Maybe", "No", "Never"]))
+                await message.reply(
+                    randomChoice(["Yes", "Sure", "Maybe", "No", "Never"]),
+                );
             }
         } catch (error) {
-            await message.reply(error.message)
+            await message.reply(error.message);
         }
     } else {
-        messageSearch(message)
+        messageSearch(message);
     }
-})
+});
 
-client.login(token) // login the bot
+client.login(token); // login the bot
