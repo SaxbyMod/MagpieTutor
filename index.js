@@ -19,56 +19,56 @@ const {
     ButtonBuilder,
     MessageAttachment,
     Attachment,
-} = require('discord.js')
+} = require("discord.js")
 
 // installed module
-const StringSimilarity = require('string-similarity')
-const scryfall = require('scryfall')
-const chalk = require('chalk')
-const Canvas = require('@napi-rs/canvas')
-const format = require('string-format')
-const { create, all } = require('mathjs')
+const StringSimilarity = require("string-similarity")
+const scryfall = require("scryfall")
+const chalk = require("chalk")
+const Canvas = require("@napi-rs/canvas")
+const format = require("string-format")
+const { create, all } = require("mathjs")
 
 const mathjs = create(all)
 const mathSafe = create(all)
 
-mathSafe.createUnit('blahaj', '55 cm', { prefixes: 'long' })
-mathSafe.createUnit('longhaj', '1 m', { prefixes: 'long' })
+mathSafe.createUnit("blahaj", "55 cm", { prefixes: "long" })
+mathSafe.createUnit("longhaj", "1 m", { prefixes: "long" })
 
 const limitedEvaluate = mathSafe.evaluate
 
 mathSafe.import(
     {
         import: function () {
-            throw new Error('Function import is disabled')
+            throw new Error("Function import is disabled")
         },
         createUnit: function () {
-            throw new Error('Function createUnit is disabled')
+            throw new Error("Function createUnit is disabled")
         },
         evaluate: function () {
-            throw new Error('Function evaluate is disabled')
+            throw new Error("Function evaluate is disabled")
         },
         parse: function () {
-            throw new Error('Function parse is disabled')
+            throw new Error("Function parse is disabled")
         },
         simplify: function () {
-            throw new Error('Function simplify is disabled')
+            throw new Error("Function simplify is disabled")
         },
         derivative: function () {
-            throw new Error('Function derivative is disabled')
+            throw new Error("Function derivative is disabled")
         },
     },
     { override: true }
 )
 
 // general module (don't need installing)
-const fetch = require('node-fetch')
-const http = require('http')
-const fs = require('fs')
+const fetch = require("node-fetch")
+const http = require("http")
+const fs = require("fs")
 
 // my module
-const { token, clientId } = require('./config.json')
-const sigilList = require('./extra/sigilList.json')
+const { token, clientId } = require("./config.json")
+const sigilList = require("./extra/sigilList.json")
 const {
     debugLog,
     infoLog,
@@ -91,9 +91,9 @@ const {
     getBlood,
     deepCopy,
     randStr,
-} = require('./extra/utils')
+} = require("./extra/utils")
 
-const portraitCaches = require('./extra/caches.json')
+const portraitCaches = require("./extra/caches.json")
 
 format.extend(String.prototype, {})
 
@@ -102,21 +102,21 @@ const queryRegex = /(-|)(\w+):([^"\s]+|"[^"]+")/g
 
 const matchPercentage = 0.4
 let scream = false
-let log = ''
+let log = ""
 let doneSetup = false
 // Chalk color
-chalk.orange = chalk.hex('#fb922b')
-chalk.pink = chalk.hex('#ff80a4')
+chalk.orange = chalk.hex("#fb922b")
+chalk.pink = chalk.hex("#ff80a4")
 
 const colorList = [
-    'blue',
-    'cyan',
-    'green',
-    'yellow',
-    'orange',
-    'red',
-    'pink',
-    'magenta',
+    "blue",
+    "cyan",
+    "green",
+    "yellow",
+    "orange",
+    "red",
+    "pink",
+    "magenta",
 ]
 
 //set up the bot client
@@ -140,56 +140,56 @@ const client = new Client({
 const SetFormatList = {
     imf: {
         color: {
-            'card.rare': Colors.Green,
+            "card.rare": Colors.Green,
         },
         title: [
-            { text: '{name}', type: 'sub' },
-            { text: ' ({set})', type: 'set' },
-            { text: ':conductive:', type: 'con', condition: 'card.conduit' },
-            { text: ':rare:', type: 'con', condition: 'card.rare' },
-            { text: ':unsacable:', type: 'con', condition: 'card.unsacable' },
+            { text: "{name}", type: "sub" },
+            { text: " ({set})", type: "set" },
+            { text: ":conductive:", type: "con", condition: "card.conduit" },
+            { text: ":rare:", type: "con", condition: "card.rare" },
+            { text: ":unsacable:", type: "con", condition: "card.unsacable" },
             {
-                text: ':unhammerable:',
-                type: 'con',
-                condition: 'card.unhammerable',
+                text: ":unhammerable:",
+                type: "con",
+                condition: "card.unhammerable",
             },
-            { text: ':banned:', type: 'con', condition: 'card.banned' },
+            { text: ":banned:", type: "con", condition: "card.banned" },
         ],
         body: {
             general: {
-                type: 'general',
+                type: "general",
                 info: [
-                    { text: '*{description}*\n', type: 'sub' },
+                    { text: "*{description}*\n", type: "sub" },
                     {
                         text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
-                        type: 'sub',
+                        type: "sub",
                     },
                     {
-                        text: '\n**Bone Cost**: :{bone_cost}::x_::imfBone:',
-                        type: 'sub',
+                        text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:',
-                        type: 'sub',
+                        text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+                        type: "sub",
                     },
-                    { text: '\n**Mox Cost**: {mox_cost}', type: 'mox' },
-                    { text: '\n\n{health}', type: 'stat' },
+                    { text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+                    { text: "\n\n{health}", type: "stat" },
                 ],
             },
             sigil: {
-                type: 'keyword',
-                name: '== SIGILS ==',
-                var: 'sigils',
+                type: "keyword",
+                name: "== SIGILS ==",
+                var: "sigils",
             },
             extra: {
-                type: 'extra',
-                name: '== EXTRA INFO ==',
+                type: "extra",
+                name: "== EXTRA INFO ==",
                 info: [
-                    { text: '**Change into**: {evolution}\n', type: 'sub' },
-                    { text: '**Shed**: {sheds}\n', type: 'sub' },
+                    { text: "**Change into**: {evolution}\n", type: "sub" },
+                    { text: "**Shed**: {sheds}\n", type: "sub" },
                     {
-                        text: '**This card split into**: {left_half} (Left), {right_half} (Right)\n',
-                        type: 'sub',
+                        text: "**This card split into**: {left_half} (Left), {right_half} (Right)\n",
+                        type: "sub",
                     },
                 ],
             },
@@ -197,65 +197,65 @@ const SetFormatList = {
     },
     imfCompact: {
         color: {
-            'card.rare': Colors.Green,
+            "card.rare": Colors.Green,
         },
         title: [
-            { text: '{name}', type: 'sub' },
-            { text: ' ({set})', type: 'set' },
-            { text: ':conductive:', type: 'con', condition: 'card.conduit' },
-            { text: ':unsacable:', type: 'con', condition: 'card.unsacable' },
+            { text: "{name}", type: "sub" },
+            { text: " ({set})", type: "set" },
+            { text: ":conductive:", type: "con", condition: "card.conduit" },
+            { text: ":unsacable:", type: "con", condition: "card.unsacable" },
             {
-                text: ':unhammerable:',
-                type: 'con',
-                condition: 'card.unhammerable',
+                text: ":unhammerable:",
+                type: "con",
+                condition: "card.unhammerable",
             },
-            { text: ':banned:', type: 'con', condition: 'card.banned' },
+            { text: ":banned:", type: "con", condition: "card.banned" },
         ],
         body: {
             general: {
-                type: 'general',
+                type: "general",
                 info: [
                     {
                         text: `:{blood_cost}::imfBlood: `,
-                        type: 'sub',
+                        type: "sub",
                     },
                     {
-                        text: ':{bone_cost}::imfBone: ',
-                        type: 'sub',
+                        text: ":{bone_cost}::imfBone: ",
+                        type: "sub",
                     },
                     {
-                        text: ':{energy_cost}::imfEnergy: ',
-                        type: 'sub',
+                        text: ":{energy_cost}::imfEnergy: ",
+                        type: "sub",
                     },
-                    { text: '{mox_cost}', type: 'mox' },
-                    { text: '\n{health}', type: 'stat' },
-                    { text: '\n**Sigils**: {sigils}\n', type: 'list' },
-                    { text: '**Change into**: {evolution}\n', type: 'sub' },
-                    { text: '**Shed**: {sheds}\n', type: 'sub' },
+                    { text: "{mox_cost}", type: "mox" },
+                    { text: "\n{health}", type: "stat" },
+                    { text: "\n**Sigils**: {sigils}\n", type: "list" },
+                    { text: "**Change into**: {evolution}\n", type: "sub" },
+                    { text: "**Shed**: {sheds}\n", type: "sub" },
                     {
-                        text: '**This card split into**: {left_half} (Left), {right_half} (Right)',
-                        type: 'sub',
+                        text: "**This card split into**: {left_half} (Left), {right_half} (Right)",
+                        type: "sub",
                     },
                 ],
             },
         },
     },
     imfDraft: [
-        { text: '**{name} ', type: 'sub' },
-        { text: '[RARE] ', type: 'con', con: 'card.rare' },
-        { text: '(', type: 'normal' },
-        { text: '{blood_cost} Blood', type: 'sub' },
-        { text: '{bone_cost} Bone', type: 'sub' },
-        { text: '{energy_cost} Energy', type: 'sub' },
-        { text: '{mox_cost}', type: 'mox' },
-        { text: ')**\n', type: 'normal' },
+        { text: "**{name} ", type: "sub" },
+        { text: "[RARE] ", type: "con", con: "card.rare" },
+        { text: "(", type: "normal" },
+        { text: "{blood_cost} Blood", type: "sub" },
+        { text: "{bone_cost} Bone", type: "sub" },
+        { text: "{energy_cost} Energy", type: "sub" },
+        { text: "{mox_cost}", type: "mox" },
+        { text: ")**\n", type: "normal" },
         {
-            text: 'Stat: {s}\n',
-            type: 'stat',
-            attackVar: 'attack',
-            healthVar: 'health',
+            text: "Stat: {s}\n",
+            type: "stat",
+            attackVar: "attack",
+            healthVar: "health",
         },
-        { text: 'Sigils: {s}', type: 'list', var: 'sigils' },
+        { text: "Sigils: {s}", type: "list", var: "sigils" },
     ],
     augmented: {
         color: {
@@ -265,47 +265,47 @@ const SetFormatList = {
             'card.temple == "Magick"': Colors.Fuchsia,
         },
         title: [
-            { text: '{name}', type: 'sub' },
-            { text: ' ({set})', type: 'set' },
+            { text: "{name}", type: "sub" },
+            { text: " ({set})", type: "set" },
         ],
         body: {
             general: {
-                type: 'general',
+                type: "general",
                 info: [
-                    { text: '*{description}*\n', type: 'sub' },
-                    { text: '**Temple**: {temple}\n', type: 'sub' },
-                    { text: '**Tier**: {tier}\n', type: 'sub' },
-                    { text: '**Tribes**: {tribes}\n', type: 'sub' },
+                    { text: "*{description}*\n", type: "sub" },
+                    { text: "**Temple**: {temple}\n", type: "sub" },
+                    { text: "**Tier**: {tier}\n", type: "sub" },
+                    { text: "**Tribes**: {tribes}\n", type: "sub" },
                     {
-                        text: '\n**Blood Cost**: :{blood}::x_::blood:',
-                        type: 'sub',
+                        text: "\n**Blood Cost**: :{blood}::x_::blood:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Bone Cost**: :{bone}::x_::bones:',
-                        type: 'sub',
+                        text: "\n**Bone Cost**: :{bone}::x_::bones:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Energy Cost**: :{energy}::x_::energy:',
-                        type: 'sub',
+                        text: "\n**Energy Cost**: :{energy}::x_::energy:",
+                        type: "sub",
                     },
-                    { text: '\n**Mox Cost**: {mox}', type: 'mox' },
+                    { text: "\n**Mox Cost**: {mox}", type: "mox" },
                     {
-                        text: '\n**Shattered Mox Cost**: {shattered}',
-                        type: 'mox',
+                        text: "\n**Shattered Mox Cost**: {shattered}",
+                        type: "mox",
                     },
-                    { text: '\n\n{health}', type: 'stat' },
+                    { text: "\n\n{health}", type: "stat" },
                 ],
             },
             sigil: {
-                type: 'keyword',
-                name: '== SIGILS ==',
-                var: 'sigils',
+                type: "keyword",
+                name: "== SIGILS ==",
+                var: "sigils",
             },
-            trait: { type: 'keyword', name: '== TRAITS ==', var: 'traits' },
+            trait: { type: "keyword", name: "== TRAITS ==", var: "traits" },
             extra: {
-                type: 'extra',
-                name: '== EXTRA INFO ==',
-                info: [{ text: '**Token**: {token}', type: 'sub' }],
+                type: "extra",
+                name: "== EXTRA INFO ==",
+                info: [{ text: "**Token**: {token}", type: "sub" }],
             },
         },
     },
@@ -317,104 +317,104 @@ const SetFormatList = {
             'card.temple == "Magick"': Colors.Fuchsia,
         },
         title: [
-            { text: '{name}', type: 'sub' },
-            { text: '({set})', type: 'set' },
+            { text: "{name}", type: "sub" },
+            { text: "({set})", type: "set" },
         ],
         body: {
             general: {
-                type: 'general',
+                type: "general",
                 info: [
-                    { text: '{tribes} {tier}\n', type: 'sub' },
+                    { text: "{tribes} {tier}\n", type: "sub" },
 
-                    { text: ':{blood}::blood: ', type: 'sub' },
-                    { text: ':{bone}::bones:', type: 'sub' },
+                    { text: ":{blood}::blood: ", type: "sub" },
+                    { text: ":{bone}::bones:", type: "sub" },
                     {
-                        text: ':{energy}::energy: ',
-                        type: 'sub',
+                        text: ":{energy}::energy: ",
+                        type: "sub",
                     },
-                    { text: '{mox} ', type: 'mox' },
-                    { text: '{shattered}', type: 'mox' },
-                    { text: '\n{health}', type: 'stat' },
-                    { text: '\n**Sigils**: {sigils}', type: 'list' },
-                    { text: '\n**Traits**: {traits}', type: 'list' },
-                    { text: '\n**Token**: {token}', type: 'sub' },
+                    { text: "{mox} ", type: "mox" },
+                    { text: "{shattered}", type: "mox" },
+                    { text: "\n{health}", type: "stat" },
+                    { text: "\n**Sigils**: {sigils}", type: "list" },
+                    { text: "\n**Traits**: {traits}", type: "list" },
+                    { text: "\n**Token**: {token}", type: "sub" },
                 ],
             },
         },
     },
     augmentedDraft: [
-        { text: '**{name} ', type: 'sub' },
-        { text: '[{tier}] ', type: 'sub' },
-        { text: '(', type: 'normal' },
-        { text: '{blood} Blood', type: 'sub' },
-        { text: '{bone} Bone', type: 'sub' },
-        { text: '{energy} Energy', type: 'sub' },
-        { text: '{mox}', type: 'mox' },
-        { text: '{shattered}', type: 'mox' },
-        { text: ')** | ', type: 'normal' },
+        { text: "**{name} ", type: "sub" },
+        { text: "[{tier}] ", type: "sub" },
+        { text: "(", type: "normal" },
+        { text: "{blood} Blood", type: "sub" },
+        { text: "{bone} Bone", type: "sub" },
+        { text: "{energy} Energy", type: "sub" },
+        { text: "{mox}", type: "mox" },
+        { text: "{shattered}", type: "mox" },
+        { text: ")** | ", type: "normal" },
         {
-            text: 'Stat: {s} | ',
-            type: 'stat',
-            attackVar: 'attack',
-            healthVar: 'health',
+            text: "Stat: {s} | ",
+            type: "stat",
+            attackVar: "attack",
+            healthVar: "health",
         },
-        { text: 'Sigils: {s}', type: 'list', var: 'sigils' },
-        { text: 'Traits: {s}', type: 'list', var: 'traits' },
+        { text: "Sigils: {s}", type: "list", var: "sigils" },
+        { text: "Traits: {s}", type: "list", var: "traits" },
     ],
     redux: {
         color: {
-            'card.rare': Colors.Green,
+            "card.rare": Colors.Green,
         },
         title: [
-            { text: '{name}', type: 'sub' },
-            { text: '({set})', type: 'set' },
-            { text: ':conductive:', type: 'con', condition: 'card.conduit' },
-            { text: ':rare:', type: 'con', condition: 'card.rare' },
-            { text: ':unsacable:', type: 'con', condition: 'card.unsacable' },
+            { text: "{name}", type: "sub" },
+            { text: "({set})", type: "set" },
+            { text: ":conductive:", type: "con", condition: "card.conduit" },
+            { text: ":rare:", type: "con", condition: "card.rare" },
+            { text: ":unsacable:", type: "con", condition: "card.unsacable" },
             {
-                text: ':unhammerable:',
-                type: 'con',
-                condition: 'card.unhammerable',
+                text: ":unhammerable:",
+                type: "con",
+                condition: "card.unhammerable",
             },
-            { text: ':banned:', type: 'con', condition: 'card.banned' },
+            { text: ":banned:", type: "con", condition: "card.banned" },
         ],
         body: {
             general: {
-                type: 'general',
+                type: "general",
                 info: [
-                    { text: '*{description}*\n', type: 'sub' },
+                    { text: "*{description}*\n", type: "sub" },
                     {
                         text: `\n**Blood Cost**: :{blood_cost}::x_::imfBlood:`,
-                        type: 'sub',
+                        type: "sub",
                     },
                     {
                         text: `\n**Sap Cost**: :{sap_cost}::x_::sap:`,
-                        type: 'sub',
+                        type: "sub",
                     },
                     {
-                        text: '\n**Bone Cost**: :{bone_cost}::x_::imfBone:',
-                        type: 'sub',
+                        text: "\n**Bone Cost**: :{bone_cost}::x_::imfBone:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:',
-                        type: 'sub',
+                        text: "\n**Energy Cost**: :{energy_cost}::x_::imfEnergy:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Cell Cost**: :{cell_cost}::x_::cell:',
-                        type: 'sub',
+                        text: "\n**Cell Cost**: :{cell_cost}::x_::cell:",
+                        type: "sub",
                     },
                     {
-                        text: '\n**Heat Cost**: :{heat_cost}::x_::heat:',
-                        type: 'sub',
+                        text: "\n**Heat Cost**: :{heat_cost}::x_::heat:",
+                        type: "sub",
                     },
-                    { text: '\n**Mox Cost**: {mox_cost}', type: 'mox' },
-                    { text: '\n\n{health}', type: 'stat' },
+                    { text: "\n**Mox Cost**: {mox_cost}", type: "mox" },
+                    { text: "\n\n{health}", type: "stat" },
                 ],
             },
             sigil: {
-                type: 'special_keyword',
-                name: '== SIGILS ==',
-                var: 'sigils',
+                type: "special_keyword",
+                name: "== SIGILS ==",
+                var: "sigils",
             },
         },
     },
@@ -422,30 +422,30 @@ const SetFormatList = {
 
 // imf pool
 const ImfPool = [
-    { name: 'ban', condition: 'card.ban' },
-    { name: 'rare', condition: 'card.rare' },
-    { name: 'beast', condition: 'card.blood_cost' },
-    { name: 'undead', condition: 'card.bone_cost' },
-    { name: 'tech', condition: 'card.energy_cost' },
+    { name: "ban", condition: "card.banned" },
+    { name: "rare", condition: "card.rare" },
+    { name: "beast", condition: "card.blood_cost" },
+    { name: "undead", condition: "card.bone_cost" },
+    { name: "tech", condition: "card.energy_cost" },
     {
-        name: 'magick',
-        condition: 'card.mox_cost || specialMagick.includes(card.name)',
+        name: "magick",
+        condition: "card.mox_cost || specialMagick.includes(card.name)",
     },
-    { name: 'common', condition: '!card.rare' },
+    { name: "common", condition: "!card.rare" },
 ]
 
 //structure of a pack for drafting
 const PackStructure = {
     imf: [
-        { type: 'rare', amount: 1, replacement: 'common' },
-        { type: 'common', amount: 4 },
-        { type: 'ban', amount: 0 },
+        { type: "rare", amount: 1, replacement: "common" },
+        { type: "common", amount: 4 },
+        { type: "ban", amount: 0 },
     ],
     augmented: [
-        { type: 'talk', amount: 1, replacement: 'rare' },
-        { type: 'rare', amount: 1, replacement: 'uncommon' },
-        { type: 'uncommon', amount: 2 },
-        { type: 'common', amount: 5 },
+        { type: "talk", amount: 1, replacement: "rare" },
+        { type: "rare", amount: 1, replacement: "uncommon" },
+        { type: "uncommon", amount: 2 },
+        { type: "common", amount: 5 },
     ],
 }
 
@@ -471,8 +471,8 @@ const DraftRestriction = {
 const SetList = {
     //imf set
     com: {
-        name: 'competitive',
-        type: '107',
+        name: "competitive",
+        type: "107",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
         pools: ImfPool,
@@ -481,8 +481,8 @@ const SetList = {
         draftRestriction: DraftRestriction.imf,
     },
     van: {
-        name: 'vanilla',
-        type: '107',
+        name: "vanilla",
+        type: "107",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
         pools: ImfPool,
@@ -491,9 +491,9 @@ const SetList = {
         draftRestriction: DraftRestriction.imf,
     },
     ete: {
-        name: 'eternal',
-        type: 'url',
-        url: 'https://raw.githubusercontent.com/EternalHours/EternalFormat/main/IMF_Eternal.json',
+        name: "eternal",
+        type: "url",
+        url: "https://raw.githubusercontent.com/EternalHours/EternalFormat/main/IMF_Eternal.json",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
         pools: ImfPool,
@@ -502,8 +502,8 @@ const SetList = {
         draftRestriction: DraftRestriction.eternal,
     },
     egg: {
-        name: 'mr.egg',
-        type: 'url',
+        name: "mr.egg",
+        type: "url",
         url: "https://raw.githubusercontent.com/senor-huevo/Mr.Egg-s-Goofy/main/Mr.Egg's%20Goofy.json",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
@@ -515,108 +515,85 @@ const SetList = {
 
     //special load set
     aug: {
-        name: 'augmented',
-        type: 'specialLoad',
+        name: "augmented",
+        type: "specialLoad",
         format: SetFormatList.augmented,
         compactFormat: SetFormatList.augmentedCompact,
-        file: './extra/augmentedProcess.js',
+        file: "./extra/augmentedProcess.js",
         pools: [
-            { name: 'common', condition: 'card.tier == "Common"' },
-            { name: 'uncommon', condition: 'card.tier == "Uncommon"' },
-            { name: 'rare', condition: 'card.tier == "Rare"' },
-            { name: 'talk', condition: 'card.tier == "Talking"' },
-            { name: 'side', condition: 'card.tier == "Side Deck"' },
-            { name: 'art', condition: 'card.art == "Done"' },
+            { name: "common", condition: 'card.tier == "Common"' },
+            { name: "uncommon", condition: 'card.tier == "Uncommon"' },
+            { name: "rare", condition: 'card.tier == "Rare"' },
+            { name: "talk", condition: 'card.tier == "Talking"' },
+            { name: "side", condition: 'card.tier == "Side Deck"' },
+            { name: "art", condition: 'card.art == "Done"' },
         ],
         packStructure: PackStructure.augmented,
         draftFormat: SetFormatList.augmentedDraft,
         draftRestriction: DraftRestriction.augmented,
     },
     red: {
-        name: 'redux',
-        type: 'specialLoad',
+        name: "redux",
+        type: "specialLoad",
         format: SetFormatList.redux,
         compactFormat: SetFormatList.redux,
-        file: './extra/reduxProcess.js',
+        file: "./extra/reduxProcess.js",
         pools: ImfPool,
     },
 
     //file set
     bas: {
-        name: 'base',
-        type: 'file',
-        file: './extra/vanilla.json',
+        name: "base",
+        type: "file",
+        file: "./extra/vanilla.json",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
         pools: ImfPool,
     },
 
     // special set
-    m: { name: 'magic the gathering', type: 'special' },
+    m: { name: "magic the gathering", type: "special" },
 
     // modifier
-    o: {
-        name: 'original version',
-        type: 'modifier',
-    },
-    c: {
-        name: 'compact',
-        type: 'modifier',
-    },
-    p: {
-        name: 'no portrait',
-        type: 'modifier',
-    },
-    s: {
-        name: 'sigil',
-        type: 'modifier',
-    },
-    '`': {
-        name: 'no search',
-        type: 'modifier',
-    },
-    q: {
-        name: 'query',
-        type: 'modifier',
-    },
-    j: {
-        name: 'json',
-        type: 'modifier',
-    },
-    '?': {
-        name: 'lazy',
-        type: 'modifier',
-    },
+    o: { name: "original version", type: "modifier" },
+    c: { name: "compact", type: "modifier" },
+    p: { name: "no portrait", type: "modifier" },
+    s: { name: "sigil", type: "modifier" },
+    "`": { name: "no search", type: "modifier" },
+    q: { name: "query", type: "modifier" },
+    j: { name: "json", type: "modifier" },
+    "?": { name: "lazy", type: "modifier" },
+    $: { name: "exact", type: "modifier" },
 }
 
 //!SECTION - define the ruleset shit
 
-const serverDefaultSet = require('./extra/default.json')
+const serverDefaultSet = require("./extra/default.json")
 
 let setsData = {}
 
 const specialMagick = [
-    'Mox Module',
+    "Mox Module",
     "Bleene's Mox",
     "Goranj's Mox",
     "Orlu's Mox",
-    'Mage Pupil',
-    'Skelemagus',
-    'Gem Detonator',
-    'Gem Guardian',
-    'Horse Mage',
+    "Mage Pupil",
+    "Skelemagus",
+    "Gem Detonator",
+    "Gem Guardian",
+    "Horse Mage",
 ] // these card will be consider magick no matter what
 
 //downloading all the set and fetch important shit
-infoLog(chalk.magenta.underline.bold('Setup please wait'))
+infoLog(chalk.magenta.underline.bold("Setup please wait"))
 ;(async () => {
     const startSetup = performance.now()
-    infoLog(chalk.magenta.underline.bold('Loading set data...'))
+    infoLog(chalk.magenta.underline.bold("Loading set data..."))
     let i = 0
     //fetch all the set json
     for (const set of Object.values(SetList)) {
         const start = performance.now()
-        if (set.type === '107') {
+        if (set.type === "107") {
             await fetch(
                 `https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
             )
@@ -624,11 +601,11 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
                 .then((json) => {
                     setsData[set.name] = json
                 })
-        } else if (set.type == 'file') {
+        } else if (set.type == "file") {
             setsData[set.name] = require(set.file)
-        } else if (set.type == 'specialLoad') {
+        } else if (set.type == "specialLoad") {
             setsData[set.name] = await require(set.file).load()
-        } else if (set.type == 'url') {
+        } else if (set.type == "url") {
             try {
                 await fetch(set.url)
                     .then((res) => res.json())
@@ -641,17 +618,17 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
                         `Set ${set.name} have a json error loading competitive data instead!`
                     )
                 )
-                if (set.name != 'eternal') continue
+                if (set.name != "eternal") continue
                 console.log(err)
                 scream = true
                 log = err
                 setsData[set.name] = JSON.parse(
-                    JSON.stringify(setsData['competitive'])
+                    JSON.stringify(setsData["competitive"])
                 )
             }
         }
         const cardCount = setsData[set.name]
-            ? typeof setsData[set.name].cards == 'object'
+            ? typeof setsData[set.name].cards == "object"
                 ? Object.keys(setsData[set.name].cards).length
                 : setsData[set.name].cards.length
             : 0
@@ -669,12 +646,12 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
                     setsData[set.name]
                         ? ` and ${chalk[
                               cardCount > 300
-                                  ? 'red'
+                                  ? "red"
                                   : cardCount > 100
-                                  ? 'yellow'
-                                  : 'green'
+                                  ? "yellow"
+                                  : "green"
                           ](cardCount)} cards`
-                        : ''
+                        : ""
                 } (${chalk.red(
                     `load times: ${(performance.now() - start).toFixed(1)} ms`
                 )})`
@@ -690,11 +667,11 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
         )
     )
     // loading all the card pool
-    infoLog(chalk.magenta.underline.bold('Loading card pools...'))
+    infoLog(chalk.magenta.underline.bold("Loading card pools..."))
     for (const setName of Object.keys(setsData)) {
         const start = performance.now()
         if (
-            Object.values(SetList).find((i) => i.name == setName).type == 'file'
+            Object.values(SetList).find((i) => i.name == setName).type == "file"
         )
             continue
         setsData[setName].pools = {}
@@ -713,18 +690,23 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
             }
         }
         setsData[setName].cards = temp
-        // Finish loading [set name] pools. Loaded [all pool amount] cards. Pool names: [pool]
+        // Finish loading [set name] pools. Loaded [all pool amount and percentage] cards. Pool names: [pool]
         infoLog(
             chalk.green(
                 `${setName} loaded with ${chalk.blue(
                     Object.keys(setsData[setName].pools).length
-                )} pools with ${Object.values(setsData[setName].pools)
-                    .map((p, i) => chalk[colorList[i]](p.length))
-                    .join(', ')} cards. Pool names: ${Object.keys(
-                    setsData[setName].pools
-                )
-                    .map((p, i) => chalk[colorList[i]](p))
-                    .join(', ')} (${chalk.red(
+                )} pools with ${Object.entries(setsData[setName].pools)
+                    .map(([pn, pv], i) =>
+                        chalk[colorList[i]](
+                            `${pv.length} (${pn}, ${(
+                                (pv.length /
+                                    Object.keys(setsData[setName].cards)
+                                        .length) *
+                                100
+                            ).toFixed(1)}%)`
+                        )
+                    )
+                    .join(", ")} cards.(${chalk.red(
                     `load times: ${(performance.now() - start).toFixed(1)}ms`
                 )})`
             )
@@ -756,7 +738,7 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
     infoLog(
         chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`)
     )
-    debugLog('Setup completed')
+    debugLog("Setup completed")
 
     doneSetup = true
     if (!client.isReady()) return
@@ -771,7 +753,7 @@ infoLog(chalk.magenta.underline.bold('Setup please wait'))
         chalk.cyan(
             `Servers: ${servers
                 .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                .join(', ')}`
+                .join(", ")}`
         )
     )
 })()
@@ -788,8 +770,8 @@ const specialAttackDescription = {
 
 const queryKeywordList = {
     sigil: {
-        alias: ['s'],
-        description: 'Filter for a sigils',
+        alias: ["s"],
+        description: "Filter for a sigils",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) =>
                 info.sigils
@@ -803,8 +785,8 @@ const queryKeywordList = {
         },
     },
     effect: {
-        alias: ['e'],
-        description: 'Filter for a sigil effect',
+        alias: ["e"],
+        description: "Filter for a sigil effect",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
                 if (!info.sigils) return false
@@ -819,8 +801,8 @@ const queryKeywordList = {
         },
     },
     description: {
-        alias: ['d'],
-        description: 'Filter for a description',
+        alias: ["d"],
+        description: "Filter for a description",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
                 if (!info.description) return false
@@ -830,23 +812,23 @@ const queryKeywordList = {
         },
     },
     resourcecost: {
-        alias: ['rc'],
+        alias: ["rc"],
         description:
-            'Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)',
+            "Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
-            const op = value.includes('>=')
-                ? '>='
-                : value.includes('<=')
-                ? '<='
-                : value.includes('>')
-                ? '>'
-                : value.includes('<')
-                ? '<'
-                : '=='
+            const op = value.includes(">=")
+                ? ">="
+                : value.includes("<=")
+                ? "<="
+                : value.includes(">")
+                ? ">"
+                : value.includes("<")
+                ? "<"
+                : "=="
             value = value
-                .replaceAll('<', '')
-                .replaceAll('>', '')
-                .replaceAll('=', '')
+                .replaceAll("<", "")
+                .replaceAll(">", "")
+                .replaceAll("=", "")
             filterPossibleValue(
                 ([name, info]) =>
                     eval(`${info.blood_cost}${op}${value}`) ||
@@ -856,9 +838,9 @@ const queryKeywordList = {
                         `${
                             info.mox_cost || info.mox
                                 ? info[
-                                      set.name == 'augmeted'
-                                          ? 'mox'
-                                          : 'mox_cost'
+                                      set.name == "augmeted"
+                                          ? "mox"
+                                          : "mox_cost"
                                   ].length
                                 : undefined
                         }${op}${value}`
@@ -874,23 +856,23 @@ const queryKeywordList = {
         },
     },
     convertedresourcecost: {
-        alias: ['crc'],
+        alias: ["crc"],
         description:
-            'Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)',
+            "Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
-            const op = value.includes('>=')
-                ? '>='
-                : value.includes('<=')
-                ? '<='
-                : value.includes('>')
-                ? '>'
-                : value.includes('<')
-                ? '<'
-                : '=='
+            const op = value.includes(">=")
+                ? ">="
+                : value.includes("<=")
+                ? "<="
+                : value.includes(">")
+                ? ">"
+                : value.includes("<")
+                ? "<"
+                : "=="
             value = value
-                .replaceAll('<', '')
-                .replaceAll('>', '')
-                .replaceAll('=', '')
+                .replaceAll("<", "")
+                .replaceAll(">", "")
+                .replaceAll("=", "")
             filterPossibleValue(([name, info]) =>
                 eval(
                     `${
@@ -898,7 +880,7 @@ const queryKeywordList = {
                         (info.bone_cost ? info.bone_cost : 0) +
                         (info.energy_cost ? info.energy_cost : 0) +
                         (info.mox_cost || info.mox
-                            ? info[set.name == 'augmeted' ? 'mox' : 'mox_cost']
+                            ? info[set.name == "augmeted" ? "mox" : "mox_cost"]
                                   .length
                             : 0) +
                         (info.shattered ? info.shattered.length : 0)
@@ -910,87 +892,87 @@ const queryKeywordList = {
         },
     },
     resourcetype: {
-        alias: ['rt'],
+        alias: ["rt"],
         description:
-            'Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)',
+            "Filter for resource type. Possible resource: base game resource  (`blood`, `bone`, etc.) and custom resource (`shattered`) and first character of resource name (`o` for bone instead)",
         callback: (value, set, filterPossibleValue) => {
             const type =
-                value == 'b' || value == 'blood'
-                    ? set.name == 'augmented'
-                        ? 'blood'
-                        : 'blood_cost'
-                    : value == 'o' || value == 'bone'
-                    ? set.name == 'augmented'
-                        ? 'bone'
-                        : 'bone_cost'
-                    : value == 'e' || value == 'energy'
-                    ? set.name == 'augmented'
-                        ? 'energy'
-                        : 'energy_cost'
-                    : value == 'm' || value == 'mox'
-                    ? set.name == 'augmented'
-                        ? 'mox'
-                        : 'mox_cost'
-                    : value == 's' || value == 'shattered'
-                    ? 'shattered'
-                    : ''
+                value == "b" || value == "blood"
+                    ? set.name == "augmented"
+                        ? "blood"
+                        : "blood_cost"
+                    : value == "o" || value == "bone"
+                    ? set.name == "augmented"
+                        ? "bone"
+                        : "bone_cost"
+                    : value == "e" || value == "energy"
+                    ? set.name == "augmented"
+                        ? "energy"
+                        : "energy_cost"
+                    : value == "m" || value == "mox"
+                    ? set.name == "augmented"
+                        ? "mox"
+                        : "mox_cost"
+                    : value == "s" || value == "shattered"
+                    ? "shattered"
+                    : ""
             filterPossibleValue(([name, info]) => info[type])
 
             return `{n} cost ${
-                value == 'b' || value == 'blood'
-                    ? 'blood'
-                    : value == 'o' || value == 'bone'
-                    ? 'bone'
-                    : value == 'e' || value == 'energy'
-                    ? 'energy'
-                    : value == 'm' || value == 'mox'
-                    ? 'mox'
-                    : value == 's' || value == 'shattered'
-                    ? 'shattered'
-                    : ''
+                value == "b" || value == "blood"
+                    ? "blood"
+                    : value == "o" || value == "bone"
+                    ? "bone"
+                    : value == "e" || value == "energy"
+                    ? "energy"
+                    : value == "m" || value == "mox"
+                    ? "mox"
+                    : value == "s" || value == "shattered"
+                    ? "shattered"
+                    : ""
             }`
         },
     },
     color: {
-        alias: ['c'],
+        alias: ["c"],
         description:
-            'Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)',
+            "Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
         callback: (value, set, filterPossibleValue) => {
             const color =
-                value == 'g' ||
-                value == 'green' ||
-                value == 'e' ||
-                value == 'emerald'
-                    ? set.name == 'augmented'
-                        ? 'emerald'
-                        : 'Green'
-                    : value == 'o' ||
-                      value == 'orange' ||
-                      value == 'r' ||
-                      value == 'ruby'
-                    ? set.name == 'augmented'
-                        ? 'ruby'
-                        : 'Orange'
-                    : value == 'b' ||
-                      value == 'blue' ||
-                      value == 's' ||
-                      value == 'sapphire'
-                    ? set.name == 'augmented'
-                        ? 'sapphire'
-                        : 'Blue'
-                    : value == 'c' ||
-                      value == 'colorless' ||
-                      value == 'p' ||
-                      value == 'prism'
-                    ? 'prism'
-                    : ''
+                value == "g" ||
+                value == "green" ||
+                value == "e" ||
+                value == "emerald"
+                    ? set.name == "augmented"
+                        ? "emerald"
+                        : "Green"
+                    : value == "o" ||
+                      value == "orange" ||
+                      value == "r" ||
+                      value == "ruby"
+                    ? set.name == "augmented"
+                        ? "ruby"
+                        : "Orange"
+                    : value == "b" ||
+                      value == "blue" ||
+                      value == "s" ||
+                      value == "sapphire"
+                    ? set.name == "augmented"
+                        ? "sapphire"
+                        : "Blue"
+                    : value == "c" ||
+                      value == "colorless" ||
+                      value == "p" ||
+                      value == "prism"
+                    ? "prism"
+                    : ""
 
             // if mox cost exist check for color then if shattered exist also check for color
             // or between mox and shattered
             filterPossibleValue(([name, info]) =>
                 info.mox || info.mox_cost
                     ? info[
-                          set.name == 'augmented' ? 'mox' : 'mox_cost'
+                          set.name == "augmented" ? "mox" : "mox_cost"
                       ].includes(color)
                     : false || info.shattered
                     ? info.shattered.includes(`shattered_${color}`)
@@ -1001,33 +983,33 @@ const queryKeywordList = {
         },
     },
     temple: {
-        alias: ['t'],
+        alias: ["t"],
         description:
-            'Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)',
+            "Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const temple =
-                value == 'b' || value == 'beast'
-                    ? 'Beast'
-                    : value == 'u' || value == 'undead'
-                    ? 'Undead'
-                    : value == 't' || value == 'technology' || 'tech'
-                    ? 'Tech'
-                    : value == 'm' || value == 'magick'
-                    ? 'Magick'
-                    : ''
+                value == "b" || value == "beast"
+                    ? "Beast"
+                    : value == "u" || value == "undead"
+                    ? "Undead"
+                    : value == "t" || value == "technology" || value == "tech"
+                    ? "Tech"
+                    : value == "m" || value == "magick"
+                    ? "Magick"
+                    : ""
             filterPossibleValue(([name, info]) => info.temple == temple)
 
             return `{n} from ${temple} temple`
         },
     },
     tribe: {
-        alias: ['tb'],
-        description: 'Filter for tribe.',
+        alias: ["tb"],
+        description: "Filter for tribe.",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
                 if (!info.tribes) return false
                 if (Array.isArray(info.tribes))
-                    info.tribes = info.tribes.join(' ')
+                    info.tribes = info.tribes.join(" ")
                 return info.tribes.toLowerCase().includes(value)
             })
 
@@ -1035,8 +1017,8 @@ const queryKeywordList = {
         },
     },
     trait: {
-        alias: ['tr'],
-        description: 'Filter for trait.',
+        alias: ["tr"],
+        description: "Filter for trait.",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
                 if (!info.traits) return false
@@ -1047,28 +1029,28 @@ const queryKeywordList = {
         },
     },
     rarity: {
-        alias: ['r'],
+        alias: ["r"],
         description:
-            'Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talk`, `side`, etc.) first character of rarity. (`c`, `u`, etc.)',
+            "Filter for rarity/tier. Possible rarity: Possible value: base game rarity  (`common`, `rare`), custom rarity (`uncommon`, `talk`, `side`, etc.) first character of rarity. (`c`, `u`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const rarity =
-                value == 'c' || value == 'common'
-                    ? set.name == 'augmented'
-                        ? 'Common'
+                value == "c" || value == "common"
+                    ? set.name == "augmented"
+                        ? "Common"
                         : false
-                    : value == 'u' || value == 'uncommon'
-                    ? 'Uncommon'
-                    : value == 'r' || value == 'rare'
-                    ? set.name == 'augmented'
-                        ? 'Rare'
+                    : value == "u" || value == "uncommon"
+                    ? "Uncommon"
+                    : value == "r" || value == "rare"
+                    ? set.name == "augmented"
+                        ? "Rare"
                         : true
-                    : value == 't' || value == 'talk'
-                    ? 'Talking'
-                    : value == 's' || value == 'side'
-                    ? 'Side Deck'
-                    : ''
+                    : value == "t" || value == "talk"
+                    ? "Talking"
+                    : value == "s" || value == "side"
+                    ? "Side Deck"
+                    : ""
             filterPossibleValue(([name, info]) =>
-                set.name == 'augmented'
+                set.name == "augmented"
                     ? info.tier == rarity
                     : rarity
                     ? info.rare
@@ -1079,23 +1061,23 @@ const queryKeywordList = {
         },
     },
     health: {
-        alias: ['h'],
+        alias: ["h"],
         description:
-            'Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)',
+            "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
-            const op = value.includes('>=')
-                ? '>='
-                : value.includes('<=')
-                ? '<='
-                : value.includes('>')
-                ? '>'
-                : value.includes('<')
-                ? '<'
-                : '=='
+            const op = value.includes(">=")
+                ? ">="
+                : value.includes("<=")
+                ? "<="
+                : value.includes(">")
+                ? ">"
+                : value.includes("<")
+                ? "<"
+                : "=="
             value = value
-                .replaceAll('<', '')
-                .replaceAll('>', '')
-                .replaceAll('=', '')
+                .replaceAll("<", "")
+                .replaceAll(">", "")
+                .replaceAll("=", "")
             filterPossibleValue(([name, info]) =>
                 eval(`${info.health}${op}${value}`)
             )
@@ -1103,23 +1085,23 @@ const queryKeywordList = {
         },
     },
     power: {
-        alias: ['p'],
+        alias: ["p"],
         description:
-            'Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)',
+            "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
-            const op = value.includes('>=')
-                ? '>='
-                : value.includes('<=')
-                ? '<='
-                : value.includes('>')
-                ? '>'
-                : value.includes('<')
-                ? '<'
-                : '=='
+            const op = value.includes(">=")
+                ? ">="
+                : value.includes("<=")
+                ? "<="
+                : value.includes(">")
+                ? ">"
+                : value.includes("<")
+                ? "<"
+                : "=="
             value = value
-                .replaceAll('<', '')
-                .replaceAll('>', '')
-                .replaceAll('=', '')
+                .replaceAll("<", "")
+                .replaceAll(">", "")
+                .replaceAll("=", "")
             filterPossibleValue(([name, info]) =>
                 eval(`${info.attack}${op}${value}`)
             )
@@ -1128,23 +1110,23 @@ const queryKeywordList = {
         },
     },
     powerhealth: {
-        alias: ['ph'],
+        alias: ["ph"],
         description:
-            'Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)',
+            "Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
-            const op = value.includes('>=')
-                ? '>='
-                : value.includes('<=')
-                ? '<='
-                : value.includes('>')
-                ? '>'
-                : value.includes('<')
-                ? '<'
-                : '=='
+            const op = value.includes(">=")
+                ? ">="
+                : value.includes("<=")
+                ? "<="
+                : value.includes(">")
+                ? ">"
+                : value.includes("<")
+                ? "<"
+                : "=="
             value = value
-                .replaceAll('<', '')
-                .replaceAll('>', '')
-                .replaceAll('=', '')
+                .replaceAll("<", "")
+                .replaceAll(">", "")
+                .replaceAll("=", "")
             filterPossibleValue(([name, info]) =>
                 eval(`${info.attack + info.health}${op}${value}`)
             )
@@ -1155,7 +1137,7 @@ const queryKeywordList = {
     is: {
         alias: [],
         description:
-            'Filter for type of card. List of nickname can be found [here](https://github.com/khanhfg/MagpieTutor#nicknames)',
+            "Filter for type of card. List of nickname can be found [here](https://github.com/khanhfg/MagpieTutor#nicknames)",
         callback: (value, set, filterPossibleValue) => {
             const nicknameList = {
                 vanilla: ([name, info]) => !info.sigils,
@@ -1166,14 +1148,14 @@ const queryKeywordList = {
                 traitless: ([name, info]) => !info.traits,
                 removal: ([name, info]) => {
                     const removalList = [
-                        'explode bot',
-                        'strange frog',
-                        'mrs. bomb',
-                        'adder',
-                        'mirrorbot',
-                        'shutterbug',
-                        'drowned soul',
-                        'long elk',
+                        "explode bot",
+                        "strange frog",
+                        "mrs. bomb",
+                        "adder",
+                        "mirrorbot",
+                        "shutterbug",
+                        "drowned soul",
+                        "long elk",
                     ]
                     return removalList.includes(name)
                 },
@@ -1190,8 +1172,8 @@ const queryKeywordList = {
         },
     },
     name: {
-        alias: 'n',
-        description: 'Filter for name',
+        alias: "n",
+        description: "Filter for name",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) =>
                 name.toLowerCase().includes(value.toLowerCase())
@@ -1201,8 +1183,8 @@ const queryKeywordList = {
         },
     },
     regex: {
-        alias: ['rx'],
-        description: 'Filter for regex match in name',
+        alias: ["rx"],
+        description: "Filter for regex match in name",
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => name.match(value))
 
@@ -1219,10 +1201,10 @@ function getEmoji(name) {
 }
 
 function numToEmoji(num) {
-    let out = ''
+    let out = ""
     for (const digit of num + []) {
-        if (digit === '-') {
-            out += getEmoji('negative')
+        if (digit === "-") {
+            out += getEmoji("negative")
         } else out += getEmoji(`${digit}_`)
     }
     return out
@@ -1230,28 +1212,28 @@ function numToEmoji(num) {
 
 function coloredString(str, raw) {
     const codeList = {
-        $$g: '\u001b[0;30m',
-        $$r: '\u001b[0;31m',
-        $$e: '\u001b[0;32m',
-        $$y: '\u001b[0;33m',
-        $$b: '\u001b[0;34m',
-        $$p: '\u001b[0;35m',
-        $$c: '\u001b[0;36m',
-        $$w: '\u001b[0;37m',
+        $$g: "\u001b[0;30m",
+        $$r: "\u001b[0;31m",
+        $$e: "\u001b[0;32m",
+        $$y: "\u001b[0;33m",
+        $$b: "\u001b[0;34m",
+        $$p: "\u001b[0;35m",
+        $$c: "\u001b[0;36m",
+        $$w: "\u001b[0;37m",
 
-        $$1: '\u001b[0;40m',
-        $$2: '\u001b[0;41m',
-        $$3: '\u001b[0;42m',
-        $$4: '\u001b[0;43m',
-        $$5: '\u001b[0;44m',
-        $$6: '\u001b[0;45m',
-        $$7: '\u001b[0;46m',
-        $$8: '\u001b[0;47m',
+        $$1: "\u001b[0;40m",
+        $$2: "\u001b[0;41m",
+        $$3: "\u001b[0;42m",
+        $$4: "\u001b[0;43m",
+        $$5: "\u001b[0;44m",
+        $$6: "\u001b[0;45m",
+        $$7: "\u001b[0;46m",
+        $$8: "\u001b[0;47m",
 
-        $$l: '\u001b[1m',
-        $$u: '\u001b[4m',
+        $$l: "\u001b[1m",
+        $$u: "\u001b[4m",
 
-        $$0: '\u001b[0m',
+        $$0: "\u001b[0m",
     }
 
     for (const code of Object.keys(codeList)) {
@@ -1264,7 +1246,7 @@ async function messageSearch(message, returnValue = false) {
     const start = performance.now()
     let embedList = []
     let attachmentList = []
-    let msg = ''
+    let msg = ""
     if (!message.content.toLowerCase().match(searchRegex)) {
         return
     }
@@ -1273,8 +1255,8 @@ async function messageSearch(message, returnValue = false) {
             `Message with content: "${chalk.green(
                 message.content
             )}" in ${chalk.red.bold(
-                message.guild ? message.guild.name : 'DM'
-            )} detected searching time ${chalk.magenta('OwO')}`
+                message.guild ? message.guild.name : "DM"
+            )} detected searching time ${chalk.magenta("OwO")}`
         )
     )
     let cards = []
@@ -1285,7 +1267,7 @@ async function messageSearch(message, returnValue = false) {
         let selectedSet = [
             SetList[cardMatch[2]] ??
                 SetList[serverDefaultSet[message.guildId]?.default] ??
-                SetList['com'],
+                SetList["com"],
         ]
         let name = cardMatch[3]
         let card
@@ -1297,12 +1279,13 @@ async function messageSearch(message, returnValue = false) {
         let query = false
         let json = false
         let lazy = false
+        let exact = false
 
         for (const code of modifierCode) {
             const modifierSet = SetList[code]
             if (!modifierSet) break
-            if (modifierSet.type == 'special') {
-                if (modifierSet.name == 'magic the gathering') {
+            if (modifierSet.type == "special") {
+                if (modifierSet.name == "magic the gathering") {
                     const card = await fetchMagicCard(name)
 
                     if (card == -1) {
@@ -1319,26 +1302,28 @@ async function messageSearch(message, returnValue = false) {
                     }
                 }
                 continue outer
-            } else if (modifierSet.type == 'modifier') {
-                if (modifierSet.name == 'original version') {
+            } else if (modifierSet.type == "modifier") {
+                if (modifierSet.name == "original version") {
                     noAlter = true
-                } else if (modifierSet.name == 'compact') {
+                } else if (modifierSet.name == "compact") {
                     compactDisplay = true
-                } else if (modifierSet.name == 'no portrait') {
+                } else if (modifierSet.name == "no portrait") {
                     noArt = true
-                } else if (modifierSet.name == 'sigil') {
+                } else if (modifierSet.name == "sigil") {
                     sigilSearch = true
-                } else if (modifierSet.name == 'no search') {
+                } else if (modifierSet.name == "no search") {
                     continue outer
-                } else if (modifierSet.name == 'query') {
+                } else if (modifierSet.name == "query") {
                     query = true
-                } else if (modifierSet.name == 'json') {
+                } else if (modifierSet.name == "json") {
                     json = true
-                } else if (modifierSet.name == 'lazy') {
+                } else if (modifierSet.name == "lazy") {
                     lazy = true
                     selectedSet = Object.keys(setsData).map((name) =>
                         Object.values(SetList).find((s) => s.name == name)
                     )
+                } else if (modifierSet.name == "exact") {
+                    exact = true
                 }
             }
         }
@@ -1348,15 +1333,16 @@ async function messageSearch(message, returnValue = false) {
         let bestRating = 0
 
         for (const set of selectedSet) {
-            let bestMatch = { rating: 0 }
+            let bestMatch = exact
+                ? { target: name, rating: 1 }
+                : StringSimilarity.findBestMatch(
+                      name,
+                      sigilSearch
+                          ? Object.keys(setsData[set.name].sigils)
+                          : Object.keys(setsData[set.name].cards)
+                  ).bestMatch
             if (sigilSearch) {
                 if (!setsData[set.name].sigils) continue
-                // get the best match
-                bestMatch = StringSimilarity.findBestMatch(
-                    name,
-                    Object.keys(setsData[set.name].sigils)
-                ).bestMatch
-
                 if (bestMatch.rating <= matchPercentage) {
                     if (!lazy) {
                         embedList.push(
@@ -1380,23 +1366,12 @@ async function messageSearch(message, returnValue = false) {
             } else if (query) {
                 temp = queryCard(name, set, compactDisplay)
             } else if (json) {
-                bestMatch = StringSimilarity.findBestMatch(
-                    name,
-                    Object.keys(setsData[set.name].cards)
-                ).bestMatch
-
                 msg += `\`\`\`json\n${JSON.stringify(
                     fetchCard(bestMatch.target, set.name, true),
                     null,
                     compactDisplay ? 0 : 2
                 )}\`\`\``
             } else {
-                // get the best match
-                bestMatch = StringSimilarity.findBestMatch(
-                    name,
-                    Object.keys(setsData[set.name].cards)
-                ).bestMatch
-
                 // if less than 40% match return error and continue to the next match
                 if (bestMatch.rating <= 0.4) {
                     if (!lazy) {
@@ -1443,8 +1418,8 @@ async function messageSearch(message, returnValue = false) {
                 embedList.push(
                     new EmbedBuilder()
                         .setColor(Colors.Red)
-                        .setTitle('No card found')
-                        .setDescription('No card found in all selected set')
+                        .setTitle("No card found")
+                        .setDescription("No card found in all selected set")
                 )
                 continue
             }
@@ -1468,12 +1443,12 @@ async function messageSearch(message, returnValue = false) {
         components: [
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
-                    .setLabel('Retry')
-                    .setCustomId('retry')
+                    .setLabel("Retry")
+                    .setCustomId("retry")
                     .setStyle(ButtonStyle.Primary),
                 new ButtonBuilder()
-                    .setLabel('Remove Cache')
-                    .setCustomId('removeCache')
+                    .setLabel("Remove Cache")
+                    .setCustomId("removeCache")
                     .setStyle(ButtonStyle.Danger)
             ),
         ],
@@ -1481,21 +1456,21 @@ async function messageSearch(message, returnValue = false) {
 
     const end = performance.now()
 
-    if (msg != '') {
-        replyOption['content'] = msg
-        if (replyOption['content'].length > 2000)
-            replyOption['content'] = 'Message too large'
+    if (msg != "") {
+        replyOption["content"] = msg
+        if (replyOption["content"].length > 2000)
+            replyOption["content"] = "Message too large"
     }
-    if (embedList.length > 0) replyOption['embeds'] = embedList
-    if (attachmentList.length > 0) replyOption['files'] = attachmentList
+    if (embedList.length > 0) replyOption["embeds"] = embedList
+    if (attachmentList.length > 0) replyOption["files"] = attachmentList
 
     if (
-        replyOption['content'] ||
-        replyOption['embeds'] ||
-        replyOption['files']
+        replyOption["content"] ||
+        replyOption["embeds"] ||
+        replyOption["files"]
     ) {
-        replyOption['content'] =
-            (replyOption['content'] ? replyOption['content'] : '') +
+        replyOption["content"] =
+            (replyOption["content"] ? replyOption["content"] : "") +
             `\nSearch complete in ${(end - start).toFixed(1)}ms`
         if (returnValue) return replyOption
 
@@ -1509,7 +1484,7 @@ async function messageSearch(message, returnValue = false) {
             }
         }
         fs.writeFileSync(
-            './extra/caches.json',
+            "./extra/caches.json",
             JSON.stringify(portraitCaches, null, 4)
         )
     }
@@ -1519,9 +1494,9 @@ function genDescription(textFormat, card) {
     let out = {}
 
     for (const field of Object.values(textFormat.body)) {
-        completeInfo = ''
+        completeInfo = ""
 
-        if (field.type == 'keyword') {
+        if (field.type == "keyword") {
             if (card[field.var]) {
                 card[field.var].forEach((keyword) => {
                     completeInfo += `**${keyword}**: ${
@@ -1529,7 +1504,7 @@ function genDescription(textFormat, card) {
                     }\n`
                 })
             }
-        } else if (field.type == 'special_keyword') {
+        } else if (field.type == "special_keyword") {
             if (card[field.var]) {
                 card[field.var].forEach((keyword) => {
                     completeInfo += `**${keyword.name}**: ${keyword.description}`
@@ -1543,7 +1518,7 @@ function genDescription(textFormat, card) {
                 }
                 let temp = card[info.text.match(/{(\w+)}/g)[0].slice(1, -1)]
                 if (!temp) continue
-                if (info.type == 'mox') {
+                if (info.type == "mox") {
                     if (temp.length < 1) continue
                     // idk what this do anymore i was very high
                     temp = {} // make a dict to put them in so .format can use it as key
@@ -1553,13 +1528,13 @@ function genDescription(textFormat, card) {
                         info.text.match(/{(\w+)}/g)[0].slice(1, -1)
                     ]
                         .map((a) => `:${a}:`.toLowerCase())
-                        .join('') // put the mox in : to make it emoji
+                        .join("") // put the mox in : to make it emoji
                     completeInfo += info.text.format(temp)
-                } else if (info.type == 'list') {
+                } else if (info.type == "list") {
                     completeInfo += info.text.format(card)
-                } else if (info.type == 'stat') {
+                } else if (info.type == "stat") {
                     completeInfo += info.text.replace(
-                        '{health}',
+                        "{health}",
                         `**Stat**: ${
                             card.atkspecial
                                 ? `:${card.atkspecial}:`
@@ -1569,16 +1544,16 @@ function genDescription(textFormat, card) {
                                 ? `(${
                                       specialAttackDescription[card.atkspecial]
                                   })`
-                                : ''
+                                : ""
                         }`
                     )
-                } else if (info.type == 'sub') {
+                } else if (info.type == "sub") {
                     completeInfo += info.text.format(card)
                 }
             }
         }
-        if (field.type == 'general') {
-            out['general'] = completeInfo
+        if (field.type == "general") {
+            out["general"] = completeInfo
         } else {
             out[field.name] = completeInfo
         }
@@ -1587,18 +1562,18 @@ function genDescription(textFormat, card) {
 }
 
 function genTitle(textFormat, card) {
-    let completeInfo = ''
+    let completeInfo = ""
     for (const info of textFormat.title) {
-        if (info.type == 'con') {
+        if (info.type == "con") {
             if (eval(info.condition)) {
                 completeInfo += info.text
             }
-        } else if (info.type == 'set') {
+        } else if (info.type == "set") {
             completeInfo += info.text.replaceAll(
-                '{set}',
+                "{set}",
                 setsData[card.set].ruleset
             )
-        } else if (info.type == 'sub') {
+        } else if (info.type == "sub") {
             if (!info.text.match(/{(\w+)}/g)) {
                 completeInfo += info.text
                 continue
@@ -1635,14 +1610,16 @@ function genColor(textFormat, card) {
     }
     return Colors.Grey
 }
+
 // fetch the card and its url
 function fetchCard(name, setName, noAlter = false, noArt = false) {
     let card
 
     let set = setsData[setName]
 
-    card = deepCopy(set.cards[name])
-    // look for the card in the set
+    try {
+        card = deepCopy(set.cards[name])
+    } catch {} // look for the card in the set
 
     if (!card) return card
 
@@ -1653,8 +1630,8 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
         card.url = card.pixport_url
     } else {
         card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-            ' ',
-            '%20'
+            " ",
+            "%20"
         )}.png`
     }
 
@@ -1670,40 +1647,40 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
     }
 
     // change existing card info and custom url
-    if (setName != 'augmented') {
-        if (card.name == 'Fox') {
+    if (setName != "augmented") {
+        if (card.name == "Fox") {
             card.url =
-                'https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png'
-        } else if (card.name == 'Geck') {
-            card.sigils = ['Omni Strike']
-        } else if (card.name == 'Bell Tentacle') {
-            card.atkspecial = 'bell'
-        } else if (card.name == 'Hand Tentacle') {
-            card.atkspecial = 'hand'
-        } else if (card.name == 'Ruby Dragon') {
+                "https://cdn.discordapp.com/attachments/1038091526800162826/1069256708783882300/Screenshot_2023-01-30_at_00.31.53.png"
+        } else if (card.name == "Geck") {
+            card.sigils = ["Omni Strike"]
+        } else if (card.name == "Bell Tentacle") {
+            card.atkspecial = "bell"
+        } else if (card.name == "Hand Tentacle") {
+            card.atkspecial = "hand"
+        } else if (card.name == "Ruby Dragon") {
             card.url =
-                'https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png'
+                "https://cdn.discordapp.com/attachments/999643351156535296/1082825510888935465/portrait_prism_dragon_gbc.png"
 
-            card.name = 'GAY DRAGON'
-            card.description = 'Modified portrait by ener'
-        } else if (card.name == 'Horse Mage') {
+            card.name = "GAY DRAGON"
+            card.description = "Modified portrait by ener"
+        } else if (card.name == "Horse Mage") {
             card.description = `Not make by ener :trolled:`
-        } else if (card.name == 'The Moon') {
+        } else if (card.name == "The Moon") {
             card.sigils = [
-                'Omni Strike',
-                'Tidal Lock',
-                'Made of Stone',
-                'Mighty Leap',
+                "Omni Strike",
+                "Tidal Lock",
+                "Made of Stone",
+                "Mighty Leap",
             ]
-        } else if (card.name == 'Adder') {
-            card.name = 'peak'
-            card.description = 'peak'
-            card.sigils = Array(6).fill('Handy')
-        } else if (card.name == 'Ouroboros') {
-            card.description = 'Ouroboros is the source of all evil - 107'
-        } else if (card.name == 'Blue Mage') {
+        } else if (card.name == "Adder") {
+            card.name = "peak"
+            card.description = "peak"
+            card.sigils = Array(6).fill("Handy")
+        } else if (card.name == "Ouroboros") {
+            card.description = "Ouroboros is the source of all evil - 107"
+        } else if (card.name == "Blue Mage") {
             card.url =
-                'https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg'
+                "https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
         }
     }
 
@@ -1738,17 +1715,17 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
                 cardPortrait.width * scale,
                 cardPortrait.height * scale
             )
-            const context = portrait.getContext('2d')
+            const context = portrait.getContext("2d")
             context.imageSmoothingEnabled = false
             if (card.set == SetList.aug.name) {
                 context.drawImage(
                     await Canvas.loadImage(
                         `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
-                            ['Common', 'Uncommon', 'Side Deck'].includes(
+                            ["Common", "Uncommon", "Side Deck"].includes(
                                 card.tier
                             )
-                                ? 'common'
-                                : 'rare'
+                                ? "common"
+                                : "rare"
                         }_${card.temple.toLowerCase()}.png`
                     ),
                     0,
@@ -1765,7 +1742,7 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
                 portrait.height
             )
 
-            attachment = new AttachmentBuilder(await portrait.encode('png'), {
+            attachment = new AttachmentBuilder(await portrait.encode("png"), {
                 name: `${id}.png`,
             })
         }
@@ -1773,13 +1750,13 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
         // cache missing portrait
         portraitCaches[card.url] = null
         fs.writeFileSync(
-            './extra/caches.json',
+            "./extra/caches.json",
             JSON.stringify(portraitCaches, null, 4)
         )
     }
 
     const format = Object.values(SetList).find((set) => set.name == card.set)[
-        compactDisplay ? 'compactFormat' : 'format'
+        compactDisplay ? "compactFormat" : "format"
     ]
     // create template
     let embed = new EmbedBuilder()
@@ -1815,10 +1792,10 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
         }
     }
 
-    info.general = info.general.replaceAll(':x_:', getEmoji('x_'))
+    info.general = info.general.replaceAll(":x_:", getEmoji("x_"))
 
     for (const fieldName of Object.keys(info)) {
-        if (fieldName == 'general') {
+        if (fieldName == "general") {
             embed.setDescription(info[fieldName])
         } else {
             if (info[fieldName])
@@ -1849,7 +1826,7 @@ function queryCard(string, set, compactDisplay = false) {
     let searchExplain = []
     for (const tag of string.matchAll(queryRegex)) {
         let type = tag[2],
-            value = tag[3].replaceAll('"', '')
+            value = tag[3].replaceAll('"', "")
         let negation = !!tag[1]
 
         const filterPossibleValue = (callback) => {
@@ -1865,14 +1842,14 @@ function queryCard(string, set, compactDisplay = false) {
                 searchExplain.push(
                     keyInfo
                         .callback(value, set, filterPossibleValue)
-                        .replace('{n} ', negation ? 'not ' : '')
+                        .replace("{n} ", negation ? "not " : "")
                 )
             }
         }
     }
     const final = Object.keys(possibleMatches)
-    const result = `**Card that ${searchExplain.join(', ')}**:\n${final
-        .join(', ')
+    const result = `**Card that ${searchExplain.join(", ")}**:\n${final
+        .join(", ")
         .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
 
     embed.setTitle(
@@ -1881,13 +1858,13 @@ function queryCard(string, set, compactDisplay = false) {
     embed.setDescription(
         compactDisplay
             ? `**Card that ${searchExplain.join(
-                  ', '
+                  ", "
               )}**:\nResult hidden by compact mode`
             : final.length > 0
             ? result.length > 4096 // checking if it excess the char limit
-                ? 'Too many result, please be more specific'
+                ? "Too many result, please be more specific"
                 : result
-            : 'No card found'
+            : "No card found"
     )
     return [embed, 1]
 }
@@ -1906,7 +1883,7 @@ client.once(Events.ClientReady, () => {
             chalk.cyan(
                 `Servers: ${servers
                     .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                    .join(', ')}`
+                    .join(", ")}`
             )
         )
     } else {
@@ -1916,10 +1893,10 @@ client.once(Events.ClientReady, () => {
             )
         )
     }
-    client.user.setActivity('YOUR MOM')
+    client.user.setActivity("YOUR MOM")
     if (scream) {
         client.channels.cache
-            .find((c) => c.id == '1095885953958158426')
+            .find((c) => c.id == "1095885953958158426")
             .send(`Hey you mess up the Json again.\n\`\`\`${log}\`\`\``)
     }
 })
@@ -1928,20 +1905,20 @@ client.once(Events.ClientReady, () => {
 client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.isChatInputCommand()) {
         const { commandName, options } = interaction
-        if (commandName == 'echo') {
+        if (commandName == "echo") {
             if (!isPerm(interaction)) return
-            const message = options.getString('text')
+            const message = options.getString("text")
             console.log(`${interaction.user.username} say ${message}`)
             const channel =
-                options.getChannel('channel') != undefined
-                    ? options.getChannel('channel')
+                options.getChannel("channel") != undefined
+                    ? options.getChannel("channel")
                     : interaction.channel
 
-            if (options.getString('message')) {
+            if (options.getString("message")) {
                 ;(
                     await getMessage(
                         interaction.channel,
-                        options.getString('message')
+                        options.getString("message")
                     )
                 ).reply(message)
             } else {
@@ -1949,60 +1926,60 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
 
             await interaction.reply({
-                content: 'Sent',
+                content: "Sent",
                 ephemeral: true,
             })
-        } else if (commandName == 'set-code') {
-            let temp = ''
+        } else if (commandName == "set-code") {
+            let temp = ""
             Object.keys(SetList).forEach((key) => {
                 temp += `**${key}**: ${SetList[key].name}${
-                    SetList[key].type == 'modifier' ? ' (Modifier)' : ''
+                    SetList[key].type == "modifier" ? " (Modifier)" : ""
                 }\n`
             })
             await interaction.reply(
                 `Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`sete\` will look up a sigil in the Eternal set`
             )
-        } else if (commandName == 'ping') {
+        } else if (commandName == "ping") {
             await interaction.reply(
                 randInt(1, 4) == 4
                     ? randomChoice([
                           "Mike, If you are reading this, you've been in a coma for 5 years, we're trying a new technique, please, wake up.",
-                          'Something Something',
-                          'Soon',
-                          'We been trying to reach you about your car extended warranty',
-                          'babe wake up the bot is online',
+                          "Something Something",
+                          "Soon",
+                          "We been trying to reach you about your car extended warranty",
+                          "babe wake up the bot is online",
                           "I'm doing your mom at this very instance",
-                          'What did I miss',
-                          'New update in sometime',
-                          'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-                          'https://www.youtube.com/watch?v=b7vWLz9iGsk',
+                          "What did I miss",
+                          "New update in sometime",
+                          "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                          "https://www.youtube.com/watch?v=b7vWLz9iGsk",
                           "I don't know who you are. I don't know what you want. If you are looking for ransom I can tell you I don't have money, but what I do have are a very particular set of skills. Skills I have acquired over a very long career. Skills that make me a nightmare for people like you. If you let my daughter go now that'll be the end of it. I will not look for you, I will not pursue you, but if you don't, I will look for you, I will find you and I will kill you.",
-                          'Stoat is not dense >:(',
-                          'Crazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\n',
+                          "Stoat is not dense >:(",
+                          "Crazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\nCrazy?\nI was crazy once\nThey lock me in a room\nA rubber room\nA rubber room with rats\nThe rats make me crazy\n",
                       ])
-                    : 'Pong!'
+                    : "Pong!"
             )
-        } else if (commandName == 'restart') {
+        } else if (commandName == "restart") {
             if (isPerm(interaction)) {
                 await interaction.reply(
                     randomChoice([
-                        'Restarting...',
-                        'AAAAAAAAAAAAAAAAAAAAAAAA',
+                        "Restarting...",
+                        "AAAAAAAAAAAAAAAAAAAAAAAA",
                         "No father don't kill me",
                     ])
                 )
-                throw new Error('death')
-            } else await interaction.reply('no')
-        } else if (commandName == 'draft') {
+                throw new Error("death")
+            } else await interaction.reply("no")
+        } else if (commandName == "draft") {
             // grab the important shit
-            const setName = options.getString('set') // get the set name
+            const setName = options.getString("set") // get the set name
             const set = Object.values(SetList).find((v) => v.name == setName)
-            const deckSize = options.getInteger('size') // get deck size
-                ? options.getInteger('size')
+            const deckSize = options.getInteger("size") // get deck size
+                ? options.getInteger("size")
                 : 20
 
             const message = await interaction.reply({
-                content: 'Loading...',
+                content: "Loading...",
                 fetchReply: true,
             })
 
@@ -2029,7 +2006,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             let deck = {
                 cards: [],
-                side_deck: '10 Squirrel',
+                side_deck: "10 Squirrel",
             }
             let wildCount = 0
             let flag = false // exit flag
@@ -2083,7 +2060,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     )
                 ) {
                     pack.push({
-                        name: 'WILD CARD',
+                        name: "WILD CARD",
                         attack: 100,
                         health: 100,
                     })
@@ -2099,15 +2076,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     )
 
                 const selectionList = new StringSelectMenuBuilder()
-                    .setCustomId('select')
-                    .setPlaceholder('Select a card!')
+                    .setCustomId("select")
+                    .setPlaceholder("Select a card!")
 
-                let description = ''
+                let description = ""
 
                 //generate the pack list
                 for (const card of pack) {
                     for (let line of set.draftFormat) {
-                        if (line.type == 'sub') {
+                        if (line.type == "sub") {
                             if (
                                 !card[
                                     line.text.match(/{(\w+)}/g)[0].slice(1, -1)
@@ -2115,11 +2092,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             )
                                 continue
                             description += line.text.format(card)
-                        } else if (line.type == 'normal') {
+                        } else if (line.type == "normal") {
                             description += line.text
-                        } else if (line.type == 'con') {
+                        } else if (line.type == "con") {
                             if (eval(line.con)) description += line.text
-                        } else if (line.type == 'mox') {
+                        } else if (line.type == "mox") {
                             if (
                                 !card[
                                     line.text.match(/{(\w+)}/g)[0].slice(1, -1)
@@ -2127,24 +2104,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             )
                                 continue
                             description += line.text.format(card)
-                        } else if (line.type == 'stat') {
+                        } else if (line.type == "stat") {
                             description += line.text.replace(
-                                '{s}',
+                                "{s}",
                                 `${
                                     card.atkspecial
                                         ? `:${card.atkspecial}:`
                                         : card[line.attackVar]
                                 } / ${card[line.healthVar]}`
                             )
-                        } else if (line.type == 'list') {
+                        } else if (line.type == "list") {
                             if (!card[line.var]) continue
                             description += line.text.replace(
-                                '{s}',
+                                "{s}",
                                 card[line.var]
                             )
                         }
                     }
-                    description += '\n\n'
+                    description += "\n\n"
 
                     // add the card to selection
                     selectionList.addOptions({
@@ -2154,12 +2131,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 }
 
                 // load the deck dup to check for restriction later
-                let deckStr = ''
+                let deckStr = ""
                 let deckDup = countDup(
                     deck.cards.sort((a, b) =>
-                        a.startsWith('*')
+                        a.startsWith("*")
                             ? -1
-                            : b.startsWith('*')
+                            : b.startsWith("*")
                             ? 1
                             : a.localeCompare(b)
                     )
@@ -2173,20 +2150,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // add pack and preview into embed
                 embed.addFields(
                     {
-                        name: '=============== PACK ===============',
+                        name: "=============== PACK ===============",
                         value: description,
                         inline: true,
                     },
                     {
                         name: `======= DECK =======`,
-                        value: deck.cards.length < 1 ? 'Blank' : deckStr,
+                        value: deck.cards.length < 1 ? "Blank" : deckStr,
                         inline: true,
                     }
                 )
 
                 // send embed and selection
                 await interaction.editReply({
-                    content: '',
+                    content: "",
                     components: [
                         new ActionRowBuilder().addComponents(selectionList),
                     ],
@@ -2196,7 +2173,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 const filter = (i) => i.user.id === interaction.user.id
 
                 // process the selection
-                let error = ''
+                let error = ""
                 await message
                     .awaitMessageComponent({
                         componentType: ComponentType.StringSelect,
@@ -2205,7 +2182,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     })
                     .then(async (i) => {
                         const card = pack.find((c) => c.name == i.values[0])
-                        if (card.name == 'WILD CARD') {
+                        if (card.name == "WILD CARD") {
                             wildCount++
                         } else {
                             deck.cards.push(card.name)
@@ -2232,7 +2209,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 pool[card.type] = []
                             }
                         }
-                        await i.update('added')
+                        await i.update("added")
                     })
                     .catch((err) => {
                         flag = true
@@ -2244,7 +2221,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         content: `Error: ${coloredString(
                             `$$r${error}`
                         )}\nCurrent deck: ${deck.cards.join(
-                            ', '
+                            ", "
                         )}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
                         embeds: [],
                         components: [],
@@ -2259,20 +2236,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 content: `${
                     wildCount > 0
                         ? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
-                        : ''
+                        : ""
                 }Completed Deck: ${deck.cards.join(
-                    ', '
+                    ", "
                 )}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
                 embeds: [],
                 components: [],
             })
-        } else if (commandName == 'deck-sim') {
+        } else if (commandName == "deck-sim") {
             let fullDeck = []
             let fullSide = []
-            if (options.getAttachment('deck-file')) {
+            if (options.getAttachment("deck-file")) {
                 const deckFile = JSON.parse(
                     await (
-                        await fetch(options.getAttachment('deck-file').url)
+                        await fetch(options.getAttachment("deck-file").url)
                     ).text()
                 )
                 fullDeck = deckFile.cards
@@ -2294,13 +2271,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         setsData.competitive.side_decks[deckFile.side_deck].card
                     )
                 }
-            } else if (options.getString('deck-list')) {
-                let temp = options.getString('deck-list').split(';')
-                temp = temp.map((i) => i.split(','))
+            } else if (options.getString("deck-list")) {
+                let temp = options.getString("deck-list").split(";")
+                temp = temp.map((i) => i.split(","))
                 fullDeck = temp[0]
                 fullSide = temp[1] ? temp[1] : []
             } else {
-                await interaction.reply('Deck missing')
+                await interaction.reply("Deck missing")
                 return
             }
 
@@ -2308,16 +2285,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
             let currSide = deepCopy(fullSide)
 
             const message = await interaction.reply({
-                content: 'Doing stuff please wait',
+                content: "Doing stuff please wait",
                 fetchReply: true,
             })
             let stillRunning = true
-            const detailMode = options.getBoolean('detail')
+            const detailMode = options.getBoolean("detail")
 
             let hand = drawList(currDeck, 3)
 
             while (stillRunning) {
-                let tempStr = ''
+                let tempStr = ""
                 let currDup = countDup(hand)
                 Object.keys(currDup).forEach((c) => {
                     tempStr += `${currDup[c]}x ${c}\n`
@@ -2325,18 +2302,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
                 let embed = new EmbedBuilder()
                     .setColor(Colors.Orange)
-                    .setTitle('Thingy')
+                    .setTitle("Thingy")
                     .setDescription(
                         `Card left in Main Deck: ${currDeck.length}\nCard left in Side Deck: ${currSide.length}`
                     )
                     .addFields({
-                        name: '====== HAND ======',
+                        name: "====== HAND ======",
                         value: tempStr,
                         inline: true,
                     })
 
                 if (detailMode) {
-                    tempStr = ''
+                    tempStr = ""
                     let currDup = countDup(currDeck)
                     let fullDup = countDup(fullDeck)
                     Object.keys(currDup).forEach((c) => {
@@ -2345,19 +2322,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             fullDup[c]
                         }) ${c} (${percentage.toFixed(1)}%)\n`
                     })
-                    if (tempStr === '') {
-                        tempStr += 'No Card Left'
+                    if (tempStr === "") {
+                        tempStr += "No Card Left"
                     }
                     embed.addFields({
-                        name: '====== DRAW PERCENTAGE ======',
+                        name: "====== DRAW PERCENTAGE ======",
                         value: tempStr,
                         inline: true,
                     })
                 }
 
                 let selectionList = new StringSelectMenuBuilder()
-                    .setPlaceholder('Select a card to play/remove/discard')
-                    .setCustomId('play')
+                    .setPlaceholder("Select a card to play/remove/discard")
+                    .setCustomId("play")
 
                 for (n of new Set(hand)) {
                     selectionList.addOptions({
@@ -2372,25 +2349,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ActionRowBuilder().addComponents(selectionList),
                         new ActionRowBuilder().addComponents(
                             new ButtonBuilder()
-                                .setLabel('Draw Main')
+                                .setLabel("Draw Main")
                                 .setStyle(ButtonStyle.Success)
-                                .setCustomId('main'),
+                                .setCustomId("main"),
                             new ButtonBuilder()
-                                .setLabel('Draw Side')
+                                .setLabel("Draw Side")
                                 .setStyle(ButtonStyle.Secondary)
-                                .setCustomId('side'),
+                                .setCustomId("side"),
                             new ButtonBuilder()
-                                .setLabel('Create Card')
+                                .setLabel("Create Card")
                                 .setStyle(ButtonStyle.Secondary)
-                                .setCustomId('create'),
+                                .setCustomId("create"),
                             new ButtonBuilder()
-                                .setLabel('Fetch Card')
+                                .setLabel("Fetch Card")
                                 .setStyle(ButtonStyle.Secondary)
-                                .setCustomId('fetch'),
+                                .setCustomId("fetch"),
                             new ButtonBuilder()
-                                .setLabel('End')
+                                .setLabel("End")
                                 .setStyle(ButtonStyle.Danger)
-                                .setCustomId('end')
+                                .setCustomId("end")
                         ),
                     ],
                 })
@@ -2403,7 +2380,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         filter,
                     })
                     .then(async (inter) => {
-                        if (inter.customId === 'main') {
+                        if (inter.customId === "main") {
                             currDup = drawList(currDeck, 1)[0]
                             if (currDup) {
                                 hand.push(currDup)
@@ -2411,7 +2388,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             } else {
                                 await inter.update(`Main is Empty`)
                             }
-                        } else if (inter.customId === 'side') {
+                        } else if (inter.customId === "side") {
                             currDup = drawList(currSide, 1)[0]
                             if (currDup) {
                                 hand.push(currDup)
@@ -2419,25 +2396,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             } else {
                                 await inter.update(`Side is Empty`)
                             }
-                        } else if (inter.customId === 'play') {
+                        } else if (inter.customId === "play") {
                             hand.splice(hand.indexOf(inter.values[0]), 1)
                             await inter.update(`Played ${inter.values[0]}`)
-                        } else if (inter.customId === 'create') {
+                        } else if (inter.customId === "create") {
                             // Create the modal
                             const modal = new ModalBuilder()
-                                .setCustomId('create')
-                                .setTitle('Create Card')
+                                .setCustomId("create")
+                                .setTitle("Create Card")
 
                             // Add components to modal
                             modal.addComponents(
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
                                         .setLabel(
-                                            'What card do you want to create'
+                                            "What card do you want to create"
                                         )
-                                        .setPlaceholder('Enter Card Name!')
+                                        .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
-                                        .setCustomId('card')
+                                        .setCustomId("card")
                                 )
                             )
 
@@ -2448,43 +2425,43 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 .awaitModalSubmit({ time: 10000, filter })
                                 .then(async (i) => {
                                     hand.push(
-                                        i.fields.getTextInputValue('card')
+                                        i.fields.getTextInputValue("card")
                                     )
                                     await i.update(
                                         `Created ${i.fields.getTextInputValue(
-                                            'card'
+                                            "card"
                                         )}`
                                     )
                                 })
                                 .catch((e) => inter.update())
-                        } else if (inter.customId === 'fetch') {
+                        } else if (inter.customId === "fetch") {
                             // Create the modal
                             const modal = new ModalBuilder()
-                                .setCustomId('fetch')
-                                .setTitle('Fetch Card')
+                                .setCustomId("fetch")
+                                .setTitle("Fetch Card")
 
                             // Add components to modal
                             modal.addComponents(
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
                                         .setLabel(
-                                            'Card in deck (not to be edit)'
+                                            "Card in deck (not to be edit)"
                                         )
                                         .setValue(
-                                            [...new Set(currDeck)].join('\n')
+                                            [...new Set(currDeck)].join("\n")
                                         )
                                         .setStyle(TextInputStyle.Paragraph)
-                                        .setCustomId('eeeee')
+                                        .setCustomId("eeeee")
                                         .setRequired(false)
                                 ),
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
                                         .setLabel(
-                                            'What card do you want to fetch'
+                                            "What card do you want to fetch"
                                         )
-                                        .setPlaceholder('Enter Card Name!')
+                                        .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
-                                        .setCustomId('card')
+                                        .setCustomId("card")
                                         .setRequired(true)
                                 )
                             )
@@ -2499,7 +2476,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                         const bestMatch =
                                             StringSimilarity.findBestMatch(
                                                 i.fields
-                                                    .getTextInputValue('card')
+                                                    .getTextInputValue("card")
                                                     .toLowerCase(),
                                                 currDeck
                                             )
@@ -2515,12 +2492,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                             `Fetched ${bestMatch.bestMatch.target}`
                                         )
                                     } else {
-                                        await i.update('')
+                                        await i.update("")
                                     }
                                 })
-                        } else if (inter.customId === 'end') {
+                        } else if (inter.customId === "end") {
                             stillRunning = false
-                            await inter.update('')
+                            await inter.update("")
                         }
                     })
                     .catch((err) => {
@@ -2533,40 +2510,40 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Red)
-                        .setTitle('Deck Simulation Ended')
-                        .setDescription('The simulation Ended'),
+                        .setTitle("Deck Simulation Ended")
+                        .setDescription("The simulation Ended"),
                 ],
                 components: [],
             })
-        } else if (commandName == 'tunnel-status') {
+        } else if (commandName == "tunnel-status") {
             await http
-                .get('http://localtunnel.me', async (res) => {
+                .get("http://localtunnel.me", async (res) => {
                     await interaction.reply(
-                        'Tunnel is up and running. If you have problem connecting, restart the game and try again'
+                        "Tunnel is up and running. If you have problem connecting, restart the game and try again"
                     )
                 })
-                .on('error', async (e) => {
+                .on("error", async (e) => {
                     await interaction.reply(
                         "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
                     )
                 })
-        } else if (commandName == 'color-text') {
+        } else if (commandName == "color-text") {
             await interaction.reply({
                 content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
-                    options.getString('string'),
+                    options.getString("string"),
                     true
                 )}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
-                    options.getString('string')
+                    options.getString("string")
                 )}`,
                 ephemeral: true,
             })
-        } else if (commandName == 'guess-the-card') {
-            const set = options.getString('set')
+        } else if (commandName == "guess-the-card") {
+            const set = options.getString("set")
             const card = await (async () => {
                 let name
-                if (set == 'augmented')
+                if (set == "augmented")
                     name = randomChoice(setsData[set].pools.art)
-                else if (set == 'magic') {
+                else if (set == "magic") {
                     const c = await scryfall.randomCard()
                     return { name: c.name, url: c.image_uris.art_crop }
                 } else name = randomChoice(Object.keys(setsData[set].cards))
@@ -2577,12 +2554,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const cardPortrait = await Canvas.loadImage(card.url)
 
             let bg
-            if (set == 'augmented') {
+            if (set == "augmented") {
                 bg = await Canvas.loadImage(
                     `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
-                        ['Common', 'Uncommon', 'Side Deck'].includes(card.tier)
-                            ? 'common'
-                            : 'rare'
+                        ["Common", "Uncommon", "Side Deck"].includes(card.tier)
+                            ? "common"
+                            : "rare"
                     }_${card.temple.toLowerCase()}.png`
                 )
             }
@@ -2590,11 +2567,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
             let portrait
             let full
 
-            if (options.getSubcommand() === 'normal') {
-                const percentage = options.getInteger('difficulty')
-                    ? options.getInteger('difficulty')
-                    : options.getInteger('size')
-                    ? options.getInteger('size')
+            if (options.getSubcommand() === "normal") {
+                const percentage = options.getInteger("difficulty")
+                    ? options.getInteger("difficulty")
+                    : options.getInteger("size")
+                    ? options.getInteger("size")
                     : 35
 
                 const width = clamp(
@@ -2604,7 +2581,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 )
                 const height = clamp(width, 1, cardPortrait.height)
 
-                const scale = set == 'magic' ? 1 : 50
+                const scale = set == "magic" ? 1 : 50
 
                 // get the first crop point
                 const startCropPos = [
@@ -2615,7 +2592,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // make the canvas
                 portrait = Canvas.createCanvas(width * scale, height * scale)
 
-                let context = portrait.getContext('2d')
+                let context = portrait.getContext("2d")
 
                 context.imageSmoothingEnabled = false
                 if (bg)
@@ -2655,7 +2632,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     cardPortrait.height * scale
                 )
 
-                context = full.getContext('2d')
+                context = full.getContext("2d")
 
                 context.imageSmoothingEnabled = false
 
@@ -2664,7 +2641,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 context.drawImage(cardPortrait, 0, 0, full.width, full.height)
 
                 // set the color and size of the box
-                context.strokeStyle = '#f00524'
+                context.strokeStyle = "#f00524"
                 context.lineWidth = full.width * (0.5 / 100)
 
                 // draw the box
@@ -2674,26 +2651,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     width * scale,
                     height * scale
                 )
-            } else if (options.getSubcommand() === 'scramble') {
-                const scale = set == 'magic' ? 1 : 50
+            } else if (options.getSubcommand() === "scramble") {
+                const scale = set == "magic" ? 1 : 50
                 // grab the column
                 const col = parseInt(
-                    (options.getString('difficulty')
-                        ? options.getString('difficulty')
-                        : options.getString('size')
-                        ? options.getString('size')
-                        : '5,3'
-                    ).split(',')[0]
+                    (options.getString("difficulty")
+                        ? options.getString("difficulty")
+                        : options.getString("size")
+                        ? options.getString("size")
+                        : "5,3"
+                    ).split(",")[0]
                 )
 
                 //grab the row
                 const row = parseInt(
-                    (options.getString('difficulty')
-                        ? options.getString('difficulty')
-                        : options.getString('size')
-                        ? options.getString('size')
-                        : '5,3'
-                    ).split(',')[1]
+                    (options.getString("difficulty")
+                        ? options.getString("difficulty")
+                        : options.getString("size")
+                        ? options.getString("size")
+                        : "5,3"
+                    ).split(",")[1]
                 )
 
                 // get each piece height and width
@@ -2706,7 +2683,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     cardPortrait.height * scale
                 )
 
-                let context = portrait.getContext('2d')
+                let context = portrait.getContext("2d")
 
                 context.imageSmoothingEnabled = false
 
@@ -2764,7 +2741,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     cardPortrait.height * scale
                 )
 
-                context = full.getContext('2d')
+                context = full.getContext("2d")
 
                 context.imageSmoothingEnabled = false
                 if (bg) context.drawImage(bg, 0, 0, full.width, full.height)
@@ -2773,13 +2750,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             const message = await interaction.reply({
                 content:
-                    'What card is this? Press the `Guess` button and submit the modal to guess',
-                files: [new AttachmentBuilder(await portrait.encode('png'))],
+                    "What card is this? Press the `Guess` button and submit the modal to guess",
+                files: [new AttachmentBuilder(await portrait.encode("png"))],
                 components: [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
-                            .setCustomId('guess')
-                            .setLabel('Guess')
+                            .setCustomId("guess")
+                            .setLabel("Guess")
                             .setStyle(ButtonStyle.Primary)
                     ),
                 ],
@@ -2794,15 +2771,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     .awaitMessageComponent({ time: 180000, filter })
                     .then(async (inter) => {
                         const modal = new ModalBuilder()
-                            .setCustomId('guessModal')
-                            .setTitle('Enter your guess below')
+                            .setCustomId("guessModal")
+                            .setTitle("Enter your guess below")
 
                         modal.addComponents(
                             new ActionRowBuilder().addComponents(
                                 new TextInputBuilder()
-                                    .setCustomId('guess')
-                                    .setLabel('What is the card?')
-                                    .setPlaceholder('Card name here')
+                                    .setCustomId("guess")
+                                    .setLabel("What is the card?")
+                                    .setPlaceholder("Card name here")
                                     .setRequired(true)
                                     .setStyle(TextInputStyle.Short)
                             )
@@ -2816,19 +2793,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                     StringSimilarity.compareTwoStrings(
                                         card.name.toLowerCase(),
                                         i.fields
-                                            .getTextInputValue('guess')
+                                            .getTextInputValue("guess")
                                             .toLowerCase()
                                     ) >= 0.4
                                 ) {
                                     await i.update({
                                         content: `Your guess (${i.fields.getTextInputValue(
-                                            'guess'
+                                            "guess"
                                         )}) was correct. Actual name ${
                                             card.name
                                         }`,
                                         files: [
                                             new AttachmentBuilder(
-                                                await full.encode('png')
+                                                await full.encode("png")
                                             ),
                                         ],
                                         components: [],
@@ -2836,13 +2813,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 } else {
                                     await i.update({
                                         content: `Your guess (${i.fields.getTextInputValue(
-                                            'guess'
+                                            "guess"
                                         )}) was incorrect. The card was ${
                                             card.name
                                         }`,
                                         files: [
                                             new AttachmentBuilder(
-                                                await full.encode('png')
+                                                await full.encode("png")
                                             ),
                                         ],
                                         components: [],
@@ -2859,24 +2836,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         collecting = false
                     })
             }
-        } else if (commandName == 'retry') {
+        } else if (commandName == "retry") {
             await messageSearch(
                 await interaction.channel.messages.fetch(
-                    options.getString('message')
+                    options.getString("message")
                 )
             )
-            await interaction.reply({ content: 'Retried', ephemeral: true })
-        } else if (commandName == 'react') {
+            await interaction.reply({ content: "Retried", ephemeral: true })
+        } else if (commandName == "react") {
             if (!isPerm(interaction))
                 return (
                     await getMessage(
                         interaction.channel,
-                        options.getString('message')
+                        options.getString("message")
                     )
-                ).react(options.getString('emoji'))
-            await interaction.reply({ content: 'Reacted', ephemeral: true })
-        } else if (commandName == 'query-info') {
-            let temp = ''
+                ).react(options.getString("emoji"))
+            await interaction.reply({ content: "Reacted", ephemeral: true })
+        } else if (commandName == "query-info") {
+            let temp = ""
             Object.keys(queryKeywordList).forEach((key) => {
                 temp += `**${key}** [${queryKeywordList[key].alias}]: ${queryKeywordList[key].description}\n`
             })
@@ -2884,28 +2861,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 content: `Possible query keyword for searching:\nHow to read: [keyword name] [keyword alias]: [keyword description]\n\n${temp}\nIf you don't know how query work visit [the documentation](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Query)`,
                 flags: [MessageFlags.SuppressEmbeds],
             })
-        } else if (commandName == 'test') {
+        } else if (commandName == "test") {
             await interaction.reply(`Nothing here`)
-        } else if (commandName == 'poll') {
-            const pollOption = options.getString('option').split(',')
-            const time = options.getString('time').endsWith('m')
-                ? parseInt(options.getString('time').slice(0, -1)) * 60000
-                : options.getString('time').endsWith('s')
-                ? parseInt(options.getString('time').slice(0, -1)) * 1000
-                : options.getString('time')
+        } else if (commandName == "poll") {
+            const pollOption = options.getString("option").split(",")
+            const time = options.getString("time").endsWith("m")
+                ? parseInt(options.getString("time").slice(0, -1)) * 60000
+                : options.getString("time").endsWith("s")
+                ? parseInt(options.getString("time").slice(0, -1)) * 1000
+                : options.getString("time")
             const endTime = ((Date.now() + time) / 1000).toFixed()
             const embed = new EmbedBuilder()
                 .setColor(Colors.Purple)
-                .setTitle(`Poll: ${options.getString('question')}`)
+                .setTitle(`Poll: ${options.getString("question")}`)
                 .setDescription(
                     `Poll end <t:${endTime}:R>\n` +
                         pollOption
                             .map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
-                            .join('\n')
+                            .join("\n")
                 )
             const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId('pollSelect')
-                .setPlaceholder('Choose a option')
+                .setCustomId("pollSelect")
+                .setPlaceholder("Choose a option")
             for (const [index, option] of pollOption.entries()) {
                 selectMenu.addOptions({
                     label: option,
@@ -2918,26 +2895,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 fetchReply: true,
             })
 
-            let pollData = require('./extra/poll.json')
+            let pollData = require("./extra/poll.json")
             pollData[message.id] = {
                 endTime: endTime,
-                question: options.getString('question'),
+                question: options.getString("question"),
                 optionResult: pollOption.map((value) => {
                     return { option: value, amount: 0 }
                 }),
                 alreadyVote: [],
             }
             fs.writeFileSync(
-                './extra/poll.json',
+                "./extra/poll.json",
                 JSON.stringify(pollData),
-                'utf8'
+                "utf8"
             )
 
             await sleep(time)
 
-            pollData = require('./extra/poll.json')
+            pollData = require("./extra/poll.json")
             await message.edit({
-                content: 'Poll ended',
+                content: "Poll ended",
                 embeds: [
                     new EmbedBuilder()
                         .setTitle(pollData[message.id].question)
@@ -2954,38 +2931,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
             delete pollData[message.id]
 
             fs.writeFileSync(
-                './extra/poll.json',
+                "./extra/poll.json",
                 JSON.stringify(pollData),
-                'utf8'
+                "utf8"
             )
-        } else if (commandName == 'default-code') {
+        } else if (commandName == "default-code") {
             serverDefaultSet[interaction.guildId] = {
-                default: options.getString('default-set-code'),
-                addon: options.getString('addon-set-code'),
+                default: options.getString("default-set-code"),
+                addon: options.getString("addon-set-code"),
             }
             await interaction.reply({
-                content: 'Default added',
+                content: "Default added",
                 ephemeral: true,
             })
             fs.writeFileSync(
-                './extra/default.json',
+                "./extra/default.json",
                 JSON.stringify(serverDefaultSet)
             )
-        } else if (commandName == 'deck-analysis') {
-            await interaction.reply('Crunching number, this may take a while')
-            const set = options.getString('set')
+        } else if (commandName == "deck-analysis") {
+            await interaction.reply("Crunching number, this may take a while")
+            const set = options.getString("set")
 
             let mainDeck = []
             // let sideDeck = []
 
-            const deckFile = options.getAttachment('deck-file')
+            const deckFile = options.getAttachment("deck-file")
                 ? JSON.parse(
                       await (
-                          await fetch(options.getAttachment('deck-file').url)
+                          await fetch(options.getAttachment("deck-file").url)
                       ).text()
                   )
-                : options.getString('deck-json')
-                ? JSON.parse(options.getString('deck-json'))
+                : options.getString("deck-json")
+                ? JSON.parse(options.getString("deck-json"))
                 : {}
 
             for (const name of deckFile.cards) {
@@ -2993,8 +2970,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
             const embed = new EmbedBuilder()
                 .setColor(Colors.Gold)
-                .setTitle('Deck Analysis result')
-                .setDescription('eeeeeeeee')
+                .setTitle("Deck Analysis result")
+                .setDescription("eeeeeeeee")
 
             const possibleMainHandCombinations = combinations(
                 mainDeck.map((c) => c.name),
@@ -3009,7 +2986,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             embed.addFields(
                 // Deck count
                 {
-                    name: 'Draw Percentage',
+                    name: "Draw Percentage",
                     value: Object.keys(deckDup)
                         .map(
                             (c) =>
@@ -3035,28 +3012,28 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                         )
                                 )}%)`
                         )
-                        .join('\n'),
+                        .join("\n"),
                 },
                 // Hand combination
                 {
-                    name: 'Starting hand',
+                    name: "Starting hand",
                     value: `Possible starting hand permutation: ${
                         possibleMainHandCombinations.length
                     }\nPossible unique starting hand combination: ${
                         new Set(
-                            possibleMainHandCombinations.map((h) => h.join(','))
+                            possibleMainHandCombinations.map((h) => h.join(","))
                         ).size
                     }\n`,
                     inline: true,
                 },
                 // Common hand combination
                 {
-                    name: 'Common Hand combination',
+                    name: "Common Hand combination",
                     value: `Most common starting hands:\n${(() => {
                         const temp = Object.entries(
                             countDup(
                                 possibleMainHandCombinations.map((h) =>
-                                    h.join(',')
+                                    h.join(",")
                                 )
                             )
                         ).sort(([, a], [, b]) => b - a)
@@ -3073,7 +3050,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // Deck composition
                 //TODO clean this up
                 {
-                    name: 'Deck Composition',
+                    name: "Deck Composition",
                     value: `Blood card count: ${mainDeck.reduce((acc, c) => {
                         if (c.blood_cost) return acc + 1
                         else return acc
@@ -3112,7 +3089,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // Deck stat
                 //TODO clean up
                 {
-                    name: 'Deck Stat',
+                    name: "Deck Stat",
                     value: `Maximum Blood cost: ${mainDeck.reduce(
                         (acc, c) => acc + getBlood(c),
                         0
@@ -3146,30 +3123,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await interaction.editReply({
                 embeds: [embed],
             })
-        } else if (commandName == 'add-vanilla') {
+        } else if (commandName == "add-vanilla") {
             if (!isPerm(interaction)) {
-                await interaction.reply('no')
+                await interaction.reply("no")
                 return
             }
             try {
                 setsData.vanilla.cards[
-                    JSON.parse(options.getString('card-json')).name
+                    JSON.parse(options.getString("card-json")).name
                 ] = (() => {
-                    const json = JSON.parse(options.getString('card-json'))
+                    const json = JSON.parse(options.getString("card-json"))
                     json.noArt = true
                     return json
                 })()
                 fs.writeFileSync(
-                    './extra/vanilla.json',
+                    "./extra/vanilla.json",
                     JSON.stringify(setsData.vanilla)
                 )
-                await interaction.reply('Card added')
+                await interaction.reply("Card added")
             } catch (err) {
                 await interaction.reply(`\`\`\`\n${err}\`\`\``)
             }
         }
     } else if (interaction.isButton()) {
-        if (interaction.customId == 'retry') {
+        if (interaction.customId == "retry") {
             // clear everything that was on the message.
             await interaction.update({
                 embeds: [],
@@ -3184,39 +3161,39 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     true
                 )
             )
-        } else if (interaction.customId == 'removeCache') {
+        } else if (interaction.customId == "removeCache") {
             await interaction.showModal(
                 new ModalBuilder()
-                    .setTitle('Removing portrait cache')
-                    .setCustomId('removeCache')
+                    .setTitle("Removing portrait cache")
+                    .setCustomId("removeCache")
                     .addComponents(
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
-                                .setLabel('WARNING')
+                                .setLabel("WARNING")
                                 .setValue(
                                     'If you don\'t know what this button do press "Cancel"'
                                 )
-                                .setCustomId('no')
+                                .setCustomId("no")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(false)
                         ),
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
-                                .setLabel('Enter card name')
+                                .setLabel("Enter card name")
                                 .setPlaceholder(
-                                    'Name is not case sensitive but must be exact'
+                                    "Name is not case sensitive but must be exact"
                                 )
-                                .setCustomId('name')
+                                .setCustomId("name")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(true)
                         ),
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
-                                .setLabel('Enter internal set name')
+                                .setLabel("Enter internal set name")
                                 .setPlaceholder(
-                                    'Set name is case sensitive and must be exact'
+                                    "Set name is case sensitive and must be exact"
                                 )
-                                .setCustomId('set')
+                                .setCustomId("set")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(true)
                         )
@@ -3224,51 +3201,51 @@ client.on(Events.InteractionCreate, async (interaction) => {
             )
         }
     } else if (interaction.isModalSubmit()) {
-        if (interaction.customId == 'removeCache') {
+        if (interaction.customId == "removeCache") {
             try {
                 const card = fetchCard(
-                    interaction.fields.getTextInputValue('name').toLowerCase(),
-                    interaction.fields.getTextInputValue('set'),
+                    interaction.fields.getTextInputValue("name").toLowerCase(),
+                    interaction.fields.getTextInputValue("set"),
                     true
                 )
-                if (!card) throw Error('Missing Card')
+                if (!card) throw Error("Missing Card")
                 delete portraitCaches[card.url]
                 fs.writeFileSync(
-                    './extra/caches.json',
+                    "./extra/caches.json",
                     JSON.stringify(portraitCaches, null, 4)
                 )
                 await interaction.reply({
-                    content: 'Cache removed',
+                    content: "Cache removed",
                     ephemeral: true,
                 })
             } catch {
                 await interaction.reply({
-                    content: 'Invalid card name or set name',
+                    content: "Invalid card name or set name",
                     ephemeral: true,
                 })
             }
         }
     } else if (interaction.isStringSelectMenu()) {
-        if (interaction.customId == 'pollSelect') {
-            let fullPollData = require('./extra/poll.json')
+        if (interaction.customId == "pollSelect") {
+            let fullPollData = require("./extra/poll.json")
             let pollData = fullPollData[interaction.message.id]
             if (pollData.alreadyVote.includes(interaction.user.id)) {
                 await interaction.reply({
-                    content: 'You already voted',
+                    content: "You already voted",
                     ephemeral: true,
                 })
             } else {
                 pollData.optionResult[interaction.values[0]].amount++
                 pollData.alreadyVote.push(interaction.user.id)
                 await interaction.reply({
-                    content: 'Vote Success',
+                    content: "Vote Success",
                     ephemeral: true,
                 })
             }
             fs.writeFileSync(
-                './extra/poll.json',
+                "./extra/poll.json",
                 JSON.stringify(fullPollData),
-                'utf8'
+                "utf8"
             )
         }
     }
@@ -3277,14 +3254,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // on messages send
 client.on(Events.MessageCreate, async (message) => {
     if (message.author.id === clientId) return
-    if (message.content.toLowerCase().startsWith('would you kindly')) {
+    if (message.content.toLowerCase().startsWith("would you kindly")) {
         try {
             const command = message.content.slice(17)
 
-            if (command.startsWith('calculate hand percentage of ')) {
+            if (command.startsWith("calculate hand percentage of ")) {
                 const num = command
-                    .replace('calculate hand percentage of ', '')
-                    .split(' ')
+                    .replace("calculate hand percentage of ", "")
+                    .split(" ")
                     .map((n) => parseInt(n))
                 await message.reply(
                     `There would be a ${toPercent(
@@ -3306,63 +3283,63 @@ client.on(Events.MessageCreate, async (message) => {
                     } cards deck and the starting hand is ${num[2]}`
                 )
             } else if (
-                command.startsWith('eval') &&
-                message.author.id == '601821309881810973'
+                command.startsWith("eval") &&
+                message.author.id == "601821309881810973"
             ) {
-                await message.reply(`${eval(command.replace('eval', ''))}`)
-            } else if (command.startsWith('check if tunnel is online')) {
+                await message.reply(`${eval(command.replace("eval", ""))}`)
+            } else if (command.startsWith("check if tunnel is online")) {
                 await http
-                    .get('http://localtunnel.me', async (res) => {
+                    .get("http://localtunnel.me", async (res) => {
                         await message.reply(
-                            'Tunnel is up and running. If you have problem connecting, restart the game and try again'
+                            "Tunnel is up and running. If you have problem connecting, restart the game and try again"
                         )
                     })
-                    .on('error', async (e) => {
+                    .on("error", async (e) => {
                         await message.reply(
                             "I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
                         )
                     })
-            } else if (command.startsWith('roll a d')) {
+            } else if (command.startsWith("roll a d")) {
                 await message.reply(
                     `You got a ${
                         Math.floor(
-                            parseInt(command.replace('roll a d', '')) *
+                            parseInt(command.replace("roll a d", "")) *
                                 Math.random()
                         ) + 1
                     }`
                 )
-            } else if (command.startsWith('flip a coin')) {
+            } else if (command.startsWith("flip a coin")) {
                 await message.reply(
                     `You got ${
-                        Math.floor(2 * Math.random()) == 0 ? 'Head' : 'Tail'
+                        Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"
                     }`
                 )
             } else if (
-                command.startsWith('cal') &&
-                (message.guildId == '994573431880286289' ||
-                    message.guildId == '1028530290727063604' ||
-                    message.guildId == '913238101902630983')
+                command.startsWith("cal") &&
+                (message.guildId == "994573431880286289" ||
+                    message.guildId == "1028530290727063604" ||
+                    message.guildId == "913238101902630983")
             ) {
                 if (
-                    command.replace('cal', '').replaceAll('\n', ';').trim() ==
-                    '9 + 10'
+                    command.replace("cal", "").replaceAll("\n", ";").trim() ==
+                    "9 + 10"
                 ) {
-                    await message.reply('21 duh')
+                    await message.reply("21 duh")
                     return
                 }
                 await message.reply(
                     `${limitedEvaluate(
-                        command.replace('cal', '').replaceAll('\n', ';').trim()
+                        command.replace("cal", "").replaceAll("\n", ";").trim()
                     )}`
                 )
-            } else if (command.startsWith('remind me in')) {
-                const num = command.replace('remind me in', '')
-                const ms = num.endsWith('h')
-                    ? parseInt(num.replace('h', '')) * 60 * 60 * 1000
-                    : num.endsWith('m')
-                    ? parseInt(num.replace('m', '')) * 60 * 1000
-                    : num.endsWith('s')
-                    ? parseInt(num.replace('s', '')) * 1000
+            } else if (command.startsWith("remind me in")) {
+                const num = command.replace("remind me in", "")
+                const ms = num.endsWith("h")
+                    ? parseInt(num.replace("h", "")) * 60 * 60 * 1000
+                    : num.endsWith("m")
+                    ? parseInt(num.replace("m", "")) * 60 * 1000
+                    : num.endsWith("s")
+                    ? parseInt(num.replace("s", "")) * 1000
                     : 1000
                 await message.reply(
                     `Reminder will go off <t:${(
@@ -3371,36 +3348,36 @@ client.on(Events.MessageCreate, async (message) => {
                     ).toFixed()}:R>`
                 )
                 await sleep(ms)
-                await message.reply('HEY TIME UP BITCH')
-            } else if (command.startsWith('cipher')) {
-                const cipherType = command.replace('cipher ', '')
-                if (cipherType.startsWith('atbash')) {
-                    const alphabet = 'abcdefghijklmnopqrstuvwxyz'
+                await message.reply("HEY TIME UP BITCH")
+            } else if (command.startsWith("cipher")) {
+                const cipherType = command.replace("cipher ", "")
+                if (cipherType.startsWith("atbash")) {
+                    const alphabet = "abcdefghijklmnopqrstuvwxyz"
                     await message.reply(
                         cipherType
-                            .replace('atbash ', '')
-                            .split('')
+                            .replace("atbash ", "")
+                            .split("")
                             .map((c) =>
                                 alphabet.indexOf(c) != -1
-                                    ? alphabet.split('').reverse().join('')[
+                                    ? alphabet.split("").reverse().join("")[
                                           alphabet.indexOf(c)
                                       ]
                                     : alphabet.toUpperCase().indexOf(c) != -1
                                     ? alphabet
                                           .toUpperCase()
-                                          .split('')
+                                          .split("")
                                           .reverse()
-                                          .join('')[
+                                          .join("")[
                                           alphabet.toUpperCase().indexOf(c)
                                       ]
                                     : c
                             )
-                            .join('')
+                            .join("")
                     )
                 }
             } else {
                 await message.reply(
-                    randomChoice(['Yes', 'Sure', 'Maybe', 'No', 'Never'])
+                    randomChoice(["Yes", "Sure", "Maybe", "No", "Never"])
                 )
             }
         } catch (error) {
