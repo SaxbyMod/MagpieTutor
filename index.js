@@ -108,16 +108,7 @@ let doneSetup = false
 chalk.orange = chalk.hex("#fb922b")
 chalk.pink = chalk.hex("#ff80a4")
 
-const colorList = [
-    "blue",
-    "cyan",
-    "green",
-    "yellow",
-    "orange",
-    "red",
-    "pink",
-    "magenta",
-]
+const colorList = ["blue", "cyan", "green", "yellow", "orange", "red", "pink", "magenta"]
 
 //set up the bot client
 const client = new Client({
@@ -470,8 +461,8 @@ const DraftRestriction = {
 //ANCHOR - Set config
 const SetList = {
     //imf set
-    com: {
-        name: "competitive",
+    van: {
+        name: "vanilla",
         type: "107",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
@@ -480,8 +471,8 @@ const SetList = {
         draftFormat: SetFormatList.imfDraft,
         draftRestriction: DraftRestriction.imf,
     },
-    van: {
-        name: "vanilla",
+    com: {
+        name: "competitive",
         type: "107",
         format: SetFormatList.imf,
         compactFormat: SetFormatList.imfCompact,
@@ -564,6 +555,7 @@ const SetList = {
     j: { name: "json", type: "modifier" },
     "?": { name: "lazy", type: "modifier" },
     $: { name: "exact", type: "modifier" },
+    d: { name: "dumb", type: "modifier" },
 }
 
 //!SECTION - define the ruleset shit
@@ -594,9 +586,7 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
     for (const set of Object.values(SetList)) {
         const start = performance.now()
         if (set.type === "107") {
-            await fetch(
-                `https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`
-            )
+            await fetch(`https://raw.githubusercontent.com/107zxz/inscr-onln-ruleset/main/${set.name}.json`)
                 .then((res) => res.json())
                 .then((json) => {
                     setsData[set.name] = json
@@ -613,18 +603,12 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
                         setsData[set.name] = json
                     })
             } catch (err) {
-                infoLog(
-                    chalk.bgRed(
-                        `Set ${set.name} have a json error loading competitive data instead!`
-                    )
-                )
+                infoLog(chalk.bgRed(`Set ${set.name} have a json error loading competitive data instead!`))
                 if (set.name != "eternal") continue
                 console.log(err)
                 scream = true
                 log = err
-                setsData[set.name] = JSON.parse(
-                    JSON.stringify(setsData["competitive"])
-                )
+                setsData[set.name] = JSON.parse(JSON.stringify(setsData["competitive"]))
             }
         }
         const cardCount = setsData[set.name]
@@ -644,49 +628,30 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
                     Object.keys(SetList).find((key) => SetList[key] === set)
                 )}"${
                     setsData[set.name]
-                        ? ` and ${chalk[
-                              cardCount > 300
-                                  ? "red"
-                                  : cardCount > 100
-                                  ? "yellow"
-                                  : "green"
-                          ](cardCount)} cards`
+                        ? ` and ${chalk[cardCount > 300 ? "red" : cardCount > 100 ? "yellow" : "green"](
+                              cardCount
+                          )} cards`
                         : ""
-                } (${chalk.red(
-                    `load times: ${(performance.now() - start).toFixed(1)} ms`
-                )})`
+                } (${chalk.red(`load times: ${(performance.now() - start).toFixed(1)} ms`)})`
             )
         )
         i++
     }
-    infoLog(
-        chalk.red(
-            `Loading set data took: ${(performance.now() - startSetup).toFixed(
-                1
-            )}ms`
-        )
-    )
+    infoLog(chalk.red(`Loading set data took: ${(performance.now() - startSetup).toFixed(1)}ms`))
     // loading all the card pool
     infoLog(chalk.magenta.underline.bold("Loading card pools..."))
     for (const setName of Object.keys(setsData)) {
         const start = performance.now()
-        if (
-            Object.values(SetList).find((i) => i.name == setName).type == "file"
-        )
-            continue
+        if (Object.values(SetList).find((i) => i.name == setName).type == "file") continue
         setsData[setName].pools = {}
         let temp = {}
         for (const card of setsData[setName].cards) {
             const name = card.name.toLowerCase()
             temp[name] = card
 
-            for (const poolType of Object.values(SetList).find(
-                (i) => i.name == setName
-            ).pools) {
-                if (!setsData[setName].pools[poolType.name])
-                    setsData[setName].pools[poolType.name] = []
-                if (eval(poolType.condition))
-                    setsData[setName].pools[poolType.name].push(name)
+            for (const poolType of Object.values(SetList).find((i) => i.name == setName).pools) {
+                if (!setsData[setName].pools[poolType.name]) setsData[setName].pools[poolType.name] = []
+                if (eval(poolType.condition)) setsData[setName].pools[poolType.name].push(name)
             }
         }
         setsData[setName].cards = temp
@@ -699,68 +664,40 @@ infoLog(chalk.magenta.underline.bold("Setup please wait"))
                     .map(([pn, pv], i) =>
                         chalk[colorList[i]](
                             `${pv.length} (${pn}, ${(
-                                (pv.length /
-                                    Object.keys(setsData[setName].cards)
-                                        .length) *
+                                (pv.length / Object.keys(setsData[setName].cards).length) *
                                 100
                             ).toFixed(1)}%)`
                         )
                     )
-                    .join(", ")} cards.(${chalk.red(
-                    `load times: ${(performance.now() - start).toFixed(1)}ms`
-                )})`
+                    .join(", ")} cards.(${chalk.red(`load times: ${(performance.now() - start).toFixed(1)}ms`)})`
             )
         )
     }
-    infoLog(
-        chalk.red(
-            `Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`
-        )
-    )
+    infoLog(chalk.red(`Setup took: ${(performance.now() - startSetup).toFixed(1)}ms`))
     for (const [key, value] of Object.entries(process.memoryUsage())) {
-        infoLog(
-            chalk.orange(
-                `Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `
-            )
-        )
+        infoLog(chalk.orange(`Memory usage by ${key}, ${(value / 1000000).toFixed(1)}MB `))
     }
     infoLog(
         chalk.orange(
             `Total memory use: ${(
-                Object.values(process.memoryUsage()).reduce(
-                    (acc, c) => acc + c,
-                    0
-                ) / 1000000
+                Object.values(process.memoryUsage()).reduce((acc, c) => acc + c, 0) / 1000000
             ).toFixed(1)}MB`
         )
     )
 
-    infoLog(
-        chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`)
-    )
+    infoLog(chalk.green(`Loaded ${Object.values(portraitCaches).length} caches`))
     debugLog("Setup completed")
 
     doneSetup = true
     if (!client.isReady()) return
-    console.log(
-        chalk.bgGreen.black(
-            "Setup is complete and bot is connected to Discord's sever"
-        )
-    )
+    console.log(chalk.bgGreen.black("Setup is complete and bot is connected to Discord's sever"))
     const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
     infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
-    infoLog(
-        chalk.cyan(
-            `Servers: ${servers
-                .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                .join(", ")}`
-        )
-    )
+    infoLog(chalk.cyan(`Servers: ${servers.map((s, i) => chalk[colorList[i % colorList.length]](s)).join(", ")}`))
 })()
 
 const specialAttackDescription = {
-    green_mox:
-        'This card\'s power is the number of creatures you control that have the sigil "Green Mox"',
+    green_mox: 'This card\'s power is the number of creatures you control that have the sigil "Green Mox"',
     mox: "This card's power is the number of moxes you control",
     mirror: "This card's power is the power of the opposing creature",
     ant: "This card's power is number of ant you control.",
@@ -792,8 +729,7 @@ const queryKeywordList = {
                 if (!info.sigils) return false
                 let flag = false
                 info.sigils.forEach((sigil) => {
-                    if (setsData[set.name].sigils[sigil].includes(value))
-                        flag = true
+                    if (setsData[set.name].sigils[sigil].includes(value)) flag = true
                 })
                 return flag
             })
@@ -813,8 +749,7 @@ const queryKeywordList = {
     },
     resourcecost: {
         alias: ["rc"],
-        description:
-            "Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)",
+        description: "Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -825,10 +760,7 @@ const queryKeywordList = {
                 : value.includes("<")
                 ? "<"
                 : "=="
-            value = value
-                .replaceAll("<", "")
-                .replaceAll(">", "")
-                .replaceAll("=", "")
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
             filterPossibleValue(
                 ([name, info]) =>
                     eval(`${info.blood_cost}${op}${value}`) ||
@@ -837,19 +769,11 @@ const queryKeywordList = {
                     eval(
                         `${
                             info.mox_cost || info.mox
-                                ? info[
-                                      set.name == "augmeted"
-                                          ? "mox"
-                                          : "mox_cost"
-                                  ].length
+                                ? info[set.name == "augmeted" ? "mox" : "mox_cost"].length
                                 : undefined
                         }${op}${value}`
                     ) ||
-                    eval(
-                        `${
-                            info.shattered ? info.shattered.length : undefined
-                        }${op}${value}`
-                    )
+                    eval(`${info.shattered ? info.shattered.length : undefined}${op}${value}`)
             )
 
             return `with rc {n} ${op}${value}`
@@ -857,8 +781,7 @@ const queryKeywordList = {
     },
     convertedresourcecost: {
         alias: ["crc"],
-        description:
-            "Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
+        description: "Filter for converted resource cost (crc). Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -869,20 +792,14 @@ const queryKeywordList = {
                 : value.includes("<")
                 ? "<"
                 : "=="
-            value = value
-                .replaceAll("<", "")
-                .replaceAll(">", "")
-                .replaceAll("=", "")
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
             filterPossibleValue(([name, info]) =>
                 eval(
                     `${
                         (info.blood_cost ? info.blood_cost : 0) +
                         (info.bone_cost ? info.bone_cost : 0) +
                         (info.energy_cost ? info.energy_cost : 0) +
-                        (info.mox_cost || info.mox
-                            ? info[set.name == "augmeted" ? "mox" : "mox_cost"]
-                                  .length
-                            : 0) +
+                        (info.mox_cost || info.mox ? info[set.name == "augmeted" ? "mox" : "mox_cost"].length : 0) +
                         (info.shattered ? info.shattered.length : 0)
                     }${op}${value}`
                 )
@@ -939,31 +856,19 @@ const queryKeywordList = {
             "Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
         callback: (value, set, filterPossibleValue) => {
             const color =
-                value == "g" ||
-                value == "green" ||
-                value == "e" ||
-                value == "emerald"
+                value == "g" || value == "green" || value == "e" || value == "emerald"
                     ? set.name == "augmented"
                         ? "emerald"
                         : "Green"
-                    : value == "o" ||
-                      value == "orange" ||
-                      value == "r" ||
-                      value == "ruby"
+                    : value == "o" || value == "orange" || value == "r" || value == "ruby"
                     ? set.name == "augmented"
                         ? "ruby"
                         : "Orange"
-                    : value == "b" ||
-                      value == "blue" ||
-                      value == "s" ||
-                      value == "sapphire"
+                    : value == "b" || value == "blue" || value == "s" || value == "sapphire"
                     ? set.name == "augmented"
                         ? "sapphire"
                         : "Blue"
-                    : value == "c" ||
-                      value == "colorless" ||
-                      value == "p" ||
-                      value == "prism"
+                    : value == "c" || value == "colorless" || value == "p" || value == "prism"
                     ? "prism"
                     : ""
 
@@ -971,9 +876,7 @@ const queryKeywordList = {
             // or between mox and shattered
             filterPossibleValue(([name, info]) =>
                 info.mox || info.mox_cost
-                    ? info[
-                          set.name == "augmented" ? "mox" : "mox_cost"
-                      ].includes(color)
+                    ? info[set.name == "augmented" ? "mox" : "mox_cost"].includes(color)
                     : false || info.shattered
                     ? info.shattered.includes(`shattered_${color}`)
                     : false
@@ -984,8 +887,7 @@ const queryKeywordList = {
     },
     temple: {
         alias: ["t"],
-        description:
-            "Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
+        description: "Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const temple =
                 value == "b" || value == "beast"
@@ -1008,8 +910,7 @@ const queryKeywordList = {
         callback: (value, set, filterPossibleValue) => {
             filterPossibleValue(([name, info]) => {
                 if (!info.tribes) return false
-                if (Array.isArray(info.tribes))
-                    info.tribes = info.tribes.join(" ")
+                if (Array.isArray(info.tribes)) info.tribes = info.tribes.join(" ")
                 return info.tribes.toLowerCase().includes(value)
             })
 
@@ -1050,11 +951,7 @@ const queryKeywordList = {
                     ? "Side Deck"
                     : ""
             filterPossibleValue(([name, info]) =>
-                set.name == "augmented"
-                    ? info.tier == rarity
-                    : rarity
-                    ? info.rare
-                    : !info.rare
+                set.name == "augmented" ? info.tier == rarity : rarity ? info.rare : !info.rare
             )
 
             return `is {n} ${rarity}`
@@ -1062,8 +959,7 @@ const queryKeywordList = {
     },
     health: {
         alias: ["h"],
-        description:
-            "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
+        description: "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -1074,20 +970,14 @@ const queryKeywordList = {
                 : value.includes("<")
                 ? "<"
                 : "=="
-            value = value
-                .replaceAll("<", "")
-                .replaceAll(">", "")
-                .replaceAll("=", "")
-            filterPossibleValue(([name, info]) =>
-                eval(`${info.health}${op}${value}`)
-            )
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
+            filterPossibleValue(([name, info]) => eval(`${info.health}${op}${value}`))
             return `have health {n} ${op}${value}`
         },
     },
     power: {
         alias: ["p"],
-        description:
-            "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
+        description: "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -1098,21 +988,15 @@ const queryKeywordList = {
                 : value.includes("<")
                 ? "<"
                 : "=="
-            value = value
-                .replaceAll("<", "")
-                .replaceAll(">", "")
-                .replaceAll("=", "")
-            filterPossibleValue(([name, info]) =>
-                eval(`${info.attack}${op}${value}`)
-            )
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
+            filterPossibleValue(([name, info]) => eval(`${info.attack}${op}${value}`))
 
             return `have power {n} ${op}${value}`
         },
     },
     powerhealth: {
         alias: ["ph"],
-        description:
-            "Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)",
+        description: "Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)",
         callback: (value, set, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
@@ -1123,13 +1007,8 @@ const queryKeywordList = {
                 : value.includes("<")
                 ? "<"
                 : "=="
-            value = value
-                .replaceAll("<", "")
-                .replaceAll(">", "")
-                .replaceAll("=", "")
-            filterPossibleValue(([name, info]) =>
-                eval(`${info.attack + info.health}${op}${value}`)
-            )
+            value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
+            filterPossibleValue(([name, info]) => eval(`${info.attack + info.health}${op}${value}`))
 
             return `have power health total {n} ${op}${value}`
         },
@@ -1160,11 +1039,7 @@ const queryKeywordList = {
                     return removalList.includes(name)
                 },
                 banned: ([name, info]) => info.banned,
-                free: ([name, info]) =>
-                    !info.blood_cost &&
-                    !info.bone_cost &&
-                    !info.energy_cost &&
-                    !info.mox_cost,
+                free: ([name, info]) => !info.blood_cost && !info.bone_cost && !info.energy_cost && !info.mox_cost,
             }
             let callback = nicknameList[value]
             filterPossibleValue(callback ? callback : ([name, info]) => false)
@@ -1175,9 +1050,7 @@ const queryKeywordList = {
         alias: "n",
         description: "Filter for name",
         callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) =>
-                name.toLowerCase().includes(value.toLowerCase())
-            )
+            filterPossibleValue(([name, info]) => name.toLowerCase().includes(value.toLowerCase()))
 
             return `have name {n} includes ${value}`
         },
@@ -1195,9 +1068,7 @@ const queryKeywordList = {
 
 // function hell
 function getEmoji(name) {
-    return `<:${
-        client.emojis.cache.find((emoji) => emoji.name === name).identifier
-    }>`
+    return `<:${client.emojis.cache.find((emoji) => emoji.name === name).identifier}>`
 }
 
 function numToEmoji(num) {
@@ -1252,22 +1123,16 @@ async function messageSearch(message, returnValue = false) {
     }
     console.log(
         chalk.blue(
-            `Message with content: "${chalk.green(
-                message.content
-            )}" in ${chalk.red.bold(
+            `Message with content: "${chalk.green(message.content)}" in ${chalk.red.bold(
                 message.guild ? message.guild.name : "DM"
-            )} detected searching time ${chalk.magenta("OwO")}`
+            )} by ${chalk.orange.bold(message.author.username)} detected searching time ${chalk.magenta("OwO")}`
         )
     )
     let cards = []
-    outer: for (let cardMatch of message.content
-        .toLowerCase()
-        .matchAll(searchRegex)) {
+    outer: for (let cardMatch of message.content.toLowerCase().matchAll(searchRegex)) {
         let modifierCode = cardMatch[1]
         let selectedSet = [
-            SetList[cardMatch[2]] ??
-                SetList[serverDefaultSet[message.guildId]?.default] ??
-                SetList["com"],
+            SetList[cardMatch[2]] ?? SetList[serverDefaultSet[message.guildId]?.default] ?? SetList["com"],
         ]
         let name = cardMatch[3]
         let card
@@ -1280,6 +1145,7 @@ async function messageSearch(message, returnValue = false) {
         let json = false
         let lazy = false
         let exact = false
+        let dumb = false
 
         for (const code of modifierCode) {
             const modifierSet = SetList[code]
@@ -1293,9 +1159,7 @@ async function messageSearch(message, returnValue = false) {
                             new EmbedBuilder()
                                 .setColor(Colors.Red)
                                 .setTitle(`Card "${name}" not found`)
-                                .setDescription(
-                                    `Magic card ${name} not found\n`
-                                )
+                                .setDescription(`Magic card ${name} not found\n`)
                         )
                     } else {
                         attachmentList.push(card.image_uris.normal)
@@ -1324,7 +1188,15 @@ async function messageSearch(message, returnValue = false) {
                     )
                 } else if (modifierSet.name == "exact") {
                     exact = true
+                } else if (modifierSet.name == "dumb") {
+                    dumb = true
                 }
+            }
+        }
+
+        if (!dumb) {
+            if (name.includes(":")) {
+                query = true
             }
         }
 
@@ -1337,9 +1209,7 @@ async function messageSearch(message, returnValue = false) {
                 ? { target: name, rating: 1 }
                 : StringSimilarity.findBestMatch(
                       name,
-                      sigilSearch
-                          ? Object.keys(setsData[set.name].sigils)
-                          : Object.keys(setsData[set.name].cards)
+                      sigilSearch ? Object.keys(setsData[set.name].sigils) : Object.keys(setsData[set.name].cards)
                   ).bestMatch
             if (sigilSearch) {
                 if (!setsData[set.name].sigils) continue
@@ -1359,10 +1229,7 @@ async function messageSearch(message, returnValue = false) {
                     }
                 }
 
-                temp = genSigilEmbed(
-                    bestMatch.target,
-                    setsData[set.name].sigils[bestMatch.target]
-                )
+                temp = genSigilEmbed(bestMatch.target, setsData[set.name].sigils[bestMatch.target])
             } else if (query) {
                 temp = queryCard(name, set, compactDisplay)
             } else if (json) {
@@ -1442,14 +1309,8 @@ async function messageSearch(message, returnValue = false) {
         },
         components: [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setLabel("Retry")
-                    .setCustomId("retry")
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setLabel("Remove Cache")
-                    .setCustomId("removeCache")
-                    .setStyle(ButtonStyle.Danger)
+                new ButtonBuilder().setLabel("Retry").setCustomId("retry").setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setLabel("Remove Cache").setCustomId("removeCache").setStyle(ButtonStyle.Danger)
             ),
         ],
     }
@@ -1458,17 +1319,12 @@ async function messageSearch(message, returnValue = false) {
 
     if (msg != "") {
         replyOption["content"] = msg
-        if (replyOption["content"].length > 2000)
-            replyOption["content"] = "Message too large"
+        if (replyOption["content"].length > 2000) replyOption["content"] = "Message too large"
     }
     if (embedList.length > 0) replyOption["embeds"] = embedList
     if (attachmentList.length > 0) replyOption["files"] = attachmentList
 
-    if (
-        replyOption["content"] ||
-        replyOption["embeds"] ||
-        replyOption["files"]
-    ) {
+    if (replyOption["content"] || replyOption["embeds"] || replyOption["files"]) {
         replyOption["content"] =
             (replyOption["content"] ? replyOption["content"] : "") +
             `\nSearch complete in ${(end - start).toFixed(1)}ms`
@@ -1483,10 +1339,7 @@ async function messageSearch(message, returnValue = false) {
                 console.log(chalk.green(`${cards[index].name} cache created`))
             }
         }
-        fs.writeFileSync(
-            "./extra/caches.json",
-            JSON.stringify(portraitCaches, null, 4)
-        )
+        fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
     }
 }
 
@@ -1499,9 +1352,7 @@ function genDescription(textFormat, card) {
         if (field.type == "keyword") {
             if (card[field.var]) {
                 card[field.var].forEach((keyword) => {
-                    completeInfo += `**${keyword}**: ${
-                        setsData[card.set].sigils[keyword]
-                    }\n`
+                    completeInfo += `**${keyword}**: ${setsData[card.set].sigils[keyword]}\n`
                 })
             }
         } else if (field.type == "special_keyword") {
@@ -1522,9 +1373,7 @@ function genDescription(textFormat, card) {
                     if (temp.length < 1) continue
                     // idk what this do anymore i was very high
                     temp = {} // make a dict to put them in so .format can use it as key
-                    temp[
-                        info.text.match(/{(\w+)}/g)[0].slice(1, -1)
-                    ] /* field name = var name */ = card[
+                    temp[info.text.match(/{(\w+)}/g)[0].slice(1, -1)] /* field name = var name */ = card[
                         info.text.match(/{(\w+)}/g)[0].slice(1, -1)
                     ]
                         .map((a) => `:${a}:`.toLowerCase())
@@ -1535,16 +1384,8 @@ function genDescription(textFormat, card) {
                 } else if (info.type == "stat") {
                     completeInfo += info.text.replace(
                         "{health}",
-                        `**Stat**: ${
-                            card.atkspecial
-                                ? `:${card.atkspecial}:`
-                                : card.attack
-                        } / ${card.health} ${
-                            card.atkspecial
-                                ? `(${
-                                      specialAttackDescription[card.atkspecial]
-                                  })`
-                                : ""
+                        `**Stat**: ${card.atkspecial ? `:${card.atkspecial}:` : card.attack} / ${card.health} ${
+                            card.atkspecial ? `(${specialAttackDescription[card.atkspecial]})` : ""
                         }`
                     )
                 } else if (info.type == "sub") {
@@ -1569,10 +1410,7 @@ function genTitle(textFormat, card) {
                 completeInfo += info.text
             }
         } else if (info.type == "set") {
-            completeInfo += info.text.replaceAll(
-                "{set}",
-                setsData[card.set].ruleset
-            )
+            completeInfo += info.text.replaceAll("{set}", setsData[card.set].ruleset)
         } else if (info.type == "sub") {
             if (!info.text.match(/{(\w+)}/g)) {
                 completeInfo += info.text
@@ -1589,10 +1427,7 @@ function genTitle(textFormat, card) {
         if (alreadyChange.includes(emoji[0])) continue
         try {
             if (!isNaN(parseInt(emoji[1]))) {
-                completeInfo = completeInfo.replaceAll(
-                    emoji[0],
-                    numToEmoji(emoji[1])
-                )
+                completeInfo = completeInfo.replaceAll(emoji[0], numToEmoji(emoji[1]))
                 continue
             }
             completeInfo = completeInfo.replaceAll(emoji[0], getEmoji(emoji[1]))
@@ -1629,10 +1464,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
     } else if (card.pixport_url) {
         card.url = card.pixport_url
     } else {
-        card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(
-            " ",
-            "%20"
-        )}.png`
+        card.url = `https://github.com/107zxz/inscr-onln/raw/main/gfx/pixport/${card.name.replaceAll(" ", "%20")}.png`
     }
 
     if (Object.keys(portraitCaches).includes(card.url)) {
@@ -1666,12 +1498,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
         } else if (card.name == "Horse Mage") {
             card.description = `Not make by ener :trolled:`
         } else if (card.name == "The Moon") {
-            card.sigils = [
-                "Omni Strike",
-                "Tidal Lock",
-                "Made of Stone",
-                "Mighty Leap",
-            ]
+            card.sigils = ["Omni Strike", "Tidal Lock", "Made of Stone", "Mighty Leap"]
         } else if (card.name == "Adder") {
             card.name = "peak"
             card.description = "peak"
@@ -1679,14 +1506,13 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
         } else if (card.name == "Ouroboros") {
             card.description = "Ouroboros is the source of all evil - 107"
         } else if (card.name == "Blue Mage") {
-            card.url =
-                "https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
+            card.url = "https://cdn.discordapp.com/attachments/1013090988354457671/1130690799152148571/11111.jpg"
         }
     }
 
     if (JSON.stringify(original) != JSON.stringify(card)) {
         card.footnote =
-            'This card has been edited to view original put "o" in front of you search.\nEx: e[[adder]] -> oe[[adder]]'
+            'This card has been edited to view original put "o" in front of you search.\nEx: ete[[adder]] -> oete[[adder]]'
     }
 
     return card
@@ -1711,21 +1537,14 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
             let cardPortrait = await Canvas.loadImage(card.url)
             const scale = 5
             // scale the pfp
-            const portrait = Canvas.createCanvas(
-                cardPortrait.width * scale,
-                cardPortrait.height * scale
-            )
+            const portrait = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
             const context = portrait.getContext("2d")
             context.imageSmoothingEnabled = false
             if (card.set == SetList.aug.name) {
                 context.drawImage(
                     await Canvas.loadImage(
                         `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
-                            ["Common", "Uncommon", "Side Deck"].includes(
-                                card.tier
-                            )
-                                ? "common"
-                                : "rare"
+                            ["Common", "Uncommon", "Side Deck"].includes(card.tier) ? "common" : "rare"
                         }_${card.temple.toLowerCase()}.png`
                     ),
                     0,
@@ -1734,13 +1553,7 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
                     portrait.height
                 )
             }
-            context.drawImage(
-                cardPortrait,
-                0,
-                0,
-                portrait.width,
-                portrait.height
-            )
+            context.drawImage(cardPortrait, 0, 0, portrait.width, portrait.height)
 
             attachment = new AttachmentBuilder(await portrait.encode("png"), {
                 name: `${id}.png`,
@@ -1749,19 +1562,14 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
     } catch {
         // cache missing portrait
         portraitCaches[card.url] = null
-        fs.writeFileSync(
-            "./extra/caches.json",
-            JSON.stringify(portraitCaches, null, 4)
-        )
+        fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
     }
 
     const format = Object.values(SetList).find((set) => set.name == card.set)[
         compactDisplay ? "compactFormat" : "format"
     ]
     // create template
-    let embed = new EmbedBuilder()
-        .setColor(genColor(format, card))
-        .setTitle(genTitle(format, card))
+    let embed = new EmbedBuilder().setColor(genColor(format, card)).setTitle(genTitle(format, card))
 
     if (attachment) embed.setThumbnail(`attachment://${id}.png`)
     else if (card.fullUrl) {
@@ -1777,16 +1585,10 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
             if (alreadyChange.includes(emoji[0])) continue
             try {
                 if (!isNaN(parseInt(emoji[1]))) {
-                    info[field] = info[field].replaceAll(
-                        emoji[0],
-                        numToEmoji(emoji[1])
-                    )
+                    info[field] = info[field].replaceAll(emoji[0], numToEmoji(emoji[1]))
                     continue
                 }
-                info[field] = info[field].replaceAll(
-                    emoji[0],
-                    getEmoji(emoji[1])
-                )
+                info[field] = info[field].replaceAll(emoji[0], getEmoji(emoji[1]))
             } catch {}
             alreadyChange.push(emoji[0])
         }
@@ -1813,10 +1615,7 @@ async function genCardEmbed(card, compactDisplay = false, id = randStr()) {
 }
 
 function genSigilEmbed(sigilName, sigilDescription) {
-    let embed = new EmbedBuilder()
-        .setColor(Colors.Aqua)
-        .setTitle(`${sigilName}`)
-        .setDescription(sigilDescription)
+    let embed = new EmbedBuilder().setColor(Colors.Aqua).setTitle(`${sigilName}`).setDescription(sigilDescription)
     return [embed, 1]
 }
 
@@ -1831,18 +1630,14 @@ function queryCard(string, set, compactDisplay = false) {
 
         const filterPossibleValue = (callback) => {
             possibleMatches = Object.fromEntries(
-                Object.entries(possibleMatches).filter((c) =>
-                    negation ? !callback(c) : callback(c)
-                )
+                Object.entries(possibleMatches).filter((c) => (negation ? !callback(c) : callback(c)))
             )
         }
 
         for (const [key, keyInfo] of Object.entries(queryKeywordList)) {
             if (type == key || keyInfo.alias.includes(type)) {
                 searchExplain.push(
-                    keyInfo
-                        .callback(value, set, filterPossibleValue)
-                        .replace("{n} ", negation ? "not " : "")
+                    keyInfo.callback(value, set, filterPossibleValue).replace("{n} ", negation ? "not " : "")
                 )
             }
         }
@@ -1852,14 +1647,10 @@ function queryCard(string, set, compactDisplay = false) {
         .join(", ")
         .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase())}`
 
-    embed.setTitle(
-        `Result: ${final.length} cards found in ${setsData[set.name].ruleset}`
-    )
+    embed.setTitle(`Result: ${final.length} cards found in ${setsData[set.name].ruleset}`)
     embed.setDescription(
         compactDisplay
-            ? `**Card that ${searchExplain.join(
-                  ", "
-              )}**:\nResult hidden by compact mode`
+            ? `**Card that ${searchExplain.join(", ")}**:\nResult hidden by compact mode`
             : final.length > 0
             ? result.length > 4096 // checking if it excess the char limit
                 ? "Too many result, please be more specific"
@@ -1872,26 +1663,12 @@ function queryCard(string, set, compactDisplay = false) {
 // on ready call
 client.once(Events.ClientReady, () => {
     if (doneSetup) {
-        console.log(
-            chalk.bgGreen.black(
-                "Setup is complete and bot is connected to Discord's sever"
-            )
-        )
+        console.log(chalk.bgGreen.black("Setup is complete and bot is connected to Discord's sever"))
         const servers = Array.from(client.guilds.cache).map((s) => s[1].name)
         infoLog(chalk.cyan(`Bot is in ${servers.length} server`))
-        infoLog(
-            chalk.cyan(
-                `Servers: ${servers
-                    .map((s, i) => chalk[colorList[i % colorList.length]](s))
-                    .join(", ")}`
-            )
-        )
+        infoLog(chalk.cyan(`Servers: ${servers.map((s, i) => chalk[colorList[i % colorList.length]](s)).join(", ")}`))
     } else {
-        console.log(
-            chalk.bgRed(
-                "Bot connected to Discord's server but wait until set up is complete to use"
-            )
-        )
+        console.log(chalk.bgRed("Bot connected to Discord's server but wait until set up is complete to use"))
     }
     client.user.setActivity("YOUR MOM")
     if (scream) {
@@ -1910,17 +1687,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const message = options.getString("text")
             console.log(`${interaction.user.username} say ${message}`)
             const channel =
-                options.getChannel("channel") != undefined
-                    ? options.getChannel("channel")
-                    : interaction.channel
+                options.getChannel("channel") != undefined ? options.getChannel("channel") : interaction.channel
 
             if (options.getString("message")) {
-                ;(
-                    await getMessage(
-                        interaction.channel,
-                        options.getString("message")
-                    )
-                ).reply(message)
+                ;(await getMessage(interaction.channel, options.getString("message"))).reply(message)
             } else {
                 channel.send(message)
             }
@@ -1932,9 +1702,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } else if (commandName == "set-code") {
             let temp = ""
             Object.keys(SetList).forEach((key) => {
-                temp += `**${key}**: ${SetList[key].name}${
-                    SetList[key].type == "modifier" ? " (Modifier)" : ""
-                }\n`
+                temp += `**${key}**: ${SetList[key].name}${SetList[key].type == "modifier" ? " (Modifier)" : ""}\n`
             })
             await interaction.reply(
                 `Possible set code for searching:\n\n${temp}\nModifier can be add in front of set code to modify the output. Ex: \`sete\` will look up a sigil in the Eternal set`
@@ -1962,11 +1730,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         } else if (commandName == "restart") {
             if (isPerm(interaction)) {
                 await interaction.reply(
-                    randomChoice([
-                        "Restarting...",
-                        "AAAAAAAAAAAAAAAAAAAAAAAA",
-                        "No father don't kill me",
-                    ])
+                    randomChoice(["Restarting...", "AAAAAAAAAAAAAAAAAAAAAAAA", "No father don't kill me"])
                 )
                 throw new Error("death")
             } else await interaction.reply("no")
@@ -1992,10 +1756,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 for (const type of packStructure) {
                     if (type.amount == 0) {
                         Object.keys(out).forEach((k) => {
-                            out[k] = listDiff(
-                                out[k],
-                                setsData[setName].pools[type.type]
-                            )
+                            out[k] = listDiff(out[k], setsData[setName].pools[type.type])
                         })
                         continue
                     }
@@ -2025,9 +1786,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     outer: while (true) {
                         if (pool[type.type].length < 1)
                             if (type.replacement) {
-                                type = packStructure.find(
-                                    (t) => t.type == type.replacement
-                                )
+                                type = packStructure.find((t) => t.type == type.replacement)
                                 continue outer
                             } else continue
                         else {
@@ -2037,9 +1796,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
                     if (!temp[type.type]) temp[type.type] = []
 
-                    temp[type.type] = temp[type.type].concat(
-                        randomChoices(pool[type.type], amount)
-                    )
+                    temp[type.type] = temp[type.type].concat(randomChoices(pool[type.type], amount))
                 }
                 //put card data in the pack using
                 let pack = []
@@ -2052,13 +1809,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 }
 
                 // if the pack is missing cards push in wild card
-                if (
-                    pack.length <
-                    packStructure.reduce(
-                        (partialSum, a) => partialSum + a.amount,
-                        0
-                    )
-                ) {
+                if (pack.length < packStructure.reduce((partialSum, a) => partialSum + a.amount, 0)) {
                     pack.push({
                         name: "WILD CARD",
                         attack: 100,
@@ -2070,9 +1821,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 const embed = new EmbedBuilder()
                     .setColor(Colors.Blue)
                     .setTitle(
-                        `Pack Left: ${deckSize - cycle}\nCard in deck: ${
-                            deck.cards.length
-                        }\nWild Count: ${wildCount}`
+                        `Pack Left: ${deckSize - cycle}\nCard in deck: ${deck.cards.length}\nWild Count: ${wildCount}`
                     )
 
                 const selectionList = new StringSelectMenuBuilder()
@@ -2085,40 +1834,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 for (const card of pack) {
                     for (let line of set.draftFormat) {
                         if (line.type == "sub") {
-                            if (
-                                !card[
-                                    line.text.match(/{(\w+)}/g)[0].slice(1, -1)
-                                ]
-                            )
-                                continue
+                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
                             description += line.text.format(card)
                         } else if (line.type == "normal") {
                             description += line.text
                         } else if (line.type == "con") {
                             if (eval(line.con)) description += line.text
                         } else if (line.type == "mox") {
-                            if (
-                                !card[
-                                    line.text.match(/{(\w+)}/g)[0].slice(1, -1)
-                                ]
-                            )
-                                continue
+                            if (!card[line.text.match(/{(\w+)}/g)[0].slice(1, -1)]) continue
                             description += line.text.format(card)
                         } else if (line.type == "stat") {
                             description += line.text.replace(
                                 "{s}",
-                                `${
-                                    card.atkspecial
-                                        ? `:${card.atkspecial}:`
-                                        : card[line.attackVar]
-                                } / ${card[line.healthVar]}`
+                                `${card.atkspecial ? `:${card.atkspecial}:` : card[line.attackVar]} / ${
+                                    card[line.healthVar]
+                                }`
                             )
                         } else if (line.type == "list") {
                             if (!card[line.var]) continue
-                            description += line.text.replace(
-                                "{s}",
-                                card[line.var]
-                            )
+                            description += line.text.replace("{s}", card[line.var])
                         }
                     }
                     description += "\n\n"
@@ -2133,13 +1867,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // load the deck dup to check for restriction later
                 let deckStr = ""
                 let deckDup = countDup(
-                    deck.cards.sort((a, b) =>
-                        a.startsWith("*")
-                            ? -1
-                            : b.startsWith("*")
-                            ? 1
-                            : a.localeCompare(b)
-                    )
+                    deck.cards.sort((a, b) => (a.startsWith("*") ? -1 : b.startsWith("*") ? 1 : a.localeCompare(b)))
                 )
 
                 // generate the deck preview
@@ -2164,9 +1892,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // send embed and selection
                 await interaction.editReply({
                     content: "",
-                    components: [
-                        new ActionRowBuilder().addComponents(selectionList),
-                    ],
+                    components: [new ActionRowBuilder().addComponents(selectionList)],
                     embeds: [embed],
                 })
 
@@ -2186,25 +1912,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             wildCount++
                         } else {
                             deck.cards.push(card.name)
-                            if (!deckUniqueCount[card.type])
-                                deckUniqueCount[card.type] = 0
+                            if (!deckUniqueCount[card.type]) deckUniqueCount[card.type] = 0
                             deckUniqueCount[card.type]++
-                            if (
-                                countDup(deck.card) >=
-                                set.draftRestriction[card.type].copyPerDeck
-                            ) {
+                            if (countDup(deck.card) >= set.draftRestriction[card.type].copyPerDeck) {
                                 // if more than or equal to the allowed same name copy per deck remove this card from pool
-                                pool[card.type].splice(
-                                    pool[card.type].indexOf(
-                                        card.name.toLowerCase()
-                                    ),
-                                    1
-                                )
+                                pool[card.type].splice(pool[card.type].indexOf(card.name.toLowerCase()), 1)
                             }
-                            if (
-                                deckUniqueCount[card.type] >=
-                                set.draftRestriction[card.type].uniquePerDeck
-                            ) {
+                            if (deckUniqueCount[card.type] >= set.draftRestriction[card.type].uniquePerDeck) {
                                 //if more than or equal to the amount of unique copy remove this pool completely
                                 pool[card.type] = []
                             }
@@ -2218,9 +1932,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
                 if (flag) {
                     await interaction.editReply({
-                        content: `Error: ${coloredString(
-                            `$$r${error}`
-                        )}\nCurrent deck: ${deck.cards.join(
+                        content: `Error: ${coloredString(`$$r${error}`)}\nCurrent deck: ${deck.cards.join(
                             ", "
                         )}\n\nCurrent Deck Json: \`${JSON.stringify(deck)}\``,
                         embeds: [],
@@ -2237,9 +1949,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     wildCount > 0
                         ? `**You have ${wildCount} Wild Card. You can replace them with any common card**\n`
                         : ""
-                }Completed Deck: ${deck.cards.join(
-                    ", "
-                )}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
+                }Completed Deck: ${deck.cards.join(", ")}\n\nDeck Json: \`${JSON.stringify(deck)}\``,
                 embeds: [],
                 components: [],
             })
@@ -2247,27 +1957,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
             let fullDeck = []
             let fullSide = []
             if (options.getAttachment("deck-file")) {
-                const deckFile = JSON.parse(
-                    await (
-                        await fetch(options.getAttachment("deck-file").url)
-                    ).text()
-                )
+                const deckFile = JSON.parse(await (await fetch(options.getAttachment("deck-file").url)).text())
                 fullDeck = deckFile.cards
                 if (deckFile.side_deck_cards) {
                     fullSide = deckFile.side_deck_cards
                 } else if (deckFile.side_deck_cat) {
                     fullSide = Array(
-                        setsData.competitive.side_decks[deckFile.side_deck]
-                            .cards[deckFile.side_deck_cat].count
-                    ).fill(
-                        setsData.competitive.side_decks[deckFile.side_deck]
-                            .cards[deckFile.side_deck_cat].card
-                    )
+                        setsData.competitive.side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].count
+                    ).fill(setsData.competitive.side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].card)
                 } else {
-                    fullSide = Array(
-                        setsData.competitive.side_decks[deckFile.side_deck]
-                            .count
-                    ).fill(
+                    fullSide = Array(setsData.competitive.side_decks[deckFile.side_deck].count).fill(
                         setsData.competitive.side_decks[deckFile.side_deck].card
                     )
                 }
@@ -2318,9 +2017,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     let fullDup = countDup(fullDeck)
                     Object.keys(currDup).forEach((c) => {
                         const percentage = (currDup[c] / currDeck.length) * 100
-                        tempStr += `${currDup[c]}/${
-                            fullDup[c]
-                        }) ${c} (${percentage.toFixed(1)}%)\n`
+                        tempStr += `${currDup[c]}/${fullDup[c]}) ${c} (${percentage.toFixed(1)}%)\n`
                     })
                     if (tempStr === "") {
                         tempStr += "No Card Left"
@@ -2348,10 +2045,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     components: [
                         new ActionRowBuilder().addComponents(selectionList),
                         new ActionRowBuilder().addComponents(
-                            new ButtonBuilder()
-                                .setLabel("Draw Main")
-                                .setStyle(ButtonStyle.Success)
-                                .setCustomId("main"),
+                            new ButtonBuilder().setLabel("Draw Main").setStyle(ButtonStyle.Success).setCustomId("main"),
                             new ButtonBuilder()
                                 .setLabel("Draw Side")
                                 .setStyle(ButtonStyle.Secondary)
@@ -2364,10 +2058,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                 .setLabel("Fetch Card")
                                 .setStyle(ButtonStyle.Secondary)
                                 .setCustomId("fetch"),
-                            new ButtonBuilder()
-                                .setLabel("End")
-                                .setStyle(ButtonStyle.Danger)
-                                .setCustomId("end")
+                            new ButtonBuilder().setLabel("End").setStyle(ButtonStyle.Danger).setCustomId("end")
                         ),
                     ],
                 })
@@ -2401,17 +2092,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             await inter.update(`Played ${inter.values[0]}`)
                         } else if (inter.customId === "create") {
                             // Create the modal
-                            const modal = new ModalBuilder()
-                                .setCustomId("create")
-                                .setTitle("Create Card")
+                            const modal = new ModalBuilder().setCustomId("create").setTitle("Create Card")
 
                             // Add components to modal
                             modal.addComponents(
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
-                                        .setLabel(
-                                            "What card do you want to create"
-                                        )
+                                        .setLabel("What card do you want to create")
                                         .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
                                         .setCustomId("card")
@@ -2424,41 +2111,27 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             await inter
                                 .awaitModalSubmit({ time: 10000, filter })
                                 .then(async (i) => {
-                                    hand.push(
-                                        i.fields.getTextInputValue("card")
-                                    )
-                                    await i.update(
-                                        `Created ${i.fields.getTextInputValue(
-                                            "card"
-                                        )}`
-                                    )
+                                    hand.push(i.fields.getTextInputValue("card"))
+                                    await i.update(`Created ${i.fields.getTextInputValue("card")}`)
                                 })
                                 .catch((e) => inter.update())
                         } else if (inter.customId === "fetch") {
                             // Create the modal
-                            const modal = new ModalBuilder()
-                                .setCustomId("fetch")
-                                .setTitle("Fetch Card")
+                            const modal = new ModalBuilder().setCustomId("fetch").setTitle("Fetch Card")
 
                             // Add components to modal
                             modal.addComponents(
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
-                                        .setLabel(
-                                            "Card in deck (not to be edit)"
-                                        )
-                                        .setValue(
-                                            [...new Set(currDeck)].join("\n")
-                                        )
+                                        .setLabel("Card in deck (not to be edit)")
+                                        .setValue([...new Set(currDeck)].join("\n"))
                                         .setStyle(TextInputStyle.Paragraph)
                                         .setCustomId("eeeee")
                                         .setRequired(false)
                                 ),
                                 new ActionRowBuilder().addComponents(
                                     new TextInputBuilder()
-                                        .setLabel(
-                                            "What card do you want to fetch"
-                                        )
+                                        .setLabel("What card do you want to fetch")
                                         .setPlaceholder("Enter Card Name!")
                                         .setStyle(TextInputStyle.Short)
                                         .setCustomId("card")
@@ -2469,32 +2142,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             // Show the modal to the user
                             await inter.showModal(modal)
 
-                            await inter
-                                .awaitModalSubmit({ time: 10000, filter })
-                                .then(async (i) => {
-                                    if (currDeck.length > 1) {
-                                        const bestMatch =
-                                            StringSimilarity.findBestMatch(
-                                                i.fields
-                                                    .getTextInputValue("card")
-                                                    .toLowerCase(),
-                                                currDeck
-                                            )
-                                        hand.push(
-                                            currDeck[bestMatch.bestMatchIndex]
-                                        )
-                                        currDeck.splice(
-                                            bestMatch.bestMatchIndex,
-                                            1
-                                        )
+                            await inter.awaitModalSubmit({ time: 10000, filter }).then(async (i) => {
+                                if (currDeck.length > 1) {
+                                    const bestMatch = StringSimilarity.findBestMatch(
+                                        i.fields.getTextInputValue("card").toLowerCase(),
+                                        currDeck
+                                    )
+                                    hand.push(currDeck[bestMatch.bestMatchIndex])
+                                    currDeck.splice(bestMatch.bestMatchIndex, 1)
 
-                                        await i.update(
-                                            `Fetched ${bestMatch.bestMatch.target}`
-                                        )
-                                    } else {
-                                        await i.update("")
-                                    }
-                                })
+                                    await i.update(`Fetched ${bestMatch.bestMatch.target}`)
+                                } else {
+                                    await i.update("")
+                                }
+                            })
                         } else if (inter.customId === "end") {
                             stillRunning = false
                             await inter.update("")
@@ -2532,17 +2193,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
                     options.getString("string"),
                     true
-                )}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(
-                    options.getString("string")
-                )}`,
+                )}\\\`\\\`\\\`\n\nThe output will be like this:\n${coloredString(options.getString("string"))}`,
                 ephemeral: true,
             })
         } else if (commandName == "guess-the-card") {
             const set = options.getString("set")
             const card = await (async () => {
                 let name
-                if (set == "augmented")
-                    name = randomChoice(setsData[set].pools.art)
+                if (set == "augmented") name = randomChoice(setsData[set].pools.art)
                 else if (set == "magic") {
                     const c = await scryfall.randomCard()
                     return { name: c.name, url: c.image_uris.art_crop }
@@ -2557,9 +2215,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             if (set == "augmented") {
                 bg = await Canvas.loadImage(
                     `https://github.com/answearingmachine/card-printer/raw/main/dist/printer/assets/bg/bg_${
-                        ["Common", "Uncommon", "Side Deck"].includes(card.tier)
-                            ? "common"
-                            : "rare"
+                        ["Common", "Uncommon", "Side Deck"].includes(card.tier) ? "common" : "rare"
                     }_${card.temple.toLowerCase()}.png`
                 )
             }
@@ -2574,20 +2230,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     ? options.getInteger("size")
                     : 35
 
-                const width = clamp(
-                    Math.floor((cardPortrait.width * percentage) / 100),
-                    1,
-                    cardPortrait.width
-                )
+                const width = clamp(Math.floor((cardPortrait.width * percentage) / 100), 1, cardPortrait.width)
                 const height = clamp(width, 1, cardPortrait.height)
 
                 const scale = set == "magic" ? 1 : 50
 
                 // get the first crop point
-                const startCropPos = [
-                    randInt(0, cardPortrait.width - width),
-                    randInt(0, cardPortrait.height - height),
-                ]
+                const startCropPos = [randInt(0, cardPortrait.width - width), randInt(0, cardPortrait.height - height)]
 
                 // make the canvas
                 portrait = Canvas.createCanvas(width * scale, height * scale)
@@ -2627,10 +2276,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 )
 
                 // create full version canvas
-                full = Canvas.createCanvas(
-                    cardPortrait.width * scale,
-                    cardPortrait.height * scale
-                )
+                full = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
 
                 context = full.getContext("2d")
 
@@ -2645,12 +2291,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 context.lineWidth = full.width * (0.5 / 100)
 
                 // draw the box
-                context.strokeRect(
-                    startCropPos[0] * scale,
-                    startCropPos[1] * scale,
-                    width * scale,
-                    height * scale
-                )
+                context.strokeRect(startCropPos[0] * scale, startCropPos[1] * scale, width * scale, height * scale)
             } else if (options.getSubcommand() === "scramble") {
                 const scale = set == "magic" ? 1 : 50
                 // grab the column
@@ -2678,10 +2319,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 const pieceHeight = cardPortrait.height / row
 
                 // make the canvas
-                portrait = Canvas.createCanvas(
-                    cardPortrait.width * scale,
-                    cardPortrait.height * scale
-                )
+                portrait = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
 
                 let context = portrait.getContext("2d")
 
@@ -2695,11 +2333,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 let lst = shuffleList(
                     (() => {
                         let out = []
-                        ;[...Array(row).keys()].forEach((i) =>
-                            [...Array(col).keys()].forEach((j) =>
-                                out.push([i, j])
-                            )
-                        )
+                        ;[...Array(row).keys()].forEach((i) => [...Array(col).keys()].forEach((j) => out.push([i, j])))
                         return out
                     })()
                 )
@@ -2736,10 +2370,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     }
                 }
 
-                full = Canvas.createCanvas(
-                    cardPortrait.width * scale,
-                    cardPortrait.height * scale
-                )
+                full = Canvas.createCanvas(cardPortrait.width * scale, cardPortrait.height * scale)
 
                 context = full.getContext("2d")
 
@@ -2749,15 +2380,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
             }
 
             const message = await interaction.reply({
-                content:
-                    "What card is this? Press the `Guess` button and submit the modal to guess",
+                content: "What card is this? Press the `Guess` button and submit the modal to guess",
                 files: [new AttachmentBuilder(await portrait.encode("png"))],
                 components: [
                     new ActionRowBuilder().addComponents(
-                        new ButtonBuilder()
-                            .setCustomId("guess")
-                            .setLabel("Guess")
-                            .setStyle(ButtonStyle.Primary)
+                        new ButtonBuilder().setCustomId("guess").setLabel("Guess").setStyle(ButtonStyle.Primary)
                     ),
                 ],
                 fetchReply: true,
@@ -2770,9 +2397,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 await message
                     .awaitMessageComponent({ time: 180000, filter })
                     .then(async (inter) => {
-                        const modal = new ModalBuilder()
-                            .setCustomId("guessModal")
-                            .setTitle("Enter your guess below")
+                        const modal = new ModalBuilder().setCustomId("guessModal").setTitle("Enter your guess below")
 
                         modal.addComponents(
                             new ActionRowBuilder().addComponents(
@@ -2786,71 +2411,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         )
                         await inter.showModal(modal)
 
-                        await inter
-                            .awaitModalSubmit({ time: 15000, filter })
-                            .then(async (i) => {
-                                if (
-                                    StringSimilarity.compareTwoStrings(
-                                        card.name.toLowerCase(),
-                                        i.fields
-                                            .getTextInputValue("guess")
-                                            .toLowerCase()
-                                    ) >= 0.4
-                                ) {
-                                    await i.update({
-                                        content: `Your guess (${i.fields.getTextInputValue(
-                                            "guess"
-                                        )}) was correct. Actual name ${
-                                            card.name
-                                        }`,
-                                        files: [
-                                            new AttachmentBuilder(
-                                                await full.encode("png")
-                                            ),
-                                        ],
-                                        components: [],
-                                    })
-                                } else {
-                                    await i.update({
-                                        content: `Your guess (${i.fields.getTextInputValue(
-                                            "guess"
-                                        )}) was incorrect. The card was ${
-                                            card.name
-                                        }`,
-                                        files: [
-                                            new AttachmentBuilder(
-                                                await full.encode("png")
-                                            ),
-                                        ],
-                                        components: [],
-                                    })
-                                }
+                        await inter.awaitModalSubmit({ time: 15000, filter }).then(async (i) => {
+                            if (
+                                StringSimilarity.compareTwoStrings(
+                                    card.name.toLowerCase(),
+                                    i.fields.getTextInputValue("guess").toLowerCase()
+                                ) >= 0.4
+                            ) {
+                                await i.update({
+                                    content: `Your guess (${i.fields.getTextInputValue(
+                                        "guess"
+                                    )}) was correct. Actual name ${card.name}`,
+                                    files: [new AttachmentBuilder(await full.encode("png"))],
+                                    components: [],
+                                })
+                            } else {
+                                await i.update({
+                                    content: `Your guess (${i.fields.getTextInputValue(
+                                        "guess"
+                                    )}) was incorrect. The card was ${card.name}`,
+                                    files: [new AttachmentBuilder(await full.encode("png"))],
+                                    components: [],
+                                })
+                            }
 
-                                collecting = false
-                            })
+                            collecting = false
+                        })
                     })
                     .catch(async (e) => {
-                        await interaction.editReply(
-                            `Error: ${coloredString(`$$r${e}`)}`
-                        )
+                        await interaction.editReply(`Error: ${coloredString(`$$r${e}`)}`)
                         collecting = false
                     })
             }
         } else if (commandName == "retry") {
-            await messageSearch(
-                await interaction.channel.messages.fetch(
-                    options.getString("message")
-                )
-            )
+            await messageSearch(await interaction.channel.messages.fetch(options.getString("message")))
             await interaction.reply({ content: "Retried", ephemeral: true })
         } else if (commandName == "react") {
             if (!isPerm(interaction))
-                return (
-                    await getMessage(
-                        interaction.channel,
-                        options.getString("message")
-                    )
-                ).react(options.getString("emoji"))
+                return (await getMessage(interaction.channel, options.getString("message"))).react(
+                    options.getString("emoji")
+                )
             await interaction.reply({ content: "Reacted", ephemeral: true })
         } else if (commandName == "query-info") {
             let temp = ""
@@ -2862,7 +2462,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 flags: [MessageFlags.SuppressEmbeds],
             })
         } else if (commandName == "test") {
-            await interaction.reply(`Nothing here`)
+            const msg = await interaction.reply({ content: `Nothing here`, fetchReply: true })
+            await msg.react(String.fromCodePoint(127462))
         } else if (commandName == "poll") {
             const pollOption = options.getString("option").split(",")
             const time = options.getString("time").endsWith("m")
@@ -2876,13 +2477,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTitle(`Poll: ${options.getString("question")}`)
                 .setDescription(
                     `Poll end <t:${endTime}:R>\n` +
-                        pollOption
-                            .map((o) => `${pollOption.indexOf(o) + 1}: ${o}`)
-                            .join("\n")
+                        pollOption.map((o) => `${pollOption.indexOf(o) + 1}: ${o}`).join("\n")
                 )
-            const selectMenu = new StringSelectMenuBuilder()
-                .setCustomId("pollSelect")
-                .setPlaceholder("Choose a option")
+            const selectMenu = new StringSelectMenuBuilder().setCustomId("pollSelect").setPlaceholder("Choose a option")
             for (const [index, option] of pollOption.entries()) {
                 selectMenu.addOptions({
                     label: option,
@@ -2904,11 +2501,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 }),
                 alreadyVote: [],
             }
-            fs.writeFileSync(
-                "./extra/poll.json",
-                JSON.stringify(pollData),
-                "utf8"
-            )
+            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8")
 
             await sleep(time)
 
@@ -2919,22 +2512,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     new EmbedBuilder()
                         .setTitle(pollData[message.id].question)
                         .setDescription(
-                            `Winner: ${
-                                pollData[message.id].optionResult.sort(
-                                    (a, b) => b.amount - a.amount
-                                )[0].option
-                            }`
+                            `Winner: ${pollData[message.id].optionResult.sort((a, b) => b.amount - a.amount)[0].option}`
                         ),
                 ],
                 components: [],
             })
             delete pollData[message.id]
 
-            fs.writeFileSync(
-                "./extra/poll.json",
-                JSON.stringify(pollData),
-                "utf8"
-            )
+            fs.writeFileSync("./extra/poll.json", JSON.stringify(pollData), "utf8")
         } else if (commandName == "default-code") {
             serverDefaultSet[interaction.guildId] = {
                 default: options.getString("default-set-code"),
@@ -2944,10 +2529,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 content: "Default added",
                 ephemeral: true,
             })
-            fs.writeFileSync(
-                "./extra/default.json",
-                JSON.stringify(serverDefaultSet)
-            )
+            fs.writeFileSync("./extra/default.json", JSON.stringify(serverDefaultSet))
         } else if (commandName == "deck-analysis") {
             await interaction.reply("Crunching number, this may take a while")
             const set = options.getString("set")
@@ -2956,11 +2538,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             // let sideDeck = []
 
             const deckFile = options.getAttachment("deck-file")
-                ? JSON.parse(
-                      await (
-                          await fetch(options.getAttachment("deck-file").url)
-                      ).text()
-                  )
+                ? JSON.parse(await (await fetch(options.getAttachment("deck-file").url)).text())
                 : options.getString("deck-json")
                 ? JSON.parse(options.getString("deck-json"))
                 : {}
@@ -2978,9 +2556,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 3
             )
             const deckDup = Object.fromEntries(
-                Object.entries(countDup(mainDeck.map((c) => c.name))).sort(
-                    ([, a], [, b]) => b - a
-                )
+                Object.entries(countDup(mainDeck.map((c) => c.name))).sort(([, a], [, b]) => b - a)
             )
 
             embed.addFields(
@@ -2990,9 +2566,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     value: Object.keys(deckDup)
                         .map(
                             (c) =>
-                                `${deckDup[c]}x | ${c} (${toPercent(
-                                    deckDup[c] / mainDeck.length
-                                )}%, ${toPercent(
+                                `${deckDup[c]}x | ${c} (${toPercent(deckDup[c] / mainDeck.length)}%, ${toPercent(
                                     (deckDup[c] / mainDeck.length) *
                                         [...Array(3).keys()].reduce(
                                             (acc, x) =>
@@ -3000,12 +2574,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                                 [...Array(x).keys()].reduce(
                                                     (acc, y) =>
                                                         acc *
-                                                        ((mainDeck.length -
-                                                            deckDup[c] -
-                                                            y) /
-                                                            (mainDeck.length -
-                                                                y -
-                                                                1)),
+                                                        ((mainDeck.length - deckDup[c] - y) /
+                                                            (mainDeck.length - y - 1)),
                                                     1
                                                 ),
                                             0
@@ -3020,9 +2590,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     value: `Possible starting hand permutation: ${
                         possibleMainHandCombinations.length
                     }\nPossible unique starting hand combination: ${
-                        new Set(
-                            possibleMainHandCombinations.map((h) => h.join(","))
-                        ).size
+                        new Set(possibleMainHandCombinations.map((h) => h.join(","))).size
                     }\n`,
                     inline: true,
                 },
@@ -3031,19 +2599,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     name: "Common Hand combination",
                     value: `Most common starting hands:\n${(() => {
                         const temp = Object.entries(
-                            countDup(
-                                possibleMainHandCombinations.map((h) =>
-                                    h.join(",")
-                                )
-                            )
+                            countDup(possibleMainHandCombinations.map((h) => h.join(",")))
                         ).sort(([, a], [, b]) => b - a)
                         return `1. ${temp[0][0]} (${toPercent(
                             temp[0][1] / possibleMainHandCombinations.length
-                        )}%)\n2. ${temp[1][0]} (${toPercent(
-                            temp[1][1] / possibleMainHandCombinations.length
-                        )}%)\n3. ${temp[2][0]} (${toPercent(
-                            temp[2][1] / possibleMainHandCombinations.length
-                        )}%)`
+                        )}%)\n2. ${temp[1][0]} (${toPercent(temp[1][1] / possibleMainHandCombinations.length)}%)\n3. ${
+                            temp[2][0]
+                        } (${toPercent(temp[2][1] / possibleMainHandCombinations.length)}%)`
                     })(possibleMainHandCombinations)}`,
                     inline: true,
                 },
@@ -3094,26 +2656,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         (acc, c) => acc + getBlood(c),
                         0
                     )}\nAverage Blood cost: ${average(
-                        ...mainDeck
-                            .filter((c) => c.blood_cost)
-                            .map((c) => getBlood(c))
+                        ...mainDeck.filter((c) => c.blood_cost).map((c) => getBlood(c))
                     ).toFixed(1)}\nMaximum Bone cost: ${mainDeck.reduce(
                         (acc, c) => acc + getBone(c),
                         0
                     )}\nAverage Bone cost: ${average(
-                        ...mainDeck
-                            .filter((c) => c.bone_cost)
-                            .map((c) => getBone(c))
+                        ...mainDeck.filter((c) => c.bone_cost).map((c) => getBone(c))
                     ).toFixed(1)}\nAverage Energy cost: ${average(
-                        ...mainDeck
-                            .filter((c) => c.energy_cost)
-                            .map((c) => c.energy_cost)
+                        ...mainDeck.filter((c) => c.energy_cost).map((c) => c.energy_cost)
                     ).toFixed(1)} (On average it take ${Math.round(
-                        average(
-                            ...mainDeck
-                                .filter((c) => c.energy_cost)
-                                .map((c) => c.energy_cost)
-                        )
+                        average(...mainDeck.filter((c) => c.energy_cost).map((c) => c.energy_cost))
                     )} turns to play a energy card)`,
                     inline: true,
                 }
@@ -3129,17 +2681,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 return
             }
             try {
-                setsData.vanilla.cards[
-                    JSON.parse(options.getString("card-json")).name
-                ] = (() => {
+                setsData.vanilla.cards[JSON.parse(options.getString("card-json")).name] = (() => {
                     const json = JSON.parse(options.getString("card-json"))
                     json.noArt = true
                     return json
                 })()
-                fs.writeFileSync(
-                    "./extra/vanilla.json",
-                    JSON.stringify(setsData.vanilla)
-                )
+                fs.writeFileSync("./extra/vanilla.json", JSON.stringify(setsData.vanilla))
                 await interaction.reply("Card added")
             } catch (err) {
                 await interaction.reply(`\`\`\`\n${err}\`\`\``)
@@ -3154,10 +2701,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             })
             await interaction.editReply(
                 await messageSearch(
-                    await getMessage(
-                        interaction.channel,
-                        interaction.message.reference.messageId
-                    ),
+                    await getMessage(interaction.channel, interaction.message.reference.messageId),
                     true
                 )
             )
@@ -3170,9 +2714,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
                                 .setLabel("WARNING")
-                                .setValue(
-                                    'If you don\'t know what this button do press "Cancel"'
-                                )
+                                .setValue('If you don\'t know what this button do press "Cancel"')
                                 .setCustomId("no")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(false)
@@ -3180,9 +2722,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
                                 .setLabel("Enter card name")
-                                .setPlaceholder(
-                                    "Name is not case sensitive but must be exact"
-                                )
+                                .setPlaceholder("Name is not case sensitive but must be exact")
                                 .setCustomId("name")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(true)
@@ -3190,9 +2730,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         new ActionRowBuilder().addComponents(
                             new TextInputBuilder()
                                 .setLabel("Enter internal set name")
-                                .setPlaceholder(
-                                    "Set name is case sensitive and must be exact"
-                                )
+                                .setPlaceholder("Set name is case sensitive and must be exact")
                                 .setCustomId("set")
                                 .setStyle(TextInputStyle.Short)
                                 .setRequired(true)
@@ -3210,10 +2748,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 )
                 if (!card) throw Error("Missing Card")
                 delete portraitCaches[card.url]
-                fs.writeFileSync(
-                    "./extra/caches.json",
-                    JSON.stringify(portraitCaches, null, 4)
-                )
+                fs.writeFileSync("./extra/caches.json", JSON.stringify(portraitCaches, null, 4))
                 await interaction.reply({
                     content: "Cache removed",
                     ephemeral: true,
@@ -3242,11 +2777,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     ephemeral: true,
                 })
             }
-            fs.writeFileSync(
-                "./extra/poll.json",
-                JSON.stringify(fullPollData),
-                "utf8"
-            )
+            fs.writeFileSync("./extra/poll.json", JSON.stringify(fullPollData), "utf8")
         }
     }
 })
@@ -3270,22 +2801,16 @@ client.on(Events.MessageCreate, async (message) => {
                                 (acc, x) =>
                                     acc +
                                     [...Array(x).keys()].reduce(
-                                        (acc, y) =>
-                                            acc *
-                                            ((num[1] - num[0] - y) /
-                                                (num[1] - y - 1)),
+                                        (acc, y) => acc * ((num[1] - num[0] - y) / (num[1] - y - 1)),
                                         1
                                     ),
                                 0
                             )
-                    )}% chance if there were ${num[0]} copies in a ${
-                        num[1]
-                    } cards deck and the starting hand is ${num[2]}`
+                    )}% chance if there were ${num[0]} copies in a ${num[1]} cards deck and the starting hand is ${
+                        num[2]
+                    }`
                 )
-            } else if (
-                command.startsWith("eval") &&
-                message.author.id == "601821309881810973"
-            ) {
+            } else if (command.startsWith("eval") && message.author.id == "601821309881810973") {
                 await message.reply(`${eval(command.replace("eval", ""))}`)
             } else if (command.startsWith("check if tunnel is online")) {
                 await http
@@ -3301,37 +2826,21 @@ client.on(Events.MessageCreate, async (message) => {
                     })
             } else if (command.startsWith("roll a d")) {
                 await message.reply(
-                    `You got a ${
-                        Math.floor(
-                            parseInt(command.replace("roll a d", "")) *
-                                Math.random()
-                        ) + 1
-                    }`
+                    `You got a ${Math.floor(parseInt(command.replace("roll a d", "")) * Math.random()) + 1}`
                 )
             } else if (command.startsWith("flip a coin")) {
-                await message.reply(
-                    `You got ${
-                        Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"
-                    }`
-                )
+                await message.reply(`You got ${Math.floor(2 * Math.random()) == 0 ? "Head" : "Tail"}`)
             } else if (
                 command.startsWith("cal") &&
                 (message.guildId == "994573431880286289" ||
                     message.guildId == "1028530290727063604" ||
                     message.guildId == "913238101902630983")
             ) {
-                if (
-                    command.replace("cal", "").replaceAll("\n", ";").trim() ==
-                    "9 + 10"
-                ) {
+                if (command.replace("cal", "").replaceAll("\n", ";").trim() == "9 + 10") {
                     await message.reply("21 duh")
                     return
                 }
-                await message.reply(
-                    `${limitedEvaluate(
-                        command.replace("cal", "").replaceAll("\n", ";").trim()
-                    )}`
-                )
+                await message.reply(`${limitedEvaluate(command.replace("cal", "").replaceAll("\n", ";").trim())}`)
             } else if (command.startsWith("remind me in")) {
                 const num = command.replace("remind me in", "")
                 const ms = num.endsWith("h")
@@ -3341,12 +2850,7 @@ client.on(Events.MessageCreate, async (message) => {
                     : num.endsWith("s")
                     ? parseInt(num.replace("s", "")) * 1000
                     : 1000
-                await message.reply(
-                    `Reminder will go off <t:${(
-                        (Date.now() + ms) /
-                        1000
-                    ).toFixed()}:R>`
-                )
+                await message.reply(`Reminder will go off <t:${((Date.now() + ms) / 1000).toFixed()}:R>`)
                 await sleep(ms)
                 await message.reply("HEY TIME UP BITCH")
             } else if (command.startsWith("cipher")) {
@@ -3359,15 +2863,9 @@ client.on(Events.MessageCreate, async (message) => {
                             .split("")
                             .map((c) =>
                                 alphabet.indexOf(c) != -1
-                                    ? alphabet.split("").reverse().join("")[
-                                          alphabet.indexOf(c)
-                                      ]
+                                    ? alphabet.split("").reverse().join("")[alphabet.indexOf(c)]
                                     : alphabet.toUpperCase().indexOf(c) != -1
-                                    ? alphabet
-                                          .toUpperCase()
-                                          .split("")
-                                          .reverse()
-                                          .join("")[
+                                    ? alphabet.toUpperCase().split("").reverse().join("")[
                                           alphabet.toUpperCase().indexOf(c)
                                       ]
                                     : c
@@ -3376,9 +2874,7 @@ client.on(Events.MessageCreate, async (message) => {
                     )
                 }
             } else {
-                await message.reply(
-                    randomChoice(["Yes", "Sure", "Maybe", "No", "Never"])
-                )
+                await message.reply(randomChoice(["Yes", "Sure", "Maybe", "No", "Never"]))
             }
         } catch (error) {
             await message.reply(error.message)
