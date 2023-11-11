@@ -138,7 +138,7 @@ const SetFormatList = {
             { text: " ({set})", type: "set" },
             { text: ":conductive:", type: "con", condition: "card.conduit" },
             { text: ":rare:", type: "con", condition: "card.rare" },
-            { text: ":unsacable:", type: "con", condition: "card.unsacable" },
+            { text: ":unsacable:", type: "con", condition: "card.nosac" },
             {
                 text: ":unhammerable:",
                 type: "con",
@@ -1028,13 +1028,13 @@ const queryKeywordList = {
                 removal: ([name, info]) => {
                     const removalList = [
                         "explode bot",
-                        "strange frog",
                         "mrs. bomb",
                         "adder",
                         "mirrorbot",
                         "shutterbug",
                         "drowned soul",
                         "long elk",
+                        "plasma jimmy",
                     ]
                     return removalList.includes(name)
                 },
