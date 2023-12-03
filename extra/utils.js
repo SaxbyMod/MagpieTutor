@@ -46,14 +46,14 @@ const drawList = (list, num) => {
 const shuffleList = (list) => {
     for (let i = list.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-            ;[list[i], list[j]] = [list[j], list[i]]
+        ;[list[i], list[j]] = [list[j], list[i]]
     }
     return list
 }
 
 const countDup = (list) => {
     const listNoDup = new Set(list)
-    var out = {}
+    let out = {}
     for (const i of listNoDup) {
         out[i] = list.filter((c) => c.toLowerCase() === i.toLowerCase()).length
     }
@@ -66,9 +66,7 @@ const listInter = (list1, list2) => list1.filter((x) => list2.includes(x))
 const isPerm = (interaction) =>
     interaction.member.roles.cache.some(
         (role) =>
-            role.id == "994578531671609426" ||
-            role.id == "1028537837169156156" ||
-            role.id == "1111314861226459180"
+            role.id == "994578531671609426" || role.id == "1028537837169156156" || role.id == "1111314861226459180"
     ) || interaction.user.id == "601821309881810973"
 
 const getMessage = async (channel, id) => {
@@ -183,5 +181,5 @@ module.exports = {
     getBone,
     getBlood,
     deepCopy,
-    randStr
+    randStr,
 }

@@ -2177,6 +2177,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 components: [],
             })
         } else if (commandName == "tunnel-status") {
+            console.log("Command Received")
             await http
                 .get("http://localtunnel.me", async (res) => {
                     await interaction.reply(
@@ -2462,8 +2463,64 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 flags: [MessageFlags.SuppressEmbeds],
             })
         } else if (commandName == "test") {
-            const msg = await interaction.reply({ content: `Nothing here`, fetchReply: true })
-            await msg.react(String.fromCodePoint(127462))
+            await interaction.reply("https://imgur.com/a/KuxaGvY")
+            // const test = [
+            //     "https://imgur.com/a/CdNmZin",
+            //     "https://imgur.com/a/CdNmYin",
+            //     "https://imgur.com/a/CdNmXin",
+            //     "https://imgur.com/a/CdNmWin",
+            //     "https://imgur.com/a/CdNmVin",
+            //     "https://imgur.com/a/CdNmUin",
+            //     "https://imgur.com/a/CdNmTin",
+            //     "https://imgur.com/a/CdNmSin",
+            //     "https://imgur.com/a/CdNmRin",
+            //     "https://imgur.com/a/CdNmQin",
+            //     "https://imgur.com/a/CdNmPin",
+            //     "https://imgur.com/a/CdNmOin",
+            //     "https://imgur.com/a/CdNmNin",
+            //     "https://imgur.com/a/CdNmMin",
+            //     "https://imgur.com/a/CdNmLin",
+            //     "https://imgur.com/a/CdNmKin",
+            //     "https://imgur.com/a/CdNmJin",
+            //     "https://imgur.com/a/CdNmIin",
+            //     "https://imgur.com/a/CdNmHin",
+            //     "https://imgur.com/a/CdNmGin",
+            //     "https://imgur.com/a/CdNmFin",
+            //     "https://imgur.com/a/CdNmEin",
+            //     "https://imgur.com/a/CdNmDin",
+            //     "https://imgur.com/a/CdNmCin",
+            //     "https://imgur.com/a/CdNmBin",
+            //     "https://imgur.com/a/CdNmAin",
+            //     "https://imgur.com/a/CdNmzin",
+            //     "https://imgur.com/a/CdNmyin",
+            //     "https://imgur.com/a/CdNmxin",
+            //     "https://imgur.com/a/CdNmwin",
+            //     "https://imgur.com/a/CdNmvin",
+            //     "https://imgur.com/a/CdNmuin",
+            //     "https://imgur.com/a/CdNmtin",
+            //     "https://imgur.com/a/CdNmsin",
+            //     "https://imgur.com/a/CdNmrin",
+            //     "https://imgur.com/a/CdNmqin",
+            //     "https://imgur.com/a/CdNmpin",
+            //     "https://imgur.com/a/CdNmoin",
+            //     "https://imgur.com/a/CdNmnin",
+            //     "https://imgur.com/a/CdNmmin",
+            //     "https://imgur.com/a/CdNmlin",
+            //     "https://imgur.com/a/CdNmkin",
+            //     "https://imgur.com/a/CdNmjin",
+            //     "https://imgur.com/a/CdNmiin",
+            //     "https://imgur.com/a/CdNmhin",
+            //     "https://imgur.com/a/CdNmgin",
+            //     "https://imgur.com/a/CdNmfin",
+            //     "https://imgur.com/a/CdNmein",
+            //     "https://imgur.com/a/CdNmdin",
+            //     "https://imgur.com/a/CdNmcin",
+            //     "https://imgur.com/a/CdNmbin",
+            //     "https://imgur.com/a/CdNmain",
+            // ]
+            // for (const e of test) {
+            //     await interaction.followUp(e)
+            // }
         } else if (commandName == "poll") {
             const pollOption = options.getString("option").split(",")
             const time = options.getString("time").endsWith("m")
