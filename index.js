@@ -2448,11 +2448,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
             await messageSearch(await interaction.channel.messages.fetch(options.getString("message")))
             await interaction.reply({ content: "Retried", ephemeral: true })
         } else if (commandName == "react") {
-            if (!isPerm(interaction))
-                return (await getMessage(interaction.channel, options.getString("message"))).react(
-                    options.getString("emoji")
-                )
-            await interaction.reply({ content: "Reacted", ephemeral: true })
+            if (isPerm(interaction)) {
+                ;(await getMessage(interaction.channel, options.getString("message"))).react(options.getString("emoji"))
+                await interaction.reply({ content: "Reacted", ephemeral: true })
+            }
         } else if (commandName == "query-info") {
             let temp = ""
             Object.keys(queryKeywordList).forEach((key) => {
