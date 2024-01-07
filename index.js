@@ -19,6 +19,7 @@ const {
     ButtonBuilder,
     MessageAttachment,
     Attachment,
+    PermissionsBitField,
 } = require("discord.js")
 
 // installed module
@@ -766,13 +767,7 @@ const queryKeywordList = {
                     eval(`${info.blood_cost}${op}${value}`) ||
                     eval(`${info.bone_cost}${op}${value}`) ||
                     eval(`${info.energy_cost}${op}${value}`) ||
-                    eval(
-                        `${
-                            info.mox_cost || info.mox
-                                ? info[set.name == "augmeted" ? "mox" : "mox_cost"].length
-                                : undefined
-                        }${op}${value}`
-                    ) ||
+                    eval(`${info.mox ? info["mox"].length : undefined}${op}${value}`) ||
                     eval(`${info.shattered ? info.shattered.length : undefined}${op}${value}`)
             )
 
@@ -853,7 +848,7 @@ const queryKeywordList = {
     color: {
         alias: ["c"],
         description:
-            "Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) and custom gem name (`prism`)",
+            "Filter for mox color. Possible color: base game mox color (`green`, `orange`, etc.), custom color (`colorless`), base game gem name (`emerald`, `ruby`, etc.) custom gem name (`prism`), and first character of color name",
         callback: (value, set, filterPossibleValue) => {
             const color =
                 value == "g" || value == "green" || value == "e" || value == "emerald"
@@ -1499,10 +1494,6 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
             card.description = `Not make by ener :trolled:`
         } else if (card.name == "The Moon") {
             card.sigils = ["Omni Strike", "Tidal Lock", "Made of Stone", "Mighty Leap"]
-        } else if (card.name == "Adder") {
-            card.name = "peak"
-            card.description = "peak"
-            card.sigils = Array(6).fill("Handy")
         } else if (card.name == "Ouroboros") {
             card.description = "Ouroboros is the source of all evil - 107"
         } else if (card.name == "Blue Mage") {
@@ -2462,64 +2453,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 flags: [MessageFlags.SuppressEmbeds],
             })
         } else if (commandName == "test") {
-            await interaction.reply("https://imgur.com/a/KuxaGvY")
-            // const test = [
-            //     "https://imgur.com/a/CdNmZin",
-            //     "https://imgur.com/a/CdNmYin",
-            //     "https://imgur.com/a/CdNmXin",
-            //     "https://imgur.com/a/CdNmWin",
-            //     "https://imgur.com/a/CdNmVin",
-            //     "https://imgur.com/a/CdNmUin",
-            //     "https://imgur.com/a/CdNmTin",
-            //     "https://imgur.com/a/CdNmSin",
-            //     "https://imgur.com/a/CdNmRin",
-            //     "https://imgur.com/a/CdNmQin",
-            //     "https://imgur.com/a/CdNmPin",
-            //     "https://imgur.com/a/CdNmOin",
-            //     "https://imgur.com/a/CdNmNin",
-            //     "https://imgur.com/a/CdNmMin",
-            //     "https://imgur.com/a/CdNmLin",
-            //     "https://imgur.com/a/CdNmKin",
-            //     "https://imgur.com/a/CdNmJin",
-            //     "https://imgur.com/a/CdNmIin",
-            //     "https://imgur.com/a/CdNmHin",
-            //     "https://imgur.com/a/CdNmGin",
-            //     "https://imgur.com/a/CdNmFin",
-            //     "https://imgur.com/a/CdNmEin",
-            //     "https://imgur.com/a/CdNmDin",
-            //     "https://imgur.com/a/CdNmCin",
-            //     "https://imgur.com/a/CdNmBin",
-            //     "https://imgur.com/a/CdNmAin",
-            //     "https://imgur.com/a/CdNmzin",
-            //     "https://imgur.com/a/CdNmyin",
-            //     "https://imgur.com/a/CdNmxin",
-            //     "https://imgur.com/a/CdNmwin",
-            //     "https://imgur.com/a/CdNmvin",
-            //     "https://imgur.com/a/CdNmuin",
-            //     "https://imgur.com/a/CdNmtin",
-            //     "https://imgur.com/a/CdNmsin",
-            //     "https://imgur.com/a/CdNmrin",
-            //     "https://imgur.com/a/CdNmqin",
-            //     "https://imgur.com/a/CdNmpin",
-            //     "https://imgur.com/a/CdNmoin",
-            //     "https://imgur.com/a/CdNmnin",
-            //     "https://imgur.com/a/CdNmmin",
-            //     "https://imgur.com/a/CdNmlin",
-            //     "https://imgur.com/a/CdNmkin",
-            //     "https://imgur.com/a/CdNmjin",
-            //     "https://imgur.com/a/CdNmiin",
-            //     "https://imgur.com/a/CdNmhin",
-            //     "https://imgur.com/a/CdNmgin",
-            //     "https://imgur.com/a/CdNmfin",
-            //     "https://imgur.com/a/CdNmein",
-            //     "https://imgur.com/a/CdNmdin",
-            //     "https://imgur.com/a/CdNmcin",
-            //     "https://imgur.com/a/CdNmbin",
-            //     "https://imgur.com/a/CdNmain",
-            // ]
-            // for (const e of test) {
-            //     await interaction.followUp(e)
-            // }
         } else if (commandName == "poll") {
             const pollOption = options.getString("option").split(",")
             const time = options.getString("time").endsWith("m")
@@ -2929,6 +2862,9 @@ client.on(Events.MessageCreate, async (message) => {
                             .join("")
                     )
                 }
+            } else if (command.startsWith("scryfall")) {
+                const query = command.replace("scryfall", "")
+                await message.reply(`[Scryfall query](https://scryfall.com/search?q=${encodeURI(query)})`)
             } else {
                 await message.reply(randomChoice(["Yes", "Sure", "Maybe", "No", "Never"]))
             }
