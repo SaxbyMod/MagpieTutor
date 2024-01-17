@@ -532,6 +532,14 @@ const SetList = {
         file: "./extra/reduxProcess.js",
         pools: ImfPool,
     },
+    sls: {
+        name: "stuff",
+        type: "specialLoad",
+        format: SetFormatList.augmented,
+        compactFormat: SetFormatList.augmentedCompact,
+        file: "./extra/stoatLordCardStuff.js",
+        pools: ImfPool,
+    },
 
     //file set
     bas: {
@@ -1758,7 +1766,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             let deck = {
                 cards: [],
-                side_deck: "10 Squirrel",
+                side_deck: "10 Squirrels",
             }
             let wildCount = 0
             let flag = false // exit flag
@@ -1948,17 +1956,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
             let fullDeck = []
             let fullSide = []
             if (options.getAttachment("deck-file")) {
+                const set = options.getString("set")
+                if (!set) return await interaction.reply("MISSING SET WHEN USING FILE")
                 const deckFile = JSON.parse(await (await fetch(options.getAttachment("deck-file").url)).text())
                 fullDeck = deckFile.cards
                 if (deckFile.side_deck_cards) {
                     fullSide = deckFile.side_deck_cards
                 } else if (deckFile.side_deck_cat) {
                     fullSide = Array(
-                        setsData.competitive.side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].count
-                    ).fill(setsData.competitive.side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].card)
+                        setsData[set].side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].count
+                    ).fill(setsData[set].side_decks[deckFile.side_deck].cards[deckFile.side_deck_cat].card)
                 } else {
-                    fullSide = Array(setsData.competitive.side_decks[deckFile.side_deck].count).fill(
-                        setsData.competitive.side_decks[deckFile.side_deck].card
+                    fullSide = Array(setsData[set].side_decks[deckFile.side_deck].count).fill(
+                        setsData[set].side_decks[deckFile.side_deck].card
                     )
                 }
             } else if (options.getString("deck-list")) {
@@ -2169,17 +2179,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
             })
         } else if (commandName == "tunnel-status") {
             console.log("Command Received")
-            await http
-                .get("http://localtunnel.me", async (res) => {
-                    await interaction.reply(
-                        "Tunnel is up and running. If you have problem connecting, restart the game and try again"
-                    )
-                })
-                .on("error", async (e) => {
-                    await interaction.reply(
-                        "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
-                    )
-                })
+            http.get("http://localtunnel.me", async (res) => {
+                await interaction.reply(
+                    "Tunnel is up and running. If you have problem connecting, restart the game and try again"
+                )
+            }).on("error", async (e) => {
+                await interaction.reply(
+                    "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
+                )
+            })
         } else if (commandName == "color-text") {
             await interaction.reply({
                 content: `Raw message:\n \\\`\\\`\\\`ansi\n${coloredString(
@@ -2552,26 +2560,29 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // Deck count
                 {
                     name: "Draw Percentage",
-                    value: Object.keys(deckDup)
-                        .map(
-                            (c) =>
-                                `${deckDup[c]}x | ${c} (${toPercent(deckDup[c] / mainDeck.length)}%, ${toPercent(
-                                    (deckDup[c] / mainDeck.length) *
-                                        [...Array(3).keys()].reduce(
-                                            (acc, x) =>
-                                                acc +
-                                                [...Array(x).keys()].reduce(
-                                                    (acc, y) =>
-                                                        acc *
-                                                        ((mainDeck.length - deckDup[c] - y) /
-                                                            (mainDeck.length - y - 1)),
-                                                    1
-                                                ),
-                                            0
-                                        )
-                                )}%)`
-                        )
-                        .join("\n"),
+                    value:
+                        "```\n" +
+                        Object.keys(deckDup)
+                            .map(
+                                (c) =>
+                                    `${deckDup[c]}x | ${c} (${toPercent(deckDup[c] / mainDeck.length)}%, ${toPercent(
+                                        (deckDup[c] / mainDeck.length) *
+                                            [...Array(3).keys()].reduce(
+                                                (acc, x) =>
+                                                    acc +
+                                                    [...Array(x).keys()].reduce(
+                                                        (acc, y) =>
+                                                            acc *
+                                                            ((mainDeck.length - deckDup[c] - y) /
+                                                                (mainDeck.length - y - 1)),
+                                                        1
+                                                    ),
+                                                0
+                                            )
+                                    )}%)`
+                            )
+                            .join("\n") +
+                        "\n```",
                 },
                 // Hand combination
                 {
@@ -2586,7 +2597,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 // Common hand combination
                 {
                     name: "Common Hand combination",
-                    value: `Most common starting hands:\n${(() => {
+                    value: `${(() => {
                         const temp = Object.entries(
                             countDup(possibleMainHandCombinations.map((h) => h.join(",")))
                         ).sort(([, a], [, b]) => b - a)
@@ -2602,7 +2613,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 //TODO clean this up
                 {
                     name: "Deck Composition",
-                    value: `Blood card count: ${mainDeck.reduce((acc, c) => {
+                    value: `Blood count: ${mainDeck.reduce((acc, c) => {
                         if (c.blood_cost) return acc + 1
                         else return acc
                     }, 0)} (${toPercent(
@@ -2610,7 +2621,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             if (c.blood_cost) return acc + 1
                             else return acc
                         }, 0) / mainDeck.length
-                    )}%)\nBone card count: ${mainDeck.reduce((acc, c) => {
+                    )}%)\nBone count: ${mainDeck.reduce((acc, c) => {
                         if (c.bone_cost) return acc + 1
                         else return acc
                     }, 0)} (${toPercent(
@@ -2618,7 +2629,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             if (c.bone_cost) return acc + 1
                             else return acc
                         }, 0) / mainDeck.length
-                    )}%)\nEnergy card count: ${mainDeck.reduce((acc, c) => {
+                    )}%)\nEnergy count: ${mainDeck.reduce((acc, c) => {
                         if (c.energy_cost) return acc + 1
                         else return acc
                     }, 0)} (${toPercent(
@@ -2626,7 +2637,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             if (c.energy_cost) return acc + 1
                             else return acc
                         }, 0) / mainDeck.length
-                    )}%)\nMox card count: ${mainDeck.reduce((acc, c) => {
+                    )}%)\nMox count: ${mainDeck.reduce((acc, c) => {
                         if (c.mox_cost) return acc + 1
                         else return acc
                     }, 0)} (${toPercent(

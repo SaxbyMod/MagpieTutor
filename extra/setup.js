@@ -44,6 +44,22 @@ const commands = [
     new SlashCommandBuilder()
         .setName("deck-sim")
         .setDescription("Simulate a deck, you can draw card test starting hand, etc")
+        .addStringOption((option) =>
+            option.setName("set").setDescription("Which set this deck file was made in").addChoices(
+                {
+                    name: "Competitive",
+                    value: "competitive",
+                },
+                {
+                    name: "Eternal",
+                    value: "eternal",
+                },
+                {
+                    name: "Mr.egg",
+                    value: "mr.egg",
+                }
+            )
+        )
         .addAttachmentOption((option) =>
             option.setName("deck-file").setDescription("The deck file you want to test with")
         )
