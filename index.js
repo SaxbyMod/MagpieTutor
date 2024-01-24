@@ -15,11 +15,7 @@ const {
     ModalBuilder,
     TextInputStyle,
     MessageFlags,
-    PermissionFlagsBits,
     ButtonBuilder,
-    MessageAttachment,
-    Attachment,
-    PermissionsBitField,
 } = require("discord.js")
 
 // installed module
@@ -69,7 +65,6 @@ const fs = require("fs")
 
 // my module
 const { token, clientId } = require("./config.json")
-const sigilList = require("./extra/sigilList.json")
 const {
     debugLog,
     infoLog,
@@ -80,7 +75,6 @@ const {
     shuffleList,
     countDup,
     listDiff,
-    listInter,
     isPerm,
     getMessage,
     clamp,
@@ -718,8 +712,8 @@ const queryKeywordList = {
     sigil: {
         alias: ["s"],
         description: "Filter for a sigils",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) =>
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([_, info]) =>
                 info.sigils
                     ? StringSimilarity.findBestMatch(
                           value,
@@ -734,7 +728,7 @@ const queryKeywordList = {
         alias: ["e"],
         description: "Filter for a sigil effect",
         callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => {
+            filterPossibleValue(([_, info]) => {
                 if (!info.sigils) return false
                 let flag = false
                 info.sigils.forEach((sigil) => {
@@ -748,8 +742,8 @@ const queryKeywordList = {
     description: {
         alias: ["d"],
         description: "Filter for a description",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => {
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([_, info]) => {
                 if (!info.description) return false
                 return info.description.includes(value)
             })
@@ -759,7 +753,7 @@ const queryKeywordList = {
     resourcecost: {
         alias: ["rc"],
         description: "Filter for resource cost (rc). Can compare with numeric expression (`>`,`>=`, etc.)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
                 : value.includes("<=")
@@ -771,7 +765,7 @@ const queryKeywordList = {
                 : "=="
             value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
             filterPossibleValue(
-                ([name, info]) =>
+                ([_, info]) =>
                     eval(`${info.blood_cost}${op}${value}`) ||
                     eval(`${info.bone_cost}${op}${value}`) ||
                     eval(`${info.energy_cost}${op}${value}`) ||
@@ -796,7 +790,7 @@ const queryKeywordList = {
                 ? "<"
                 : "=="
             value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) =>
+            filterPossibleValue(([_, info]) =>
                 eval(
                     `${
                         (info.blood_cost ? info.blood_cost : 0) +
@@ -836,7 +830,7 @@ const queryKeywordList = {
                     : value == "s" || value == "shattered"
                     ? "shattered"
                     : ""
-            filterPossibleValue(([name, info]) => info[type])
+            filterPossibleValue(([_, info]) => info[type])
 
             return `{n} cost ${
                 value == "b" || value == "blood"
@@ -877,7 +871,7 @@ const queryKeywordList = {
 
             // if mox cost exist check for color then if shattered exist also check for color
             // or between mox and shattered
-            filterPossibleValue(([name, info]) =>
+            filterPossibleValue(([_, info]) =>
                 info.mox || info.mox_cost
                     ? info[set.name == "augmented" ? "mox" : "mox_cost"].includes(color)
                     : false || info.shattered
@@ -891,7 +885,7 @@ const queryKeywordList = {
     temple: {
         alias: ["t"],
         description: "Filter for temple. Possible temple: base game temple (`beast`, `undead`, etc.)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const temple =
                 value == "b" || value == "beast"
                     ? "Beast"
@@ -902,7 +896,7 @@ const queryKeywordList = {
                     : value == "m" || value == "magick"
                     ? "Magick"
                     : ""
-            filterPossibleValue(([name, info]) => info.temple == temple)
+            filterPossibleValue(([_, info]) => info.temple == temple)
 
             return `{n} from ${temple} temple`
         },
@@ -910,8 +904,8 @@ const queryKeywordList = {
     tribe: {
         alias: ["tb"],
         description: "Filter for tribe.",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => {
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([_, info]) => {
                 if (!info.tribes) return false
                 if (Array.isArray(info.tribes)) info.tribes = info.tribes.join(" ")
                 return info.tribes.toLowerCase().includes(value)
@@ -923,8 +917,8 @@ const queryKeywordList = {
     trait: {
         alias: ["tr"],
         description: "Filter for trait.",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => {
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([_, info]) => {
                 if (!info.traits) return false
                 return info.traits.map((t) => t.toLowerCase()).includes(value)
             })
@@ -953,7 +947,7 @@ const queryKeywordList = {
                     : value == "s" || value == "side"
                     ? "Side Deck"
                     : ""
-            filterPossibleValue(([name, info]) =>
+            filterPossibleValue(([_, info]) =>
                 set.name == "augmented" ? info.tier == rarity : rarity ? info.rare : !info.rare
             )
 
@@ -963,7 +957,7 @@ const queryKeywordList = {
     health: {
         alias: ["h"],
         description: "Filter for health. Can compare with numeric expression (`>`,`>=`, etc.)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
                 : value.includes("<=")
@@ -974,14 +968,14 @@ const queryKeywordList = {
                 ? "<"
                 : "=="
             value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.health}${op}${value}`))
+            filterPossibleValue(([_, info]) => eval(`${info.health}${op}${value}`))
             return `have health {n} ${op}${value}`
         },
     },
     power: {
         alias: ["p"],
         description: "Filter for power. Can compare with numeric expression (`>`,`>=`, etc.)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
                 : value.includes("<=")
@@ -992,7 +986,7 @@ const queryKeywordList = {
                 ? "<"
                 : "=="
             value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.attack}${op}${value}`))
+            filterPossibleValue(([_, info]) => eval(`${info.attack}${op}${value}`))
 
             return `have power {n} ${op}${value}`
         },
@@ -1000,7 +994,7 @@ const queryKeywordList = {
     powerhealth: {
         alias: ["ph"],
         description: "Filter for total power and health. Can compare with numeric expression (`>`,`>=`, etc.)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const op = value.includes(">=")
                 ? ">="
                 : value.includes("<=")
@@ -1011,7 +1005,7 @@ const queryKeywordList = {
                 ? "<"
                 : "=="
             value = value.replaceAll("<", "").replaceAll(">", "").replaceAll("=", "")
-            filterPossibleValue(([name, info]) => eval(`${info.attack + info.health}${op}${value}`))
+            filterPossibleValue(([_, info]) => eval(`${info.attack + info.health}${op}${value}`))
 
             return `have power health total {n} ${op}${value}`
         },
@@ -1020,15 +1014,15 @@ const queryKeywordList = {
         alias: [],
         description:
             "Filter for type of card. List of nickname can be found [here](https://github.com/khanhfg/MagpieTutor#nicknames)",
-        callback: (value, set, filterPossibleValue) => {
+        callback: (value, _, filterPossibleValue) => {
             const nicknameList = {
-                vanilla: ([name, info]) => !info.sigils,
-                tank: ([name, info]) => info.health > 5,
-                glass: ([name, info]) => info.attack > info.health,
-                square: ([name, info]) => info.attack == info.health,
-                reflected: ([name, info]) => info.attack >= info.health,
-                traitless: ([name, info]) => !info.traits,
-                removal: ([name, info]) => {
+                vanilla: ([_, info]) => !info.sigils,
+                tank: ([_, info]) => info.health > 5,
+                glass: ([_, info]) => info.attack > info.health,
+                square: ([_, info]) => info.attack == info.health,
+                reflected: ([_, info]) => info.attack >= info.health,
+                traitless: ([_, info]) => !info.traits,
+                removal: ([name, _]) => {
                     const removalList = [
                         "explode bot",
                         "mrs. bomb",
@@ -1041,19 +1035,19 @@ const queryKeywordList = {
                     ]
                     return removalList.includes(name)
                 },
-                banned: ([name, info]) => info.banned,
-                free: ([name, info]) => !info.blood_cost && !info.bone_cost && !info.energy_cost && !info.mox_cost,
+                banned: ([_, info]) => info.banned,
+                free: ([_, info]) => !info.blood_cost && !info.bone_cost && !info.energy_cost && !info.mox_cost,
             }
             let callback = nicknameList[value]
-            filterPossibleValue(callback ? callback : ([name, info]) => false)
+            filterPossibleValue(callback ? callback : (_) => false)
             return `is {n} ${value}`
         },
     },
     name: {
         alias: "n",
         description: "Filter for name",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => name.toLowerCase().includes(value.toLowerCase()))
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([name, _]) => name.toLowerCase().includes(value.toLowerCase()))
 
             return `have name {n} includes ${value}`
         },
@@ -1061,8 +1055,8 @@ const queryKeywordList = {
     regex: {
         alias: ["rx"],
         description: "Filter for regex match in name",
-        callback: (value, set, filterPossibleValue) => {
-            filterPossibleValue(([name, info]) => name.match(value))
+        callback: (value, _, filterPossibleValue) => {
+            filterPossibleValue(([name, _]) => name.match(value))
 
             return `have name {n} match ${value}`
         },
@@ -1440,7 +1434,7 @@ function genTitle(textFormat, card) {
     return completeInfo
 }
 
-function genColor(textFormat, card) {
+function genColor(textFormat) {
     for (const con of Object.keys(textFormat.color)) {
         if (eval(con)) {
             return textFormat.color[con]
@@ -1519,7 +1513,7 @@ function fetchCard(name, setName, noAlter = false, noArt = false) {
 
 // fetch the mtg card and its url
 async function fetchMagicCard(name) {
-    out = await scryfall.getCardByName(name, true).catch(async (err) => {
+    out = await scryfall.getCardByName(name, true).catch(async (_) => {
         return -1
     })
 
@@ -1913,7 +1907,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                             deck.cards.push(card.name)
                             if (!deckUniqueCount[card.type]) deckUniqueCount[card.type] = 0
                             deckUniqueCount[card.type]++
-                            if (countDup(deck.card) >= set.draftRestriction[card.type].copyPerDeck) {
+                            if (countDup(deck.cards) >= set.draftRestriction[card.type].copyPerDeck) {
                                 // if more than or equal to the allowed same name copy per deck remove this card from pool
                                 pool[card.type].splice(pool[card.type].indexOf(card.name.toLowerCase()), 1)
                             }
@@ -2115,7 +2109,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                                     hand.push(i.fields.getTextInputValue("card"))
                                     await i.update(`Created ${i.fields.getTextInputValue("card")}`)
                                 })
-                                .catch((e) => inter.update())
+                                .catch((_) => inter.update())
                         } else if (inter.customId === "fetch") {
                             // Create the modal
                             const modal = new ModalBuilder().setCustomId("fetch").setTitle("Fetch Card")
@@ -2179,11 +2173,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
             })
         } else if (commandName == "tunnel-status") {
             console.log("Command Received")
-            http.get("http://localtunnel.me", async (res) => {
+            http.get("http://localtunnel.me", async (_) => {
                 await interaction.reply(
                     "Tunnel is up and running. If you have problem connecting, restart the game and try again"
                 )
-            }).on("error", async (e) => {
+            }).on("error", async (_) => {
                 await interaction.reply(
                     "Stoat's laptop say tunnel is down, but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
                 )
@@ -2813,17 +2807,15 @@ client.on(Events.MessageCreate, async (message) => {
             } else if (command.startsWith("eval") && message.author.id == "601821309881810973") {
                 await message.reply(`${eval(command.replace("eval", ""))}`)
             } else if (command.startsWith("check if tunnel is online")) {
-                await http
-                    .get("http://localtunnel.me", async (res) => {
-                        await message.reply(
-                            "Tunnel is up and running. If you have problem connecting, restart the game and try again"
-                        )
-                    })
-                    .on("error", async (e) => {
-                        await message.reply(
-                            "I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
-                        )
-                    })
+                http.get("http://localtunnel.me", async (_) => {
+                    await message.reply(
+                        "Tunnel is up and running. If you have problem connecting, restart the game and try again"
+                    )
+                }).on("error", async (_) => {
+                    await message.reply(
+                        "I can't connect to tunnel but you can check it yourself [here](https://isitdownorjust.me/localtunnel-me/)"
+                    )
+                })
             } else if (command.startsWith("roll a d")) {
                 await message.reply(
                     `You got a ${Math.floor(parseInt(command.replace("roll a d", "")) * Math.random()) + 1}`
