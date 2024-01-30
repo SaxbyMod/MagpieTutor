@@ -1,7 +1,4 @@
 config.json
+botConfig.json
 node_modules
-test
-extra/poll.json
-extra/default.json
-extra/caches.json
 .gitignore
