@@ -6,7 +6,7 @@
 
 Scryfall bot but for Inscryption. Currently the bot can look up card in the following [format/set](https://github.com/Mouthless-Stoat/MagpieTutor/wiki/Searching#set-code)
 
-IF you have any request for new set send me a message on discord. `mouthless_stoat`.
+IF you have any request for new set send me a message on discord. `mouthed_stoat`.
 
 ## Table of Content
 - [MagpieTutor](#magpietutor)
