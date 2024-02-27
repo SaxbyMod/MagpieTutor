@@ -1,7 +1,7 @@
 const fetch = require("node-fetch")
 
 var imfJson = {
-    ruleset: "Stoat Lord Card Thingymagik",
+    ruleset: "Pixels Custom TCG Inscryption",
     cards: [],
     sigils: {},
 }
@@ -30,6 +30,8 @@ async function load() {
         cardFormated.cost = card["Cost"]
         cardFormated.attack = card["Power"]
         cardFormated.health = card["Health"]
+        cardFormated.flavor = card["Flavor"]
+        cardFormated.token = card["Token"]
 
         cardFormated.sigils = [
             card["Sigil 1"] ?? "",
@@ -39,7 +41,7 @@ async function load() {
         ]
         cardFormated.sigils = cardFormated.sigils.filter((s) => s !== "")
 
-        cardFormated.url = card["image"]
+        cardFormated.url = card["Image"]
         imfJson.cards.push(cardFormated)
     }
 
