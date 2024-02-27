@@ -526,8 +526,8 @@ const SetList = {
         file: "./extra/reduxProcess.js",
         pools: ImfPool,
     },
-    sls: {
-        name: "stuff",
+    cti: {
+        name: "custom-tcg-inscryption",
         type: "specialLoad",
         format: SetFormatList.augmented,
         compactFormat: SetFormatList.augmentedCompact,
