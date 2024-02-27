@@ -1434,7 +1434,7 @@ function genTitle(textFormat, card) {
     return completeInfo
 }
 
-function genColor(textFormat) {
+function genColor(textFormat, card) {
     for (const con of Object.keys(textFormat.color)) {
         if (eval(con)) {
             return textFormat.color[con]
@@ -2202,6 +2202,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 return fetchCard(name, set)
             })()
 
+            console.log(`The answer is ${card.name}`)
+
             // get the card picture
             const cardPortrait = await Canvas.loadImage(card.url)
 
@@ -2433,7 +2435,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                         })
                     })
                     .catch(async (e) => {
-                        await interaction.editReply(`Error: ${coloredString(`$$r${e}`)}`)
+                        await interaction.editReply(`Error: ${coloredString(`$$r${e}`)}\nThe card was ${card.name}`)
                         collecting = false
                     })
             }

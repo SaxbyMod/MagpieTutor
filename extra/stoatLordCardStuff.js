@@ -39,7 +39,7 @@ async function load() {
         ]
         cardFormated.sigils = cardFormated.sigils.filter((s) => s !== "")
 
-        cardFormated.url = card["image"]
+        cardFormated.pixport_url = card["Image"]
         imfJson.cards.push(cardFormated)
     }
 
