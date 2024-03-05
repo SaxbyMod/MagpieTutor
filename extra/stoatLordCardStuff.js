@@ -27,12 +27,12 @@ async function load() {
         cardFormated.name = card["Name"]
         cardFormated.temple = card["Temple"]
         cardFormated.tier = card["Rarity"]
-        cardFormated.cost = card["Cost"].toLowerCase()
+        cardFormated.cost = card["Cost"]
         cardFormated.attack = card["Power"]
         cardFormated.health = card["Health"]
 
         // parsing cost
-        card["Cost"] = card["Cost"]
+        card["Cost"] = card["Cost"].toLowerCase()
             .replace("bones", "bone")
             .replace("sapphires", "sapphire")
             .replace("rubies", "ruby")
