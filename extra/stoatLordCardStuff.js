@@ -27,7 +27,7 @@ async function load() {
         cardFormated.name = card["Name"]
         cardFormated.temple = card["Temple"]
         cardFormated.tier = card["Rarity"]
-        cardFormated.cost = card["Cost"]
+        cardFormated.cost = card["Cost"].toLowerCase()
         cardFormated.attack = card["Power"]
         cardFormated.health = card["Health"]
 
@@ -46,10 +46,13 @@ async function load() {
                     cardFormated["shattered"].push(`shattered_${temp[2]}`)
                 }
             } else if (["sapphire", "ruby", "emerald", "prism"].some((i) => cost.includes(i))) {
-                if (!cardFormated["gem"]) cardFormated["gem"] = []
+                if (!cardFormated["mox"]) cardFormated["mox"] = []
                 for (let i = 0; i < temp[0]; i++) {
-                    cardFormated["gem"].push(temp[1])
+                    cardFormated["mox"].push(temp[1])
                 }
+            } else if (cost = "Free" {
+                cardFormatted["free"].push(temp[1]
+            }
             } else if (temp.length > 0) {
                 cardFormated[temp[1]] = parseInt(temp[0])
             }
