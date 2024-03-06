@@ -50,8 +50,8 @@ async function load() {
                 for (let i = 0; i < temp[0]; i++) {
                     cardFormated["mox"].push(temp[1])
                 }
-            } else if (cost = "Free" {
-                cardFormatted["free"].push(temp[1]
+            } else if (cost = "Free") {
+                cardFormatted["free"].push(temp[1])
             }
             } else if (temp.length > 0) {
                 cardFormated[temp[1]] = parseInt(temp[0])
