@@ -545,24 +545,6 @@ const SetList = {
             { name: "banned", condition: `card.temple == "Terrain/Extras"` }
         ],
     },
-    /*
-    dmc: {
-        name: "desafts mod (CTI)",
-        type: "specialLoad",
-        format: SetFormatList.augmented,
-        compactFormat: SetFormatList.augmentedCompact,
-        file: "./extra/DesaftsModCTIProcesser.js",
-        pools: [
-            { name: "common", condition: 'card.tier == "Common"' },
-            { name: "uncommon", condition: 'card.tier == "Uncommon"' },
-            { name: "rare", condition: 'card.tier == "Rare"' },
-            { name: "talk", condition: 'card.tier == "Talking"' },
-            { name: "side", condition: 'card.tier == "Side Deck"' },
-            { name: "joke", condition: `card.tier == "Common (Joke Card)"` },
-            { name: "banned", condition: `card.temple == "Terrain/Extras"` }
-        ],
-    },
-*/
     //file set
     bas: {
         name: "base",
