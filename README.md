@@ -33,7 +33,7 @@ If you don't know how to setup a discord bot follow these step:
 4. Click on the `Bot` menu and choose `Add Bot`, you can change the name of the bot if you want here.
 5. Click the `Copy` button below `Token`.
 6. Click on the `OAuth2` menu and choose `URL Generator` choose `bot` and `application.commands` option.
-* Make sure ![image](https://github.com/SaxbyMod/NotionAssets/assets/102002463/38f0f160-7a8e-4a79-a193-084002577f3c)
+* Make sure that the bot tab looks similarly to: (REQUIRES OAUTH2 CODE GRANT, will make it so you cant get the link without a website to redirect to with the OAUTH2 code needed) ![image](https://github.com/SaxbyMod/MagpieTutor/assets/102002463/b0bd9d8f-bfdb-4e9b-bb0c-a42a4475c0a1)
 7. In the `Bot Permission` section and choose `Administrator`(If you want a more specific list of permission go to). Now you can click `Copy` at the very bottom to get the bot.invite link. **You must invite the bot to a server for future steps**.
 8. Now download this repository, unzip the folder if it a zip file.
 9. Make a `config.json` file, in there type the following: 
