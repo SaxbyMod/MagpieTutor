@@ -72,7 +72,7 @@ async function load() {
     }
 
     for (sigil of sigilRaw) {
-        if (sigil["Description"]) DesaftModCTI.sigils[sigil["Name"]] = sigil["Description"].replaceAll("\n", "").replaceAll("[TOKEN]", cardFormated.token.toString())
+        if (sigil["Description"]) DesaftModCTI.sigils[sigil["Name"]] = sigil["Description"].replaceAll("\n", "")
     }
 }
 return DesaftModCTI
