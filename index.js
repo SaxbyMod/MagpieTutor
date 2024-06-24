@@ -291,7 +291,10 @@ const SetFormatList = {
             extra: {
                 type: "extra",
                 name: "== EXTRA INFO ==",
-                info: [{ text: "**Token**: {token}", type: "sub" }],
+                info: [{ text: "**Token**: {token}", type: "sub" },
+                    { text: "\nThis card's format is: {format}", type: "sub"},
+                    { text: "\n\nThis card was provided by the Inscryption PvP wiki found [here.]({wikipage} '{name}')", type: "sub"},
+                ],
             },
         },
     },
@@ -324,6 +327,8 @@ const SetFormatList = {
                     { text: "\n**Sigils**: {sigils}", type: "list" },
                     { text: "\n**Traits**: {traits}", type: "list" },
                     { text: "\n**Token**: {token}", type: "sub" },
+                    { text: "\nThis card's format is: {format}", type: "sub"},
+                    { text: "\n\nThis card was provided by the Inscryption PvP wiki found [here.]({wikipage} '{name}')", type: "sub"},
                 ],
             },
         },
@@ -527,12 +532,36 @@ const SetList = {
         pools: ImfPool,
     },
     cti: {
-        name: "custom-tcg-inscryption",
+        name: "custom tcg inscryption",
         type: "specialLoad",
         format: SetFormatList.augmented,
         compactFormat: SetFormatList.augmentedCompact,
-        file: "./extra/stoatLordCardStuff.js",
-        pools: ImfPool,
+        file: "./extra/CustomTCGInscryptionProcesser.js",
+        pools: [
+            { name: "common", condition: 'card.tier == "Common"' },
+            { name: "uncommon", condition: 'card.tier == "Uncommon"' },
+            { name: "rare", condition: 'card.tier == "Rare"' },
+            { name: "talk", condition: 'card.tier == "Talking"' },
+            { name: "side", condition: 'card.tier == "Side Deck"' },
+            { name: "joke", condition: `card.tier == "Common (Joke Card)"` },
+            { name: "banned", condition: `card.temple == "Terrain/Extras"` }
+        ],
+    },
+    dmc: {
+        name: "desafts mod (CTI)",
+        type: "specialLoad",
+        format: SetFormatList.augmented,
+        compactFormat: SetFormatList.augmentedCompact,
+        file: "./extra/DesaftsModCTIProcesser.js",
+        pools: [
+            { name: "common", condition: 'card.tier == "Common"' },
+            { name: "uncommon", condition: 'card.tier == "Uncommon"' },
+            { name: "rare", condition: 'card.tier == "Rare"' },
+            { name: "talk", condition: 'card.tier == "Talking"' },
+            { name: "side", condition: 'card.tier == "Side Deck"' },
+            { name: "joke", condition: `card.tier == "Common (Joke Card)"` },
+            { name: "banned", condition: `card.temple == "Terrain/Extras"` }
+        ],
     },
 
     //file set

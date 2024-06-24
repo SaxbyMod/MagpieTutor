@@ -1,6 +1,6 @@
 const fetch = require("node-fetch")
 
-var imfJson = {
+var CustomTCGInscryption = {
     ruleset: "Custom TCG Inscryption",
     cards: [],
     sigils: {},
@@ -20,6 +20,7 @@ async function load() {
         .then((json) => {
             sigilRaw = json
         })
+        
     cardsRaw.pop()
     for (let card of cardsRaw) {
         let cardFormated = {}
@@ -30,14 +31,14 @@ async function load() {
         cardFormated.cost = card["Cost"]
         cardFormated.attack = card["Power"]
         cardFormated.health = card["Health"]
+        cardFormated.description = card["Flavor"]
+        cardFormated.format = card["From"]
+        cardFormated.wikipage = card["Wiki-Page"]
+        cardFormated.token = card["Token"]
 
-        // parsing cost
-        card["Cost"] = card["Cost"].toLowerCase()
-            .replace("bones", "bone")
-            .replace("sapphires", "sapphire")
-            .replace("rubies", "ruby")
-            .replace("prisms", "prism")
-        for (let cost of card["Cost"].split(",")) {
+        // Cost Parsing
+        card["Cost"] = card["Cost"].replace("Bones", "Bone").replace("Gems", "Mox").replace("Gem", "Mox").toLowerCase()
+        for (let cost of card["Cost"].split(", ")) {
             cost = cost.trim().toLowerCase()
             let temp = cost.split(" ")
             if (cost.includes("shattered")) {
@@ -50,16 +51,12 @@ async function load() {
                 for (let i = 0; i < temp[0]; i++) {
                     cardFormated["mox"].push(temp[1])
                 }
-            } else if (cost = "Free") {
-                cardFormatted["free"].push(temp[1])
-            }
+            } else if (cost.includes("free")) {
+                null
             } else if (temp.length > 0) {
                 cardFormated[temp[1]] = parseInt(temp[0])
             }
-        }
-
-        if (card["Token"]) cardFormated["token"] = card["Token"]
-        cardFormated["description"] = card["Flavor"]
+        
 
         cardFormated.sigils = [
             card["Sigil 1"] ?? "",
@@ -70,13 +67,14 @@ async function load() {
         cardFormated.sigils = cardFormated.sigils.filter((s) => s !== "")
 
         cardFormated.pixport_url = card["Image"]
-        imfJson.cards.push(cardFormated)
+        CustomTCGInscryption.cards.push(cardFormated)
     }
 
     for (sigil of sigilRaw) {
-        if (sigil["Description"]) imfJson.sigils[sigil["Name"]] = sigil["Description"].replaceAll("\n", "")
+        if (sigil["Description"]) CustomTCGInscryption.sigils[sigil["Name"]] = sigil["Description"].replaceAll("\n", "").replaceAll("[TOKEN]", cardFormated.token.toString())
     }
-    return imfJson
+}
+return CustomTCGInscryption
 }
 
 module.exports = {

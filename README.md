@@ -33,6 +33,7 @@ If you don't know how to setup a discord bot follow these step:
 4. Click on the `Bot` menu and choose `Add Bot`, you can change the name of the bot if you want here.
 5. Click the `Copy` button below `Token`.
 6. Click on the `OAuth2` menu and choose `URL Generator` choose `bot` and `application.commands` option.
+* Make sure ![image](https://github.com/SaxbyMod/NotionAssets/assets/102002463/38f0f160-7a8e-4a79-a193-084002577f3c)
 7. In the `Bot Permission` section and choose `Administrator`(If you want a more specific list of permission go to). Now you can click `Copy` at the very bottom to get the bot.invite link. **You must invite the bot to a server for future steps**.
 8. Now download this repository, unzip the folder if it a zip file.
 9. Make a `config.json` file, in there type the following: 
@@ -46,8 +47,8 @@ If you don't know how to setup a discord bot follow these step:
 11. Go into your discord client `Setting` > `Advance` and turn on `Developer Mode`
 12. You can now copy the bot client ID by right clicking and select `Copy ID`. You can replace the text `Your Client ID here` in `config.json` with this ID. Save the file if you haven't already. 
 13. Right click and choose `Open in Terminal` option or go to the path text box and type in `cmd`.
-14. Run the command `npm setup` to install all the necessary package for the bot and setup the slash commands.
-15. Finally run `npm start` to host the bot.
+14. Run the command `npm run setup` to install all the necessary package for the bot and setup the slash commands.
+15. Finally run `npm run start` to host the bot.
 
 If you have any problem ask me on Discord my DM should be open. `mouthless_stoat`
 
