@@ -292,7 +292,6 @@ const SetFormatList = {
                 type: "extra",
                 name: "== EXTRA INFO ==",
                 info: [{ text: "**Token**: {token}", type: "sub" },
-                    { text: "\nThis card's format is: {format}", type: "sub"},
                     { text: "\n\nThis card was provided by the Inscryption PvP wiki found [here.]({wikipage} '{name}')", type: "sub"},
                 ],
             },
@@ -327,7 +326,6 @@ const SetFormatList = {
                     { text: "\n**Sigils**: {sigils}", type: "list" },
                     { text: "\n**Traits**: {traits}", type: "list" },
                     { text: "\n**Token**: {token}", type: "sub" },
-                    { text: "\nThis card's format is: {format}", type: "sub"},
                     { text: "\n\nThis card was provided by the Inscryption PvP wiki found [here.]({wikipage} '{name}')", type: "sub"},
                 ],
             },
@@ -531,8 +529,8 @@ const SetList = {
         file: "./extra/reduxProcess.js",
         pools: ImfPool,
     },
-    cti: {
-        name: "custom tcg inscryption",
+    sls: {
+        name: "stuff",
         type: "specialLoad",
         format: SetFormatList.augmented,
         compactFormat: SetFormatList.augmentedCompact,
@@ -547,6 +545,7 @@ const SetList = {
             { name: "banned", condition: `card.temple == "Terrain/Extras"` }
         ],
     },
+    /*
     dmc: {
         name: "desafts mod (CTI)",
         type: "specialLoad",
@@ -563,7 +562,7 @@ const SetList = {
             { name: "banned", condition: `card.temple == "Terrain/Extras"` }
         ],
     },
-
+*/
     //file set
     bas: {
         name: "base",
